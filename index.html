@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ghost Keyboard Race</title>
+    
+    <!-- Open Graph Data (Makes the link look good when shared on WhatsApp/iMessage) -->
+    <meta property="og:title" content="Ghost Keyboard Challenge">
+    <meta property="og:description" content="I bet you can't type on an invisible keyboard. Try to beat my score.">
+    <meta property="og:image" content="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/apple/325/ghost_1f47b.png">
+
+    <style>
+        :root {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --accent-color: #00ff88; /* Cyberpunk Green */
+            --key-bg: #3a3a3c;
+            --key-active: #5e5e60;
+            --wrong-color: #ff4444;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; /* Full viewport height */
+            margin: 0;
+            overflow: hidden; /* Prevent scrolling */
+            touch-action: manipulation; /* Improves touch response */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px; /* Constrain width for desktop users */
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* -- TYPOGRAPHY -- */
+        h1 { 
+            font-size: 1.2rem; 
+            opacity: 0.7; 
+            margin: 0; 
+            letter-spacing: 1px; 
+            text-transform: uppercase;
+            text-align: center;
+        }
+        
+        /* -- GAME UI -- */
+        .target-box {
+            background: rgba(255,255,255,0.08);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            margin: 20px 0;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        .target-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            line-height: 1.4;
+        }
+
+        .input-display {
+            font-size: 1.6rem;
+            min-height: 50px;
+            border-bottom: 2px solid #333;
+            margin-bottom: 20px;
+            text-align: center;
+            white-space: pre; 
+            color: #fff;
+            font-family: monospace;
+        }
+
+        /* -- THE GHOST KEYBOARD -- */
+        .keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 8px; /* Gap between rows */
+            padding-bottom: 30px; /* Space at bottom for phones with home bars */
+            user-select: none;
+        }
+
+        .row {
+            display: flex;
+            justify-content: center;
+            gap: 6px; /* Gap between keys */
+        }
+
+        .key {
+            background-color: var(--key-bg);
+            border-radius: 6px;
+            height: 50px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.05s, background-color 0.1s;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        /* Key Widths */
+        .row:nth-child(1) .key { width: 9%; } 
+        .row:nth-child(2) .key { width: 9%; } 
+        .row:nth-child(3) .key { width: 13%; } 
+        
+        .key.space { width: 50%; }
+        .key.special { width: 15%; background-color: #555; font-size: 0.9rem;}
+        .key.enter { background-color: var(--accent-color); color: #000; }
+
+        /* THE GHOST EFFECT: Letters are there, but invisible */
+        .key span {
+            opacity: 0; 
+        }
+        /* Exception: Show labels for special keys */
+        .key.special span, .key.enter span {
+            opacity: 1;
+        }
+
+        .key:active {
+            transform: scale(0.90);
+            background-color: var(--key-active);
+            box-shadow: 0 0 0 rgba(0,0,0,0);
+            transform: translateY(3px);
+        }
+
+        /* -- SCREENS -- */
+        #game-screen { display: none; height: 100%; flex-direction: column; justify-content: space-between;}
+        
+        #start-screen, #result-screen { 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            height: 100%;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        button.cta {
+            background: var(--accent-color);
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 25px;
+            color: #121212;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+            transition: transform 0.1s;
+        }
+        button.cta:active { transform: scale(0.95); }
+
+        /* Stats & Comparison */
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 6px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            margin: 0 auto 20px auto;
+        }
+        
+        .comparison {
+            text-align: left;
+            background: #222;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 0.9rem;
+            border: 1px solid #333;
+        }
+        .comp-row { margin: 8px 0; display: flex; flex-direction: column;}
+        .label { color: #666; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 4px;}
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- START SCREEN -->
+        <div id="start-screen">
+            <div style="font-size: 4rem; margin-bottom: 10px;">👻</div>
+            <h1 style="font-size: 3rem; color:var(--accent-color); line-height: 1;">GHOST<br>KEYBOARD</h1>
+            <p style="margin-top: 20px; font-size: 1.1rem;">The keys are invisible.<br>Do you trust your muscle memory?</p>
+            
+            <div id="challenge-msg" style="display:none; background: #333; padding: 10px; border-radius: 8px; margin-top: 15px; color: var(--accent-color); font-size: 0.9rem;">
+                <!-- "Your friend scored 80%" goes here -->
+            </div>
+
+            <button class="cta" onclick="startGame()">START</button>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="game-screen">
+            <div>
+                <header>
+                    <h1 id="mode-title">Training Mode</h1>
+                </header>
+
+                <div class="target-box">
+                    <span id="target-text" class="target-text">Loading...</span>
+                </div>
+
+                <div id="user-input" class="input-display">|</div>
+            </div>
+
+            <!-- The Virtual Keyboard -->
+            <div class="keyboard">
+                <div class="row" id="row1"></div>
+                <div class="row" id="row2"></div>
+                <div class="row" id="row3"></div>
+                <div class="row">
+                    <div class="key special" onclick="handleKey('123')"><span>123</span></div>
+                    <div class="key space" onclick="handleKey(' ')"><span>space</span></div>
+                    <div class="key enter" onclick="submitGame()"><span>GO</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULT SCREEN -->
+        <div id="result-screen" style="display: none;">
+            <h1>ACCURACY</h1>
+            <div class="score-circle" id="score-display">0%</div>
+            
+            <p id="roast-msg" style="font-style: italic; color: #aaa; margin: 0 0 20px 0; min-height: 20px;">...</p>
+
+            <div class="comparison">
+                <div class="comp-row">
+                    <span class="label">GOAL</span>
+                    <span id="res-goal" style="color: var(--accent-color)"></span>
+                </div>
+                <div class="comp-row" style="border-top: 1px solid #444; padding-top: 8px;">
+                    <span class="label">YOU TYPED</span>
+                    <span id="res-user" style="color: #fff"></span>
+                </div>
+            </div>
+
+            <button class="cta" onclick="shareResult()">CHALLENGE FRIENDS</button>
+            <button style="background:none; border:1px solid #555; color:#888; padding: 12px 25px; border-radius: 50px; margin-top: 15px; cursor:pointer; font-size: 0.9rem;" onclick="resetGame()">TRY AGAIN</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- GAME DATA ---
+        const phrases = [
+            "may the force be with you",
+            "you shall not pass",
+            "i am your father",
+            "why so serious",
+            "there is no spoon",
+            "first rule of fight club",
+            "you are a wizard harry",
+            "one does not simply walk into mordor",
+            "to infinity and beyond",
+            "show me the money",
+            "winter is coming",
+            "bond james bond",
+            "i see dead people",
+            "life is like a box of chocolates",
+            "hasta la vista baby",
+            "houston we have a problem",
+            "here is johnny",
+            "my precious",
+            "keep your friends close",
+            "et phone home",
+            "just keep swimming",
+            "elementary my dear watson",
+            "say hello to my little friend",
+            "do not go gentle into that good night"
+            "meet me in five minutes",
+            "did you see that email",
+            "can you pick up pizza",
+            "my battery is at one percent",
+            "where are we going tonight",
+            "wait i am on my way",
+            "send me the location",
+            "who is the impostor",
+            "password is incorrect",
+            "i am outside open the door",
+            "call me when you get this",
+            "why are you ignoring me"
+        ];
+
+        let currentPhraseIndex = -1; 
+        let typedText = "";
+
+        // Keyboard Layouts
+        const row1Keys = "qwertyuiop".split("");
+        const row2Keys = "asdfghjkl".split("");
+        const row3Keys = "zxcvbnm".split("");
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            // 1. Build the keyboard
+            initKeyboard();
+
+            // 2. Check for Challenge URL (e.g. ?p=3)
+            const urlParams = new URLSearchParams(window.location.search);
+            const challengeIndex = urlParams.get('p');
+
+            if (challengeIndex !== null && phrases[challengeIndex]) {
+                // Challenge Mode
+                currentPhraseIndex = parseInt(challengeIndex);
+                document.getElementById('challenge-msg').style.display = 'block';
+                document.getElementById('challenge-msg').innerText = "⚠️ CHALLENGE RECEIVED: Someone bet you can't type this phrase.";
+                document.querySelector('#start-screen .cta').innerText = "ACCEPT CHALLENGE";
+                document.querySelector('#start-screen .cta').onclick = () => startSpecificGame(currentPhraseIndex);
+            }
+        };
+
+        function initKeyboard() {
+            renderRow('row1', row1Keys);
+            renderRow('row2', row2Keys);
+            
+            const r3 = document.getElementById('row3');
+            
+            // Shift (Visual only)
+            let shift = document.createElement('div');
+            shift.className = 'key special';
+            shift.innerHTML = '<span>⬆</span>'; 
+            r3.appendChild(shift);
+
+            row3Keys.forEach(char => {
+                let k = document.createElement('div');
+                k.className = 'key';
+                k.innerHTML = `<span>${char.toUpperCase()}</span>`; 
+                k.onclick = () => handleKey(char);
+                r3.appendChild(k);
+            });
+
+            // Backspace
+            let back = document.createElement('div');
+            back.className = 'key special';
+            back.innerHTML = '<span>⌫</span>';
+            back.onclick = () => handleKey('BACKSPACE');
+            r3.appendChild(back);
+        }
+
+        function renderRow(id, keys) {
+            const row = document.getElementById(id);
+            keys.forEach(char => {
+                let k = document.createElement('div');
+                k.className = 'key';
+                k.innerHTML = `<span>${char.toUpperCase()}</span>`;
+                k.onclick = () => handleKey(char);
+                row.appendChild(k);
+            });
+        }
+
+        // --- GAME LOGIC ---
+        function startGame() {
+            // Random Mode
+            const randomIndex = Math.floor(Math.random() * phrases.length);
+            startSpecificGame(randomIndex);
+        }
+
+        function startSpecificGame(index) {
+            currentPhraseIndex = index;
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'flex';
+            
+            // Update Title based on mode
+            const urlParams = new URLSearchParams(window.location.search);
+            if(urlParams.get('p')) {
+                document.getElementById('mode-title').innerText = "VS MODE";
+                document.getElementById('mode-title').style.color = "#ff4444";
+            } else {
+                document.getElementById('mode-title').innerText = "GHOST MODE";
+                document.getElementById('mode-title').style.color = "#fff";
+            }
+
+            document.getElementById('target-text').innerText = `"${phrases[index]}"`;
+            
+            typedText = "";
+            updateDisplay();
+        }
+
+        function handleKey(key) {
+            // Haptic feedback
+            if (navigator.vibrate) navigator.vibrate(5);
+
+            if (key === 'BACKSPACE') {
+                typedText = typedText.slice(0, -1);
+            } else if (key === '123') {
+                // ignore
+            } else {
+                typedText += key;
+            }
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('user-input').innerText = typedText + "|"; 
+        }
+
+        function submitGame() {
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'flex';
+
+            const target = phrases[currentPhraseIndex];
+            const score = calculateScore(target, typedText);
+            
+            document.getElementById('score-display').innerText = score + "%";
+            document.getElementById('res-goal').innerText = target;
+            document.getElementById('res-user').innerText = typedText;
+
+            // Roast Logic
+            let roast = "";
+            if(score === 100) roast = "🤖 PERFECT. You are a cyborg.";
+            else if(score > 90) roast = "🔥 INSANE. Do you ever go outside?";
+            else if(score > 75) roast = "Not bad. You definitely text while driving.";
+            else if(score > 50) roast = "My grandma types faster than this. 👵";
+            else roast = "💀 EMBARRASSING. Are your eyes closed?";
+            
+            document.getElementById('roast-msg').innerText = roast;
+        }
+
+        function resetGame() {
+            // Clears URL params so they can play random mode next
+            window.history.pushState({}, document.title, window.location.pathname);
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+            document.getElementById('challenge-msg').style.display = 'none';
+            document.querySelector('#start-screen .cta').innerText = "START";
+            document.querySelector('#start-screen .cta').onclick = startGame;
+        }
+
+        // --- ALGORITHM (Levenshtein) ---
+        function calculateScore(target, attempt) {
+            if (!attempt) return 0;
+            target = target.toLowerCase();
+            attempt = attempt.toLowerCase();
+            const distance = levenshtein(target, attempt);
+            const maxLength = Math.max(target.length, attempt.length);
+            let accuracy = ((maxLength - distance) / maxLength) * 100;
+            return Math.max(0, Math.floor(accuracy));
+        }
+
+        function levenshtein(a, b) {
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) == a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1, 
+                            Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+                        );
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        // --- VIRAL SHARING ---
+        async function shareResult() {
+            const score = document.getElementById('score-display').innerText;
+            const currentUrl = window.location.href.split('?')[0]; 
+            const challengeLink = `${currentUrl}?p=${currentPhraseIndex}`;
+            
+            const shareData = {
+                title: 'Ghost Keyboard',
+                text: `👻 I got ${score} accuracy on the invisible keyboard.\n\nCan you beat me? Try here:\n`,
+                url: challengeLink
+            };
+
+            // 1. Try Native Mobile Share (WhatsApp, iMessage pop-up)
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                } catch (err) {
+                    console.log('Share canceled');
+                }
+            } 
+            // 2. Fallback for Desktop (Copy to Clipboard)
+            else {
+                const textToCopy = `${shareData.text} ${challengeLink}`;
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    const btn = document.querySelector('#result-screen .cta');
+                    const originalText = btn.innerText;
+                    btn.innerText = "LINK COPIED! ✅";
+                    btn.style.background = "#fff";
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.style.background = "var(--accent-color)";
+                    }, 2000);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
