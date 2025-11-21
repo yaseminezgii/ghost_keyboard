@@ -6,17 +6,21 @@
     <title>Ghost Keyboard Race</title>
     
     <meta property="og:title" content="Ghost Keyboard Challenge">
-    <meta property="og:description" content="I bet you can't type on an invisible keyboard. Try to beat my score.">
+    <meta property="og:description" content="I bet you can't type on an invisible keyboard.">
 
     <style>
         :root {
-            /* YOUR THEME: CYBERPUNK GREEN */
+            /* CYBERPUNK GREEN THEME */
             --bg-color: #121212;
             --text-color: #ffffff;
             --accent-color: #00ff88; 
             --key-bg: #3a3a3c;
             --key-active: #5e5e60;
             --wrong-color: #ff4444;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
@@ -27,10 +31,11 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            /* İŞTE DÜZELTME: 100vh yerine 100dvh (Dynamic Viewport Height) */
+            height: 100dvh; 
             margin: 0;
-            overflow: hidden;
-            touch-action: manipulation;
+            overflow: hidden; /* Kaydırmayı engelle */
+            touch-action: none; /* Zoom ve kaydırmayı engelle */
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -42,12 +47,13 @@
             flex-direction: column;
             justify-content: space-between;
             padding: 20px;
-            box-sizing: border-box;
+            /* iPhone Alttaki Çizgi (Home Bar) için boşluk bırakır */
+            padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
             position: relative;
         }
 
         h1 { 
-            font-size: 1.2rem; 
+            font-size: 1.1rem; 
             opacity: 0.7; 
             margin: 0; 
             letter-spacing: 1px; 
@@ -58,29 +64,29 @@
         /* -- GAME UI -- */
         .target-box {
             background: rgba(255,255,255,0.08);
-            padding: 20px;
+            padding: 15px;
             border-radius: 16px;
             text-align: center;
-            margin: 20px 0;
-            min-height: 80px;
+            margin: 10px 0;
+            min-height: 70px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border: 1px solid rgba(0, 255, 136, 0.1);
         }
         
         .target-text {
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: var(--accent-color);
-            line-height: 1.4;
+            line-height: 1.3;
         }
 
         .input-display {
-            font-size: 1.6rem;
-            min-height: 50px;
+            font-size: 1.4rem;
+            min-height: 40px;
             border-bottom: 2px solid #333;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             text-align: center;
             white-space: pre; 
             color: #fff;
@@ -91,21 +97,23 @@
         .keyboard {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            padding-bottom: 30px;
+            gap: 6px; /* Tuş aralarını biraz kıstım */
+            width: 100%;
             user-select: none;
+            margin-bottom: 10px;
         }
 
         .row {
             display: flex;
             justify-content: center;
-            gap: 6px;
+            gap: 4px; /* Yatay boşlukları azalttım */
+            width: 100%;
         }
 
         .key {
             background-color: var(--key-bg);
-            border-radius: 6px;
-            height: 50px; 
+            border-radius: 5px;
+            height: 48px; /* Tuş yüksekliğini mobil için optimize ettim */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -113,26 +121,23 @@
             font-size: 1.2rem;
             cursor: pointer;
             transition: transform 0.05s, background-color 0.1s;
-            box-shadow: 0 3px 0 rgba(0,0,0,0.4);
             position: relative;
+            flex: 1; /* Tuşların ekrana yayılmasını sağlar */
         }
 
-        .row:nth-child(1) .key { width: 9%; } 
-        .row:nth-child(2) .key { width: 9%; } 
-        .row:nth-child(3) .key { width: 13%; } 
+        /* Key Widths - Flex ile otomatik ayarlansın ama oran korunsun */
+        .row:nth-child(2) { margin: 0 15px; } /* Orta satırı ortala */
         
-        .key.space { width: 50%; }
-        .key.special { width: 15%; background-color: #555; font-size: 0.9rem;}
-        .key.enter { background-color: var(--accent-color); color: #000; }
+        .key.space { flex: 5; } /* Space tuşu geniş */
+        .key.special { flex: 1.5; background-color: #555; font-size: 0.9rem;}
+        .key.enter { flex: 2; background-color: var(--accent-color); color: #000; }
 
-        /* THE GHOST EFFECT */
         .key span { opacity: 0; }
         .key.special span, .key.enter span { opacity: 1; }
 
         .key:active {
-            transform: scale(0.90) translateY(3px);
+            transform: scale(0.90);
             background-color: var(--key-active);
-            box-shadow: none;
         }
 
         /* -- SCREENS -- */
@@ -152,19 +157,25 @@
         button.cta {
             background: var(--accent-color);
             border: none;
-            padding: 18px 40px;
-            font-size: 1.1rem;
+            padding: 16px 32px;
+            font-size: 1rem;
             font-weight: 800;
             border-radius: 50px;
             cursor: pointer;
-            margin-top: 25px;
+            margin-top: 20px;
             color: #121212;
             text-transform: uppercase;
             letter-spacing: 1px;
             box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
-            transition: transform 0.1s;
         }
-        button.cta:active { transform: scale(0.95); }
+
+        /* KÜÇÜK EKRANLAR İÇİN ÖZEL AYAR (iPhone Mini / SE / 13) */
+        @media (max-height: 700px) {
+            .key { height: 42px; } /* Tuşları biraz kısalt */
+            .target-box { min-height: 50px; padding: 10px; }
+            h1 { font-size: 1rem; }
+            .score-circle { width: 100px; height: 100px; font-size: 2rem; }
+        }
 
         .score-circle {
             width: 120px;
@@ -177,21 +188,21 @@
             font-size: 2.5rem;
             font-weight: 800;
             color: var(--accent-color);
-            margin: 0 auto 20px auto;
+            margin: 0 auto 15px auto;
         }
         
         .comparison {
             text-align: left;
             background: #222;
-            padding: 20px;
+            padding: 15px;
             border-radius: 12px;
-            margin: 20px 0;
+            margin: 15px 0;
             font-family: monospace;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             border: 1px solid #333;
         }
-        .comp-row { margin: 8px 0; display: flex; flex-direction: column;}
-        .label { color: #666; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 4px;}
+        .comp-row { margin: 5px 0; display: flex; flex-direction: column;}
+        .label { color: #666; font-size: 0.6rem; text-transform: uppercase; margin-bottom: 4px;}
 
     </style>
 </head>
@@ -202,20 +213,18 @@
         <!-- START SCREEN -->
         <div id="start-screen">
             <div style="font-size: 4rem; margin-bottom: 10px;">👻</div>
-            <h1 style="font-size: 3rem; color:var(--accent-color); line-height: 1;">GHOST<br>KEYBOARD</h1>
-            <p style="margin-top: 20px; font-size: 1.1rem;">The keys are invisible.<br>Do you trust your muscle memory?</p>
+            <h1 style="font-size: 2.5rem; color:var(--accent-color); line-height: 1;">GHOST<br>KEYBOARD</h1>
+            <p style="margin-top: 15px; font-size: 1rem;">The keys are invisible.<br>Muscle memory only.</p>
             
-            <div id="challenge-msg" style="display:none; background: #333; padding: 10px; border-radius: 8px; margin-top: 15px; color: var(--accent-color); font-size: 0.9rem;">
-                <!-- Challenge Text -->
-            </div>
+            <div id="challenge-msg" style="display:none; background: #333; padding: 10px; border-radius: 8px; margin-top: 15px; color: var(--accent-color); font-size: 0.9rem;"></div>
 
-            <!-- Removed onclick, JS handles it safely now -->
             <button class="cta">START</button>
         </div>
 
         <!-- GAME SCREEN -->
         <div id="game-screen">
-            <div>
+            <!-- Üst Kısım -->
+            <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
                 <header>
                     <h1 id="mode-title">Ghost Mode</h1>
                 </header>
@@ -227,7 +236,7 @@
                 <div id="user-input" class="input-display">|</div>
             </div>
 
-            <!-- The Virtual Keyboard -->
+            <!-- Alt Kısım: Klavye (En alta yapışık) -->
             <div class="keyboard">
                 <div class="row" id="row1"></div>
                 <div class="row" id="row2"></div>
@@ -242,35 +251,38 @@
 
         <!-- RESULT SCREEN -->
         <div id="result-screen">
-            <h1>ACCURACY</h1>
-            <div class="score-circle" id="score-display">0%</div>
-            
-            <p id="roast-msg" style="font-style: italic; color: #aaa; margin: 0 0 20px 0; min-height: 20px;">...</p>
+            <div>
+                <h1>ACCURACY</h1>
+                <div class="score-circle" id="score-display">0%</div>
+                <p id="roast-msg" style="font-style: italic; color: #aaa; margin: 0 0 15px 0; min-height: 20px; font-size: 0.9rem;">...</p>
 
-            <div class="comparison">
-                <div class="comp-row">
-                    <span class="label">GOAL</span>
-                    <span id="res-goal" style="color: var(--accent-color)"></span>
-                </div>
-                <div class="comp-row" style="border-top: 1px solid #444; padding-top: 8px;">
-                    <span class="label">YOU TYPED</span>
-                    <span id="res-user" style="color: #fff"></span>
+                <div class="comparison">
+                    <div class="comp-row">
+                        <span class="label">GOAL</span>
+                        <span id="res-goal" style="color: var(--accent-color)"></span>
+                    </div>
+                    <div class="comp-row" style="border-top: 1px solid #444; padding-top: 8px;">
+                        <span class="label">YOU TYPED</span>
+                        <span id="res-user" style="color: #fff"></span>
+                    </div>
                 </div>
             </div>
 
-            <button class="cta" onclick="shareResult()">CHALLENGE FRIENDS</button>
-            <button style="background:none; border:1px solid #555; color:#888; padding: 12px 25px; border-radius: 50px; margin-top: 15px; cursor:pointer; font-size: 0.9rem;" onclick="resetGame()">TRY AGAIN</button>
+            <div>
+                <button class="cta" onclick="shareResult()">CHALLENGE FRIENDS</button>
+                <button style="background:none; border:1px solid #555; color:#888; padding: 10px 25px; border-radius: 50px; margin-top: 10px; cursor:pointer; font-size: 0.8rem; margin-bottom: 10px;" onclick="resetGame()">TRY AGAIN</button>
+            </div>
         </div>
 
     </div>
 
     <script>
-        // --- 1. MOBILE SAFETY CHECK ---
+        // --- MOBILE ERROR HANDLING ---
         window.onerror = function(msg, url, line) {
-            alert("Error: " + msg + "\nLine: " + line);
+            // alert("Error: " + msg); // Uncomment if debugging needed
         };
 
-        // --- 2. PHRASES (MOVIE QUOTES) ---
+        // --- PHRASES ---
         const phrases = [
             "may the force be with you",
             "you shall not pass",
@@ -295,13 +307,21 @@
             "just keep swimming",
             "elementary my dear watson",
             "say hello to my little friend",
-            "do not go gentle into that good night"
+            "do not go gentle into that good night",
+            "meet me in five minutes",
+            "did you see that email",
+            "can you pick up pizza",
+            "my battery is at one percent",
+            "where are we going tonight",
+            "wait i am on my way",
+            "send me the location",
+            "why are you ignoring me"
         ];
 
         let currentPhraseIndex = -1; 
         let typedText = "";
 
-        // --- 3. STARTUP LOGIC (Fixes 'Nothing Happens' Bug) ---
+        // --- STARTUP ---
         window.addEventListener('DOMContentLoaded', () => {
             initKeyboard();
             setupSpecialKey('key-space', ' ');
@@ -313,20 +333,17 @@
             const startBtn = document.querySelector('#start-screen .cta');
 
             if (challengeIndex !== null && phrases[challengeIndex]) {
-                // Challenge Mode
                 currentPhraseIndex = parseInt(challengeIndex);
                 document.getElementById('challenge-msg').style.display = 'block';
                 document.getElementById('challenge-msg').innerText = "⚠️ CHALLENGE RECEIVED: Beat this score.";
                 startBtn.innerText = "ACCEPT CHALLENGE";
-                // Safe Event Listener
                 startBtn.addEventListener('click', () => startSpecificGame(currentPhraseIndex));
             } else {
-                // Normal Mode
                 startBtn.addEventListener('click', startGame);
             }
         });
 
-        // --- 4. KEYBOARD LOGIC ---
+        // --- KEYBOARD ---
         function initKeyboard() {
             const row1Keys = "qwertyuiop".split("");
             const row2Keys = "asdfghjkl".split("");
@@ -336,18 +353,15 @@
             renderRow('row2', row2Keys);
             
             const r3 = document.getElementById('row3');
-            r3.innerHTML = ''; // Clear
+            r3.innerHTML = ''; 
 
-            // Shift
             let shift = document.createElement('div');
             shift.className = 'key special';
             shift.innerHTML = '<span>⬆</span>'; 
             r3.appendChild(shift);
 
-            // Letters
             row3Keys.forEach(char => createKey(r3, char));
 
-            // Backspace
             let back = document.createElement('div');
             back.className = 'key special';
             back.innerHTML = '<span>⌫</span>';
@@ -366,7 +380,6 @@
             let k = document.createElement('div');
             k.className = 'key';
             k.innerHTML = `<span>${char.toUpperCase()}</span>`;
-            // FAST TOUCH RESPONSE
             k.addEventListener('touchstart', (e) => { e.preventDefault(); handleKey(char); });
             k.addEventListener('mousedown', (e) => { e.preventDefault(); handleKey(char); });
             parent.appendChild(k);
@@ -384,7 +397,7 @@
             el.addEventListener('mousedown', handler);
         }
 
-        // --- 5. GAME FUNCTIONS ---
+        // --- GAME LOGIC ---
         function startGame() {
             const randomIndex = Math.floor(Math.random() * phrases.length);
             startSpecificGame(randomIndex);
@@ -439,11 +452,11 @@
             document.getElementById('res-user').innerText = typedText;
 
             let roast = "";
-            if(score === 100) roast = "🤖 PERFECT. You are a cyborg.";
-            else if(score > 90) roast = "🔥 INSANE. Do you ever go outside?";
-            else if(score > 75) roast = "Not bad. You definitely text while driving.";
-            else if(score > 50) roast = "My grandma types faster than this. 👵";
-            else roast = "💀 EMBARRASSING. Are your eyes closed?";
+            if(score === 100) roast = "🤖 PERFECT.";
+            else if(score > 90) roast = "🔥 INSANE.";
+            else if(score > 75) roast = "Not bad.";
+            else if(score > 50) roast = "My grandma is faster.";
+            else roast = "💀 Eyes closed?";
             
             document.getElementById('roast-msg').innerText = roast;
         }
@@ -454,7 +467,6 @@
             document.getElementById('start-screen').style.display = 'flex';
             document.getElementById('challenge-msg').style.display = 'none';
             
-            // Re-bind start button for random mode
             const startBtn = document.querySelector('#start-screen .cta');
             const newBtn = startBtn.cloneNode(true);
             startBtn.parentNode.replaceChild(newBtn, startBtn);
@@ -462,7 +474,7 @@
             newBtn.addEventListener('click', startGame);
         }
 
-        // --- 6. SCORING ---
+        // --- ALGORITHMS & SHARE ---
         function calculateScore(target, attempt) {
             if (!attempt) return 0;
             target = target.toLowerCase();
@@ -482,25 +494,20 @@
                     if (b.charAt(i - 1) == a.charAt(j - 1)) {
                         matrix[i][j] = matrix[i - 1][j - 1];
                     } else {
-                        matrix[i][j] = Math.min(
-                            matrix[i - 1][j - 1] + 1, 
-                            Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
-                        );
+                        matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
                     }
                 }
             }
             return matrix[b.length][a.length];
         }
 
-        // --- 7. SHARING ---
         async function shareResult() {
             const score = document.getElementById('score-display').innerText;
             const currentUrl = window.location.href.split('?')[0]; 
             const challengeLink = `${currentUrl}?p=${currentPhraseIndex}`;
-            
             const shareData = {
                 title: 'Ghost Keyboard',
-                text: `👻 I got ${score} accuracy on the invisible keyboard.\n\nCan you beat me? Try here:\n`,
+                text: `👻 I got ${score} accuracy on the invisible keyboard.\nCan you beat me?\n`,
                 url: challengeLink
             };
 
