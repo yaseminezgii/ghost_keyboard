@@ -3,25 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ghost Keyboard Race</title>
+    <title>Ghost Speed Race</title>
     
-    <meta property="og:title" content="Ghost Keyboard Challenge">
-    <meta property="og:description" content="I bet you can't type on an invisible keyboard.">
+    <meta property="og:title" content="Ghost Keyboard Race">
+    <meta property="og:description" content="Invisible keys. Maximum speed. Can you beat me?">
 
     <style>
         :root {
-            /* CYBERPUNK GREEN THEME */
             --bg-color: #121212;
             --text-color: #ffffff;
             --accent-color: #00ff88; 
-            --key-bg: #3a3a3c;
-            --key-active: #5e5e60;
+            --key-bg: #4a4a4c; /* iPhone tuş rengine daha yakın */
+            --key-active: #ffffff;
+            --key-text-active: #000000;
             --wrong-color: #ff4444;
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             background-color: var(--bg-color);
@@ -31,11 +29,10 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            /* İŞTE DÜZELTME: 100vh yerine 100dvh (Dynamic Viewport Height) */
-            height: 100dvh; 
+            height: 100dvh; /* iOS Safari fix */
             margin: 0;
-            overflow: hidden; /* Kaydırmayı engelle */
-            touch-action: none; /* Zoom ve kaydırmayı engelle */
+            overflow: hidden;
+            touch-action: none;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -46,163 +43,170 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 20px;
-            /* iPhone Alttaki Çizgi (Home Bar) için boşluk bırakır */
-            padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
+            padding: 15px;
+            padding-bottom: calc(5px + env(safe-area-inset-bottom)); 
             position: relative;
         }
 
-        h1 { 
-            font-size: 1.1rem; 
-            opacity: 0.7; 
-            margin: 0; 
-            letter-spacing: 1px; 
-            text-transform: uppercase;
+        /* -- HUD -- */
+        .timer-box {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #fff;
             text-align: center;
+            font-variant-numeric: tabular-nums;
+            opacity: 0.9;
+            margin-top: 10px;
+            text-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
         }
-        
-        /* -- GAME UI -- */
+
         .target-box {
-            background: rgba(255,255,255,0.08);
-            padding: 15px;
-            border-radius: 16px;
+            background: rgba(30,30,30, 0.8);
+            padding: 20px;
+            border-radius: 18px;
             text-align: center;
-            margin: 10px 0;
-            min-height: 70px;
+            margin: 15px 0;
+            min-height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(255,255,255,0.1);
         }
         
         .target-text {
-            font-size: 1.1rem;
-            font-weight: 700;
+            font-size: 1.2rem;
+            font-weight: 600;
             color: var(--accent-color);
-            line-height: 1.3;
+            line-height: 1.4;
         }
 
         .input-display {
             font-size: 1.4rem;
             min-height: 40px;
-            border-bottom: 2px solid #333;
-            margin-bottom: 10px;
+            border-bottom: 2px solid #444;
+            margin-bottom: 20px;
             text-align: center;
             white-space: pre; 
             color: #fff;
             font-family: monospace;
+            letter-spacing: 1px;
         }
 
-        /* -- THE GHOST KEYBOARD -- */
+        /* -- REALISTIC MOBILE KEYBOARD -- */
         .keyboard {
             display: flex;
             flex-direction: column;
-            gap: 6px; /* Tuş aralarını biraz kıstım */
+            gap: 10px; /* Satır arası boşluk */
             width: 100%;
             user-select: none;
+            padding: 0 2px; /* Hafif kenar payı */
             margin-bottom: 10px;
         }
 
-        .row {
-            display: flex;
-            justify-content: center;
-            gap: 4px; /* Yatay boşlukları azalttım */
-            width: 100%;
+        .row { 
+            display: flex; 
+            justify-content: center; 
+            gap: 5px; /* Tuş arası boşluk */
+            width: 100%; 
+        }
+
+        /* İŞTE KLAVYE DÜZENİ SIRRI BURADA */
+        .row:nth-child(2) { 
+            padding: 0 18px; /* 2. Satırı (ASDF) içeri basar */
         }
 
         .key {
             background-color: var(--key-bg);
             border-radius: 5px;
-            height: 48px; /* Tuş yüksekliğini mobil için optimize ettim */
+            height: 54px; /* Tuşlar daha uzun (Phone style) */
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 1.2rem;
+            font-weight: 500;
+            font-size: 1.3rem;
             cursor: pointer;
-            transition: transform 0.05s, background-color 0.1s;
             position: relative;
-            flex: 1; /* Tuşların ekrana yayılmasını sağlar */
+            flex: 1;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+            transition: transform 0.05s;
         }
 
-        /* Key Widths - Flex ile otomatik ayarlansın ama oran korunsun */
-        .row:nth-child(2) { margin: 0 15px; } /* Orta satırı ortala */
+        .key.space { flex: 5; font-size: 1rem; color: #999; }
+        .key.special { flex: 1.3; background-color: #333; font-size: 1rem;}
+        .key.enter { flex: 2; background-color: var(--accent-color); color: #121212; font-weight: 800; }
         
-        .key.space { flex: 5; } /* Space tuşu geniş */
-        .key.special { flex: 1.5; background-color: #555; font-size: 0.9rem;}
-        .key.enter { flex: 2; background-color: var(--accent-color); color: #000; }
-
+        /* Ghost Mode: Harfler Gizli */
         .key span { opacity: 0; }
-        .key.special span, .key.enter span { opacity: 1; }
+        .key.special span, .key.enter span, .key.space span { opacity: 1; }
 
-        .key:active {
-            transform: scale(0.90);
-            background-color: var(--key-active);
+        /* Basınca Beyaz Olma Efekti (iPhone gibi) */
+        .key.active-key { 
+            background-color: var(--key-active) !important;
+            color: var(--key-text-active);
+            transform: scale(1.2); /* Pop-up efekti */
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            border-radius: 8px;
         }
+        .key.active-key span { opacity: 1; font-weight: bold; } /* Basınca harfi göster (isteğe bağlı, şu an kapalı) */
 
         /* -- SCREENS -- */
         #game-screen, #result-screen { display: none; height: 100%; flex-direction: column; justify-content: space-between;}
-        
-        #start-screen, #result-screen { 
-            text-align: center; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            height: 100%;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #start-screen, #result-screen { text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100%; animation: fadeIn 0.5s ease;}
 
         button.cta {
             background: var(--accent-color);
             border: none;
-            padding: 16px 32px;
-            font-size: 1rem;
-            font-weight: 800;
-            border-radius: 50px;
+            padding: 18px 40px;
+            font-size: 1.1rem;
+            font-weight: 900;
+            border-radius: 16px;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 25px;
             color: #121212;
             text-transform: uppercase;
             letter-spacing: 1px;
-            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
         }
 
-        /* KÜÇÜK EKRANLAR İÇİN ÖZEL AYAR (iPhone Mini / SE / 13) */
-        @media (max-height: 700px) {
-            .key { height: 42px; } /* Tuşları biraz kısalt */
-            .target-box { min-height: 50px; padding: 10px; }
-            h1 { font-size: 1rem; }
-            .score-circle { width: 100px; height: 100px; font-size: 2rem; }
-        }
-
-        .score-circle {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 6px solid var(--accent-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--accent-color);
-            margin: 0 auto 15px auto;
+        /* RESULT CARD */
+        .result-card {
+            background: #1e1e1e;
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid #333;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
         }
         
-        .comparison {
-            text-align: left;
-            background: #222;
-            padding: 15px;
-            border-radius: 12px;
-            margin: 15px 0;
-            font-family: monospace;
-            font-size: 0.85rem;
-            border: 1px solid #333;
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
         }
-        .comp-row { margin: 5px 0; display: flex; flex-direction: column;}
-        .label { color: #666; font-size: 0.6rem; text-transform: uppercase; margin-bottom: 4px;}
+        
+        .stat-item { display: flex; flex-direction: column; }
+        .stat-val { font-size: 2.5rem; font-weight: 800; color: #fff; line-height: 1;}
+        .stat-lbl { font-size: 0.8rem; color: #888; margin-top: 5px; font-weight: 600;}
+        
+        .wpm-highlight { color: var(--accent-color); }
+
+        /* HYPE ANIMATIONS */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .shake-screen { animation: shake 0.5s; }
 
     </style>
 </head>
@@ -212,35 +216,35 @@
         
         <!-- START SCREEN -->
         <div id="start-screen">
-            <div style="font-size: 4rem; margin-bottom: 10px;">👻</div>
-            <h1 style="font-size: 2.5rem; color:var(--accent-color); line-height: 1;">GHOST<br>KEYBOARD</h1>
-            <p style="margin-top: 15px; font-size: 1rem;">The keys are invisible.<br>Muscle memory only.</p>
+            <div style="font-size: 5rem; margin-bottom: 10px;">🚀</div>
+            <h1 style="font-size: 2rem; color:#fff; line-height: 1.2;">SPEED<br><span style="color:var(--accent-color)">GHOST</span></h1>
+            <p style="margin-top: 20px; color:#888; font-size: 1rem;">
+                Speed + Accuracy.<br>The ultimate muscle memory test.
+            </p>
             
-            <div id="challenge-msg" style="display:none; background: #333; padding: 10px; border-radius: 8px; margin-top: 15px; color: var(--accent-color); font-size: 0.9rem;"></div>
+            <div id="challenge-msg" style="display:none; background: #222; padding: 15px; border-radius: 12px; margin-top: 20px; border: 1px solid var(--accent-color); color: #fff;"></div>
 
-            <button class="cta">START</button>
+            <button class="cta">START RACE</button>
         </div>
 
         <!-- GAME SCREEN -->
         <div id="game-screen">
-            <!-- Üst Kısım -->
             <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-                <header>
-                    <h1 id="mode-title">Ghost Mode</h1>
-                </header>
-
+                
+                <div id="timer" class="timer-box">0.00</div>
+                
                 <div class="target-box">
-                    <span id="target-text" class="target-text">Loading...</span>
+                    <span id="target-text" class="target-text">...</span>
                 </div>
 
                 <div id="user-input" class="input-display">|</div>
             </div>
 
-            <!-- Alt Kısım: Klavye (En alta yapışık) -->
+            <!-- MOBILE LAYOUT KEYBOARD -->
             <div class="keyboard">
-                <div class="row" id="row1"></div>
-                <div class="row" id="row2"></div>
-                <div class="row" id="row3"></div>
+                <div class="row" id="row1"></div> <!-- QWERTY -->
+                <div class="row" id="row2"></div> <!-- ASDFG (Indented) -->
+                <div class="row" id="row3"></div> <!-- ZXCV (Centered) -->
                 <div class="row">
                     <div class="key special" id="key-123"><span>123</span></div>
                     <div class="key space" id="key-space"><span>space</span></div>
@@ -252,37 +256,47 @@
         <!-- RESULT SCREEN -->
         <div id="result-screen">
             <div>
-                <h1>ACCURACY</h1>
-                <div class="score-circle" id="score-display">0%</div>
-                <p id="roast-msg" style="font-style: italic; color: #aaa; margin: 0 0 15px 0; min-height: 20px; font-size: 0.9rem;">...</p>
+                <h2 id="roast-header" style="color: var(--accent-color); text-transform: uppercase; margin-bottom: 10px;">...</h2>
+                
+                <div class="result-card">
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <span class="stat-val wpm-highlight" id="res-wpm">0</span>
+                            <span class="stat-lbl">WPM (Speed)</span>
+                        </div>
+                        <div style="width: 1px; background: #444;"></div>
+                        <div class="stat-item">
+                            <span class="stat-val" id="score-display">0%</span>
+                            <span class="stat-lbl">Accuracy</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; border-top: 1px solid #333; padding-top: 10px; color: #888; font-size: 0.9rem;">
+                        Time: <span id="res-time" style="color:#fff">0.00s</span>
+                    </div>
+                </div>
 
-                <div class="comparison">
-                    <div class="comp-row">
-                        <span class="label">GOAL</span>
-                        <span id="res-goal" style="color: var(--accent-color)"></span>
-                    </div>
-                    <div class="comp-row" style="border-top: 1px solid #444; padding-top: 8px;">
-                        <span class="label">YOU TYPED</span>
-                        <span id="res-user" style="color: #fff"></span>
-                    </div>
+                <p id="roast-msg" style="color: #ccc; font-size: 1rem; line-height: 1.4; padding: 0 20px;">...</p>
+
+                <!-- Detailed Compare -->
+                <div style="text-align:left; margin-top: 20px; background: #151515; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 0.85rem; opacity: 0.8;">
+                    <div style="color:#666; font-size: 0.7rem; margin-bottom: 5px;">TARGET</div>
+                    <div style="color:var(--accent-color); margin-bottom:10px; word-wrap: break-word;" id="res-goal"></div>
+                    <div style="color:#666; font-size: 0.7rem; margin-bottom: 5px;">YOU</div>
+                    <div style="color:#fff; word-wrap: break-word;" id="res-user"></div>
                 </div>
             </div>
 
             <div>
-                <button class="cta" onclick="shareResult()">CHALLENGE FRIENDS</button>
-                <button style="background:none; border:1px solid #555; color:#888; padding: 10px 25px; border-radius: 50px; margin-top: 10px; cursor:pointer; font-size: 0.8rem; margin-bottom: 10px;" onclick="resetGame()">TRY AGAIN</button>
+                <button class="cta" onclick="shareResult()">CHALLENGE</button>
+                <button style="background:none; border:1px solid #444; color:#888; padding: 12px 30px; border-radius: 50px; margin-top: 15px; cursor:pointer; font-size: 0.9rem; margin-bottom: 10px;" onclick="resetGame()">TRY AGAIN</button>
             </div>
         </div>
 
     </div>
 
     <script>
-        // --- MOBILE ERROR HANDLING ---
-        window.onerror = function(msg, url, line) {
-            // alert("Error: " + msg); // Uncomment if debugging needed
-        };
-
-        // --- PHRASES ---
+        // --- CONFIG ---
+        // Removed apostrophes for fair keyboard play
         const phrases = [
             "may the force be with you",
             "you shall not pass",
@@ -291,35 +305,30 @@
             "there is no spoon",
             "first rule of fight club",
             "you are a wizard harry",
-            "one does not simply walk into mordor",
             "to infinity and beyond",
             "show me the money",
             "winter is coming",
             "bond james bond",
             "i see dead people",
-            "life is like a box of chocolates",
             "hasta la vista baby",
             "houston we have a problem",
             "here is johnny",
             "my precious",
-            "keep your friends close",
             "et phone home",
             "just keep swimming",
-            "elementary my dear watson",
-            "say hello to my little friend",
-            "do not go gentle into that good night",
             "meet me in five minutes",
-            "did you see that email",
-            "can you pick up pizza",
-            "my battery is at one percent",
             "where are we going tonight",
-            "wait i am on my way",
             "send me the location",
-            "why are you ignoring me"
+            "why are you ignoring me",
+            "call me back right now",
+            "i need coffee immediately"
         ];
 
         let currentPhraseIndex = -1; 
         let typedText = "";
+        let startTime = 0;
+        let timerInterval = null;
+        let gameActive = false;
 
         // --- STARTUP ---
         window.addEventListener('DOMContentLoaded', () => {
@@ -335,69 +344,31 @@
             if (challengeIndex !== null && phrases[challengeIndex]) {
                 currentPhraseIndex = parseInt(challengeIndex);
                 document.getElementById('challenge-msg').style.display = 'block';
-                document.getElementById('challenge-msg').innerText = "⚠️ CHALLENGE RECEIVED: Beat this score.";
-                startBtn.innerText = "ACCEPT CHALLENGE";
+                document.getElementById('challenge-msg').innerHTML = "⚠️ <strong>INCOMING RACE</strong><br>Can you type this faster?";
+                startBtn.innerText = "ACCEPT RACE";
                 startBtn.addEventListener('click', () => startSpecificGame(currentPhraseIndex));
             } else {
                 startBtn.addEventListener('click', startGame);
             }
         });
 
-        // --- KEYBOARD ---
-        function initKeyboard() {
-            const row1Keys = "qwertyuiop".split("");
-            const row2Keys = "asdfghjkl".split("");
-            const row3Keys = "zxcvbnm".split("");
-
-            renderRow('row1', row1Keys);
-            renderRow('row2', row2Keys);
-            
-            const r3 = document.getElementById('row3');
-            r3.innerHTML = ''; 
-
-            let shift = document.createElement('div');
-            shift.className = 'key special';
-            shift.innerHTML = '<span>⬆</span>'; 
-            r3.appendChild(shift);
-
-            row3Keys.forEach(char => createKey(r3, char));
-
-            let back = document.createElement('div');
-            back.className = 'key special';
-            back.innerHTML = '<span>⌫</span>';
-            back.addEventListener('touchstart', (e) => { e.preventDefault(); handleKey('BACKSPACE'); });
-            back.addEventListener('mousedown', (e) => { e.preventDefault(); handleKey('BACKSPACE'); });
-            r3.appendChild(back);
+        // --- TIMER ---
+        function startTimer() {
+            startTime = Date.now();
+            gameActive = true;
+            timerInterval = setInterval(() => {
+                const elapsed = (Date.now() - startTime) / 1000;
+                document.getElementById('timer').innerText = elapsed.toFixed(2);
+            }, 30);
         }
 
-        function renderRow(id, keys) {
-            const row = document.getElementById(id);
-            row.innerHTML = '';
-            keys.forEach(char => createKey(row, char));
+        function stopTimer() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            return (Date.now() - startTime) / 1000;
         }
 
-        function createKey(parent, char) {
-            let k = document.createElement('div');
-            k.className = 'key';
-            k.innerHTML = `<span>${char.toUpperCase()}</span>`;
-            k.addEventListener('touchstart', (e) => { e.preventDefault(); handleKey(char); });
-            k.addEventListener('mousedown', (e) => { e.preventDefault(); handleKey(char); });
-            parent.appendChild(k);
-        }
-
-        function setupSpecialKey(id, action) {
-            const el = document.getElementById(id);
-            if(!el) return;
-            const handler = (e) => {
-                e.preventDefault(); 
-                if(action === 'ENTER') submitGame();
-                else handleKey(action);
-            };
-            el.addEventListener('touchstart', handler);
-            el.addEventListener('mousedown', handler);
-        }
-
-        // --- GAME LOGIC ---
+        // --- GAME ---
         function startGame() {
             const randomIndex = Math.floor(Math.random() * phrases.length);
             startSpecificGame(randomIndex);
@@ -409,22 +380,24 @@
             document.getElementById('result-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'flex';
             
-            const urlParams = new URLSearchParams(window.location.search);
-            if(urlParams.get('p')) {
-                document.getElementById('mode-title').innerText = "VS MODE";
-                document.getElementById('mode-title').style.color = "#ff4444";
-            } else {
-                document.getElementById('mode-title').innerText = "GHOST MODE";
-                document.getElementById('mode-title').style.color = "#fff";
-            }
-
             document.getElementById('target-text').innerText = `"${phrases[index]}"`;
             typedText = "";
             updateDisplay();
+            
+            document.getElementById('timer').innerText = "0.00";
+            startTimer();
         }
 
-        function handleKey(key) {
-            if (navigator.vibrate) try { navigator.vibrate(5); } catch(e){}
+        function handleKey(key, element) {
+            if(!gameActive) return;
+            
+            // Visual Feedback (Pop effect)
+            if(element) {
+                element.classList.add('active-key');
+                setTimeout(() => element.classList.remove('active-key'), 100);
+            }
+            
+            if (navigator.vibrate) try { navigator.vibrate(10); } catch(e){}
 
             if (key === 'BACKSPACE') {
                 typedText = typedText.slice(0, -1);
@@ -441,24 +414,59 @@
         }
 
         function submitGame() {
+            if(!gameActive) return;
+            const timeTaken = stopTimer();
+            
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('result-screen').style.display = 'flex';
 
             const target = phrases[currentPhraseIndex];
-            const score = calculateScore(target, typedText);
+            const accuracy = calculateAccuracy(target, typedText);
             
-            document.getElementById('score-display').innerText = score + "%";
+            // WPM Calc: (Characters / 5) / Minutes
+            const wpm = Math.round((typedText.length / 5) / (timeTaken / 60)) || 0;
+
+            document.getElementById('score-display').innerText = accuracy + "%";
+            document.getElementById('res-time').innerText = timeTaken.toFixed(2) + "s";
+            document.getElementById('res-wpm').innerText = wpm;
             document.getElementById('res-goal').innerText = target;
             document.getElementById('res-user').innerText = typedText;
 
-            let roast = "";
-            if(score === 100) roast = "🤖 PERFECT.";
-            else if(score > 90) roast = "🔥 INSANE.";
-            else if(score > 75) roast = "Not bad.";
-            else if(score > 50) roast = "My grandma is faster.";
-            else roast = "💀 Eyes closed?";
-            
-            document.getElementById('roast-msg').innerText = roast;
+            // ROAST LOGIC
+            const header = document.getElementById('roast-header');
+            const msg = document.getElementById('roast-msg');
+            const card = document.querySelector('.result-card');
+
+            // Reset Animations
+            document.body.classList.remove('shake-screen');
+            card.style.borderColor = "#333";
+
+            if (accuracy >= 90) {
+                if (wpm > 65) {
+                    header.innerText = "🔥 GOD TIER 🔥";
+                    msg.innerText = "Are you a robot? That was insane.";
+                    document.body.classList.add('shake-screen');
+                    card.style.borderColor = "var(--accent-color)";
+                } else if (wpm > 40) {
+                    header.innerText = "RESPECT 👊";
+                    msg.innerText = "Solid speed. Good accuracy. You pass.";
+                } else {
+                    header.innerText = "TOO SLOW 🐢";
+                    msg.innerText = "Perfect accuracy, but my grandma texts faster.";
+                }
+            } else if (accuracy >= 60) {
+                 if (wpm > 70) {
+                    header.innerText = "CHAOTIC 🌪";
+                    msg.innerText = "You are fast, but you broke everything.";
+                } else {
+                    header.innerText = "MEH 😐";
+                    msg.innerText = "You need to practice more.";
+                }
+            } else {
+                header.innerText = "DISASTER 💀";
+                msg.innerText = "Did you type this with your elbows?";
+                card.style.borderColor = "var(--wrong-color)";
+            }
         }
 
         function resetGame() {
@@ -470,12 +478,67 @@
             const startBtn = document.querySelector('#start-screen .cta');
             const newBtn = startBtn.cloneNode(true);
             startBtn.parentNode.replaceChild(newBtn, startBtn);
-            newBtn.innerText = "START";
+            newBtn.innerText = "START RACE";
             newBtn.addEventListener('click', startGame);
         }
 
-        // --- ALGORITHMS & SHARE ---
-        function calculateScore(target, attempt) {
+        // --- KEYBOARD SETUP ---
+        function initKeyboard() {
+            const row1Keys = "qwertyuiop".split("");
+            const row2Keys = "asdfghjkl".split("");
+            const row3Keys = "zxcvbnm".split("");
+            
+            renderRow('row1', row1Keys);
+            renderRow('row2', row2Keys);
+            
+            const r3 = document.getElementById('row3');
+            r3.innerHTML = ''; 
+            
+            let shift = document.createElement('div');
+            shift.className = 'key special';
+            shift.innerHTML = '<span>⬆</span>'; 
+            r3.appendChild(shift);
+            
+            row3Keys.forEach(char => createKey(r3, char));
+            
+            let back = document.createElement('div');
+            back.className = 'key special';
+            back.innerHTML = '<span>⌫</span>';
+            back.addEventListener('touchstart', (e) => { e.preventDefault(); handleKey('BACKSPACE', back); });
+            back.addEventListener('mousedown', (e) => { e.preventDefault(); handleKey('BACKSPACE', back); });
+            r3.appendChild(back);
+        }
+
+        function renderRow(id, keys) {
+            const row = document.getElementById(id);
+            row.innerHTML = '';
+            keys.forEach(char => createKey(row, char));
+        }
+
+        function createKey(parent, char) {
+            let k = document.createElement('div');
+            k.className = 'key';
+            k.innerHTML = `<span>${char.toUpperCase()}</span>`;
+            // Pass element 'k' to handleKey for visual feedback
+            k.addEventListener('touchstart', (e) => { e.preventDefault(); handleKey(char, k); });
+            k.addEventListener('mousedown', (e) => { e.preventDefault(); handleKey(char, k); });
+            parent.appendChild(k);
+        }
+
+        function setupSpecialKey(id, action) {
+            const el = document.getElementById(id);
+            if(!el) return;
+            const handler = (e) => {
+                e.preventDefault(); 
+                if(action === 'ENTER') submitGame();
+                else handleKey(action, el);
+            };
+            el.addEventListener('touchstart', handler);
+            el.addEventListener('mousedown', handler);
+        }
+
+        // --- MATH ---
+        function calculateAccuracy(target, attempt) {
             if (!attempt) return 0;
             target = target.toLowerCase();
             attempt = attempt.toLowerCase();
@@ -501,13 +564,18 @@
             return matrix[b.length][a.length];
         }
 
+        // --- SHARE ---
         async function shareResult() {
-            const score = document.getElementById('score-display').innerText;
+            const acc = document.getElementById('score-display').innerText;
+            const time = document.getElementById('res-time').innerText;
+            const wpm = document.getElementById('res-wpm').innerText;
+            
             const currentUrl = window.location.href.split('?')[0]; 
             const challengeLink = `${currentUrl}?p=${currentPhraseIndex}`;
+            
             const shareData = {
-                title: 'Ghost Keyboard',
-                text: `👻 I got ${score} accuracy on the invisible keyboard.\nCan you beat me?\n`,
+                title: 'Ghost Speed Race',
+                text: `⚡️ I hit ${wpm} WPM with ${acc} accuracy on the Ghost Keyboard.\n\nCan you beat me?\n`,
                 url: challengeLink
             };
 
@@ -518,7 +586,7 @@
                 navigator.clipboard.writeText(textToCopy).then(() => {
                     const btn = document.querySelector('#result-screen .cta');
                     const originalText = btn.innerText;
-                    btn.innerText = "LINK COPIED! ✅";
+                    btn.innerText = "COPIED!";
                     setTimeout(() => { btn.innerText = originalText; }, 2000);
                 });
             }
