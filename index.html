@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ghost Cinema: Movie Edition</title>
+    <title>Ghost Keyboard Race</title>
     
-    <!-- Social Sharing Info -->
-    <meta property="og:title" content="Ghost Cinema Challenge">
-    <meta property="og:description" content="Can you type these famous movie quotes on an invisible keyboard?">
-    
+    <meta property="og:title" content="Ghost Keyboard Challenge">
+    <meta property="og:description" content="I bet you can't type on an invisible keyboard. Try to beat my score.">
+
     <style>
         :root {
-            --bg-color: #0f0f13;
+            /* YOUR THEME: CYBERPUNK GREEN */
+            --bg-color: #121212;
             --text-color: #ffffff;
-            --accent-color: #ffd700; /* Gold */
-            --key-bg: #2c2c2e;
-            --key-active: #48484a;
+            --accent-color: #00ff88; 
+            --key-bg: #3a3a3c;
+            --key-active: #5e5e60;
+            --wrong-color: #ff4444;
         }
 
         body {
@@ -29,7 +30,7 @@
             height: 100vh;
             margin: 0;
             overflow: hidden;
-            touch-action: manipulation; /* Improves touch response */
+            touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -47,12 +48,11 @@
 
         h1 { 
             font-size: 1.2rem; 
-            opacity: 0.8; 
+            opacity: 0.7; 
             margin: 0; 
-            letter-spacing: 2px; 
+            letter-spacing: 1px; 
             text-transform: uppercase;
             text-align: center;
-            font-weight: 800;
         }
         
         /* -- GAME UI -- */
@@ -62,12 +62,11 @@
             border-radius: 16px;
             text-align: center;
             margin: 20px 0;
-            min-height: 90px;
+            min-height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,215,0, 0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
         
         .target-text {
@@ -75,12 +74,11 @@
             font-weight: 700;
             color: var(--accent-color);
             line-height: 1.4;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
         }
 
         .input-display {
-            font-size: 1.5rem;
-            min-height: 40px;
+            font-size: 1.6rem;
+            min-height: 50px;
             border-bottom: 2px solid #333;
             margin-bottom: 20px;
             text-align: center;
@@ -107,7 +105,7 @@
         .key {
             background-color: var(--key-bg);
             border-radius: 6px;
-            height: 52px; 
+            height: 50px; 
             display: flex;
             align-items: center;
             justify-content: center;
@@ -116,7 +114,7 @@
             cursor: pointer;
             transition: transform 0.05s, background-color 0.1s;
             box-shadow: 0 3px 0 rgba(0,0,0,0.4);
-            position: relative; /* For span positioning */
+            position: relative;
         }
 
         .row:nth-child(1) .key { width: 9%; } 
@@ -124,10 +122,10 @@
         .row:nth-child(3) .key { width: 13%; } 
         
         .key.space { width: 50%; }
-        .key.special { width: 15%; background-color: #444; font-size: 0.9rem;}
+        .key.special { width: 15%; background-color: #555; font-size: 0.9rem;}
         .key.enter { background-color: var(--accent-color); color: #000; }
 
-        /* THE GHOST EFFECT: Opacity 0 makes letters invisible */
+        /* THE GHOST EFFECT */
         .key span { opacity: 0; }
         .key.special span, .key.enter span { opacity: 1; }
 
@@ -156,18 +154,18 @@
             border: none;
             padding: 18px 40px;
             font-size: 1.1rem;
-            font-weight: 900;
+            font-weight: 800;
             border-radius: 50px;
             cursor: pointer;
             margin-top: 25px;
-            color: #000;
+            color: #121212;
             text-transform: uppercase;
             letter-spacing: 1px;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
             transition: transform 0.1s;
         }
         button.cta:active { transform: scale(0.95); }
-        
+
         .score-circle {
             width: 120px;
             height: 120px;
@@ -180,8 +178,6 @@
             font-weight: 800;
             color: var(--accent-color);
             margin: 0 auto 20px auto;
-            text-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.1) inset;
         }
         
         .comparison {
@@ -205,23 +201,23 @@
         
         <!-- START SCREEN -->
         <div id="start-screen">
-            <div style="font-size: 4rem; margin-bottom: 10px;">🎬</div>
-            <h1 style="font-size: 2.5rem; color:var(--accent-color); line-height: 1;">GHOST<br>CINEMA</h1>
-            <p style="margin-top: 20px; font-size: 1.1rem; color: #ccc;">Famous quotes.<br>Invisible keys.</p>
+            <div style="font-size: 4rem; margin-bottom: 10px;">👻</div>
+            <h1 style="font-size: 3rem; color:var(--accent-color); line-height: 1;">GHOST<br>KEYBOARD</h1>
+            <p style="margin-top: 20px; font-size: 1.1rem;">The keys are invisible.<br>Do you trust your muscle memory?</p>
             
-            <div id="challenge-msg" style="display:none; background: #222; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid var(--accent-color);">
-                <!-- Challenge text injected via JS -->
+            <div id="challenge-msg" style="display:none; background: #333; padding: 10px; border-radius: 8px; margin-top: 15px; color: var(--accent-color); font-size: 0.9rem;">
+                <!-- Challenge Text -->
             </div>
 
-            <!-- Notice: No onclick here. JS handles it. -->
-            <button class="cta">START SCENE</button>
+            <!-- Removed onclick, JS handles it safely now -->
+            <button class="cta">START</button>
         </div>
 
         <!-- GAME SCREEN -->
         <div id="game-screen">
             <div>
                 <header>
-                    <h1 id="mode-title">Movie Quotes</h1>
+                    <h1 id="mode-title">Ghost Mode</h1>
                 </header>
 
                 <div class="target-box">
@@ -239,42 +235,42 @@
                 <div class="row">
                     <div class="key special" id="key-123"><span>123</span></div>
                     <div class="key space" id="key-space"><span>space</span></div>
-                    <div class="key enter" id="key-enter"><span>CUT</span></div>
+                    <div class="key enter" id="key-enter"><span>GO</span></div>
                 </div>
             </div>
         </div>
 
         <!-- RESULT SCREEN -->
         <div id="result-screen">
-            <h1 style="margin-bottom: 20px;">ACCURACY</h1>
+            <h1>ACCURACY</h1>
             <div class="score-circle" id="score-display">0%</div>
             
             <p id="roast-msg" style="font-style: italic; color: #aaa; margin: 0 0 20px 0; min-height: 20px;">...</p>
 
             <div class="comparison">
                 <div class="comp-row">
-                    <span class="label">SCRIPT SAYS:</span>
+                    <span class="label">GOAL</span>
                     <span id="res-goal" style="color: var(--accent-color)"></span>
                 </div>
                 <div class="comp-row" style="border-top: 1px solid #444; padding-top: 8px;">
-                    <span class="label">YOU IMPROVISED:</span>
+                    <span class="label">YOU TYPED</span>
                     <span id="res-user" style="color: #fff"></span>
                 </div>
             </div>
 
             <button class="cta" onclick="shareResult()">CHALLENGE FRIENDS</button>
-            <button style="background:none; border:1px solid #555; color:#888; padding: 12px 25px; border-radius: 50px; margin-top: 15px; cursor:pointer; font-size: 0.9rem;" onclick="resetGame()">NEXT SCENE</button>
+            <button style="background:none; border:1px solid #555; color:#888; padding: 12px 25px; border-radius: 50px; margin-top: 15px; cursor:pointer; font-size: 0.9rem;" onclick="resetGame()">TRY AGAIN</button>
         </div>
 
     </div>
 
     <script>
-        // --- 1. ERROR TRAP (Shows alerts if code breaks on mobile) ---
+        // --- 1. MOBILE SAFETY CHECK ---
         window.onerror = function(msg, url, line) {
             alert("Error: " + msg + "\nLine: " + line);
         };
 
-        // --- 2. CONFIGURATION ---
+        // --- 2. PHRASES (MOVIE QUOTES) ---
         const phrases = [
             "may the force be with you",
             "you shall not pass",
@@ -305,37 +301,32 @@
         let currentPhraseIndex = -1; 
         let typedText = "";
 
-        // --- 3. INITIALIZATION (Fixes the 'Start' button issue) ---
+        // --- 3. STARTUP LOGIC (Fixes 'Nothing Happens' Bug) ---
         window.addEventListener('DOMContentLoaded', () => {
-            
-            // Build Keyboard
             initKeyboard();
-            
-            // Setup Special Keys (Space, Enter, etc)
             setupSpecialKey('key-space', ' ');
             setupSpecialKey('key-enter', 'ENTER');
             setupSpecialKey('key-123', '123');
 
-            // Check URL for Challenges
             const urlParams = new URLSearchParams(window.location.search);
             const challengeIndex = urlParams.get('p');
             const startBtn = document.querySelector('#start-screen .cta');
 
             if (challengeIndex !== null && phrases[challengeIndex]) {
-                // VS Mode
+                // Challenge Mode
                 currentPhraseIndex = parseInt(challengeIndex);
                 document.getElementById('challenge-msg').style.display = 'block';
-                document.getElementById('challenge-msg').innerHTML = "<span style='color:#fff'>🎥 AUDITION CALL</span><br>Beat this score.";
-                
-                startBtn.innerText = "ACCEPT ROLE";
+                document.getElementById('challenge-msg').innerText = "⚠️ CHALLENGE RECEIVED: Beat this score.";
+                startBtn.innerText = "ACCEPT CHALLENGE";
+                // Safe Event Listener
                 startBtn.addEventListener('click', () => startSpecificGame(currentPhraseIndex));
             } else {
-                // Random Mode
+                // Normal Mode
                 startBtn.addEventListener('click', startGame);
             }
         });
 
-        // --- 4. KEYBOARD BUILDER ---
+        // --- 4. KEYBOARD LOGIC ---
         function initKeyboard() {
             const row1Keys = "qwertyuiop".split("");
             const row2Keys = "asdfghjkl".split("");
@@ -345,7 +336,7 @@
             renderRow('row2', row2Keys);
             
             const r3 = document.getElementById('row3');
-            r3.innerHTML = ''; // Clear to be safe
+            r3.innerHTML = ''; // Clear
 
             // Shift
             let shift = document.createElement('div');
@@ -354,15 +345,12 @@
             r3.appendChild(shift);
 
             // Letters
-            row3Keys.forEach(char => {
-                createKey(r3, char);
-            });
+            row3Keys.forEach(char => createKey(r3, char));
 
             // Backspace
             let back = document.createElement('div');
             back.className = 'key special';
             back.innerHTML = '<span>⌫</span>';
-            // Attach events
             back.addEventListener('touchstart', (e) => { e.preventDefault(); handleKey('BACKSPACE'); });
             back.addEventListener('mousedown', (e) => { e.preventDefault(); handleKey('BACKSPACE'); });
             r3.appendChild(back);
@@ -378,31 +366,25 @@
             let k = document.createElement('div');
             k.className = 'key';
             k.innerHTML = `<span>${char.toUpperCase()}</span>`;
-            
-            // Dual event listeners for instant response
+            // FAST TOUCH RESPONSE
             k.addEventListener('touchstart', (e) => { e.preventDefault(); handleKey(char); });
             k.addEventListener('mousedown', (e) => { e.preventDefault(); handleKey(char); });
-            
             parent.appendChild(k);
         }
 
         function setupSpecialKey(id, action) {
             const el = document.getElementById(id);
             if(!el) return;
-            
-            el.addEventListener('touchstart', (e) => { 
+            const handler = (e) => {
                 e.preventDefault(); 
                 if(action === 'ENTER') submitGame();
-                else handleKey(action); 
-            });
-            el.addEventListener('mousedown', (e) => { 
-                e.preventDefault(); 
-                if(action === 'ENTER') submitGame();
-                else handleKey(action); 
-            });
+                else handleKey(action);
+            };
+            el.addEventListener('touchstart', handler);
+            el.addEventListener('mousedown', handler);
         }
 
-        // --- 5. GAME LOGIC ---
+        // --- 5. GAME FUNCTIONS ---
         function startGame() {
             const randomIndex = Math.floor(Math.random() * phrases.length);
             startSpecificGame(randomIndex);
@@ -410,20 +392,17 @@
 
         function startSpecificGame(index) {
             currentPhraseIndex = index;
-            
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('result-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'flex';
             
             const urlParams = new URLSearchParams(window.location.search);
-            const title = document.getElementById('mode-title');
-            
             if(urlParams.get('p')) {
-                title.innerText = "AUDITION MODE";
-                title.style.color = "#ff4444";
+                document.getElementById('mode-title').innerText = "VS MODE";
+                document.getElementById('mode-title').style.color = "#ff4444";
             } else {
-                title.innerText = "MOVIE QUOTES";
-                title.style.color = "#fff";
+                document.getElementById('mode-title').innerText = "GHOST MODE";
+                document.getElementById('mode-title').style.color = "#fff";
             }
 
             document.getElementById('target-text').innerText = `"${phrases[index]}"`;
@@ -460,34 +439,30 @@
             document.getElementById('res-user').innerText = typedText;
 
             let roast = "";
-            if(score === 100) roast = "🏆 OSCAR WORTHY.";
-            else if(score > 90) roast = "🍿 The force is strong with this one.";
-            else if(score > 75) roast = "Not bad kid, do not get cocky.";
-            else if(score > 50) roast = "You are definitely an extra.";
-            else roast = "💀 Cut! That was terrible.";
+            if(score === 100) roast = "🤖 PERFECT. You are a cyborg.";
+            else if(score > 90) roast = "🔥 INSANE. Do you ever go outside?";
+            else if(score > 75) roast = "Not bad. You definitely text while driving.";
+            else if(score > 50) roast = "My grandma types faster than this. 👵";
+            else roast = "💀 EMBARRASSING. Are your eyes closed?";
             
             document.getElementById('roast-msg').innerText = roast;
         }
 
         function resetGame() {
-            // Clear URL params
             window.history.pushState({}, document.title, window.location.pathname);
-            
             document.getElementById('result-screen').style.display = 'none';
             document.getElementById('start-screen').style.display = 'flex';
             document.getElementById('challenge-msg').style.display = 'none';
             
-            // Reset Button logic to default
+            // Re-bind start button for random mode
             const startBtn = document.querySelector('#start-screen .cta');
-            startBtn.innerText = "START SCENE";
-            
-            // Clone button to remove old event listeners cleanly
             const newBtn = startBtn.cloneNode(true);
             startBtn.parentNode.replaceChild(newBtn, startBtn);
+            newBtn.innerText = "START";
             newBtn.addEventListener('click', startGame);
         }
 
-        // --- 6. MATH ---
+        // --- 6. SCORING ---
         function calculateScore(target, attempt) {
             if (!attempt) return 0;
             target = target.toLowerCase();
@@ -524,8 +499,8 @@
             const challengeLink = `${currentUrl}?p=${currentPhraseIndex}`;
             
             const shareData = {
-                title: 'Ghost Cinema',
-                text: `🎬 I got ${score} accuracy on the Ghost Keyboard.\nTry to beat me:\n`,
+                title: 'Ghost Keyboard',
+                text: `👻 I got ${score} accuracy on the invisible keyboard.\n\nCan you beat me? Try here:\n`,
                 url: challengeLink
             };
 
