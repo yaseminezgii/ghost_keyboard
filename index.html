@@ -43,7 +43,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 15px;
+            padding: 10px; /* Reduced padding for wider TR keyboard */
             padding-bottom: calc(5px + env(safe-area-inset-bottom)); 
             position: relative;
         }
@@ -85,15 +85,15 @@
         }
 
         .timer-box {
-            font-size: 0.9rem; /* Küçültüldü */
+            font-size: 0.9rem;
             font-weight: 400;
-            color: #444; /* Silikleştirildi */
+            color: #444;
             font-variant-numeric: tabular-nums;
         }
 
         .target-box {
             background: rgba(30,30,30, 0.8);
-            padding: 20px;
+            padding: 15px;
             border-radius: 18px;
             text-align: center;
             margin: 5px 0 15px 0;
@@ -106,14 +106,14 @@
         }
         
         .target-text {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 600;
             color: var(--accent-color);
             line-height: 1.4;
         }
 
         .input-display {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             min-height: 40px;
             border-bottom: 2px solid #444;
             margin-bottom: 20px;
@@ -124,29 +124,36 @@
             letter-spacing: 1px;
         }
 
-        /* -- KEYBOARD -- */
+        /* -- TURKISH KEYBOARD ADJUSTMENTS -- */
         .keyboard {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
             user-select: none;
-            padding: 0 2px;
+            padding: 0;
             margin-bottom: 10px;
         }
 
-        .row { display: flex; justify-content: center; gap: 5px; width: 100%; }
-        .row:nth-child(2) { padding: 0 18px; }
+        .row { 
+            display: flex; 
+            justify-content: center; 
+            gap: 3px; /* Tighter gap for more keys */
+            width: 100%; 
+        }
+        
+        /* Adjust indentation for Turkish Layout */
+        .row:nth-child(2) { padding: 0 10px; }
 
         .key {
             background-color: var(--key-bg);
-            border-radius: 6px;
-            height: 54px;
+            border-radius: 5px;
+            height: 52px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 500;
-            font-size: 1.3rem;
+            font-size: 1.1rem; /* Slightly smaller font for TR keys */
             cursor: pointer;
             position: relative;
             flex: 1;
@@ -154,10 +161,11 @@
             transition: transform 0.05s;
         }
 
-        .key.space { flex: 5; font-size: 1rem; color: #999; }
-        .key.special { flex: 1.3; background-color: #333; font-size: 1rem;}
-        .key.enter { flex: 2; background-color: var(--accent-color); color: #121212; font-weight: 800; }
+        .key.space { flex: 5; font-size: 0.9rem; color: #999; }
+        .key.special { flex: 1.5; background-color: #333; font-size: 0.9rem;}
+        .key.enter { flex: 2.5; background-color: var(--accent-color); color: #121212; font-weight: 800; }
         
+        /* Ghost Mode: Letters Hidden */
         .key span { opacity: 0; }
         .key.special span, .key.enter span, .key.space span { opacity: 1; }
 
@@ -166,7 +174,7 @@
             color: var(--key-text-active);
             transform: scale(1.15);
             z-index: 10;
-            border-radius: 8px;
+            border-radius: 6px;
         }
 
         /* -- SCREENS -- */
@@ -229,19 +237,19 @@
             <div class="logo">👻</div>
             <h1 style="font-size: 2.5rem; color:#fff; line-height: 1;">GHOST<br><span style="color:var(--accent-color)">KEYBOARD</span></h1>
             
-            <!-- NEW: HOW TO PLAY SECTION -->
+            <!-- TUTORIAL (ENGLISH) -->
             <div class="tutorial-box">
                 <div class="tut-item">
                     <span class="tut-icon">👀</span>
-                    <span>Read the phrase at the top.</span>
+                    <span>Read the phrase.</span>
                 </div>
                 <div class="tut-item">
                     <span class="tut-icon">⌨️</span>
-                    <span>Type it blindly (keys are invisible).</span>
+                    <span>Type blindly (Keys are invisible).</span>
                 </div>
                 <div class="tut-item">
                     <span class="tut-icon">🧠</span>
-                    <span>Trust your muscle memory!</span>
+                    <span>Trust your muscle memory.</span>
                 </div>
             </div>
             
@@ -267,7 +275,7 @@
                 <div id="user-input" class="input-display">|</div>
             </div>
 
-            <!-- KEYBOARD -->
+            <!-- KEYBOARD (TR Layout) -->
             <div class="keyboard">
                 <div class="row" id="row1"></div> 
                 <div class="row" id="row2"></div> 
@@ -318,7 +326,7 @@
     </div>
 
     <script>
-        // --- CONFIG ---
+        // --- PHRASES (ENGLISH) ---
         const phrases = [
             "may the force be with you",
             "you shall not pass",
@@ -450,7 +458,7 @@
             document.getElementById('res-goal').innerText = target;
             document.getElementById('res-user').innerText = typedText;
 
-            // --- FUNNY & EMOJI RICH ROASTS ---
+            // --- ROASTS (ENGLISH) ---
             const header = document.getElementById('roast-header');
             const msg = document.getElementById('roast-msg');
             const card = document.querySelector('.result-card');
@@ -459,7 +467,7 @@
             if (accuracy === 100) {
                 if (wpm > 60) {
                     header.innerText = "🔥 GOD MODE 🔥";
-                    msg.innerText = "Are you a robot? Or did you cheat? 🤖👀";
+                    msg.innerText = "Are you a robot? That was insane. 🤖👀";
                     card.style.borderColor = "var(--accent-color)";
                 } else if (wpm > 30) {
                     header.innerText = "CLEAN ✨";
@@ -499,20 +507,26 @@
             newBtn.addEventListener('click', startGame);
         }
 
-        // --- KEYBOARD ---
+        // --- KEYBOARD LAYOUT (TURKISH) ---
         function initKeyboard() {
-            const row1Keys = "qwertyuiop".split("");
-            const row2Keys = "asdfghjkl".split("");
-            const row3Keys = "zxcvbnm".split("");
+            // Turkish Characters Layout
+            const row1Keys = "qwertyuıopğü".split("");
+            const row2Keys = "asdfghjklşi".split("");
+            const row3Keys = "zxcvbnmöç".split("");
+            
             renderRow('row1', row1Keys);
             renderRow('row2', row2Keys);
+            
             const r3 = document.getElementById('row3');
             r3.innerHTML = ''; 
+            
             let shift = document.createElement('div');
             shift.className = 'key special';
             shift.innerHTML = '<span>⬆</span>'; 
             r3.appendChild(shift);
+            
             row3Keys.forEach(char => createKey(r3, char));
+            
             let back = document.createElement('div');
             back.className = 'key special';
             back.innerHTML = '<span>⌫</span>';
@@ -577,7 +591,7 @@
             const challengeLink = `${currentUrl}?p=${currentPhraseIndex}`;
             const shareData = {
                 title: 'Ghost Keyboard',
-                text: `👻 I typed invisible: ${acc} accuracy, ${wpm} WPM.\nCan you beat me?\n`,
+                text: `👻 Ghost Keyboard Score: ${acc} accuracy, ${wpm} WPM.\nCan you beat me?\n`,
                 url: challengeLink
             };
             if (navigator.share) {
