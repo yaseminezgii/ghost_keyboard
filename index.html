@@ -5,24 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ghost Keyboard</title>
     
-    <meta property="og:title" content="Ghost Keyboard Challenge">
-    <meta property="og:description" content="Invisible keys. Can you type blindly?">
-
     <style>
+        /* --- THEME VARIABLES --- */
         :root {
-            --bg-color: #121212;
-            --text-color: #ffffff;
-            --accent-color: #00ff88; 
-            --key-bg: #4a4a4c;
-            --key-active: #ffffff;
-            --key-text-active: #000000;
-            --wrong-color: #ff4444;
+            --bg-color: #050505;
+            --text-color: #e0e0e0;
+            --key-bg: #2d2d30;
+            --key-active: #fff;
+            
+            /* Varsayılan (Değişkenler JS ile ezilecek) */
+            --accent-color: #00ff9d; 
+            --glow-color: rgba(0, 255, 157, 0.4);
+            --bg-gradient: radial-gradient(circle at 50% 50%, #05150a 0%, #000 100%);
         }
 
-        * { box-sizing: border-box; }
+        /* --- THEME CLASSES --- */
+        body.theme-easy {
+            --accent-color: #00f2ff; /* Cyber Blue */
+            --glow-color: rgba(0, 242, 255, 0.4);
+            --bg-gradient: radial-gradient(circle at 50% 50%, #0a1525 0%, #000 100%);
+        }
+
+        body.theme-normal {
+            --accent-color: #00ff9d; /* Matrix Green */
+            --glow-color: rgba(0, 255, 157, 0.4);
+            --bg-gradient: radial-gradient(circle at 50% 50%, #05150a 0%, #000 100%);
+        }
+
+        body.theme-hard {
+            --accent-color: #ff003c; /* Red Alert */
+            --glow-color: rgba(255, 0, 60, 0.4);
+            --bg-gradient: radial-gradient(circle at 50% 50%, #250505 0%, #000 100%);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
 
         body {
-            background-color: var(--bg-color);
+            background: var(--bg-gradient);
             color: var(--text-color);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
@@ -33,577 +52,611 @@
             margin: 0;
             overflow: hidden;
             touch-action: none;
-            -webkit-tap-highlight-color: transparent;
+            transition: background 0.5s ease;
+        }
+
+        /* Scanline Effect */
+        .scanline {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1));
+            background-size: 100% 4px;
+            pointer-events: none; z-index: 0;
         }
 
         .container {
-            width: 100%;
-            max-width: 450px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 10px; /* Reduced padding for wider TR keyboard */
-            padding-bottom: calc(5px + env(safe-area-inset-bottom)); 
-            position: relative;
+            width: 100%; max-width: 420px; height: 100%;
+            display: flex; flex-direction: column; 
+            justify-content: center; align-items: center;
+            padding: 20px; gap: 30px;
+            position: relative; z-index: 2;
         }
 
-        /* -- START SCREEN -- */
-        .logo { font-size: 4.5rem; margin-bottom: 10px; animation: float 3s ease-in-out infinite; }
+        /* --- TOP SECTION --- */
+        .top-section { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 20px; }
         
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+        .logo-area { text-align: center; }
+        .ghost-icon { font-size: 4rem; display: block; animation: float 3s infinite ease-in-out; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        h1 { 
+            font-size: 2.5rem; margin: 5px 0; color: #fff; 
+            text-transform: uppercase; font-family: 'Courier New', monospace; 
+            line-height: 0.9; font-weight: 900; letter-spacing: -2px;
+        }
+        h1 span { 
+            color: var(--accent-color); 
+            text-shadow: 0 0 15px var(--glow-color); 
+            transition: color 0.5s ease, text-shadow 0.5s ease;
         }
 
         .tutorial-box {
-            background: #1e1e1e;
-            border-radius: 12px;
-            padding: 15px;
-            margin-top: 20px;
-            text-align: left;
-            border: 1px solid #333;
+            background: #111; border: 1px solid #333; border-radius: 12px;
+            padding: 20px; width: 100%; max-width: 350px;
+            text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        .tut-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-            color: #ccc;
-        }
-        .tut-icon { margin-right: 10px; font-size: 1.2rem; }
+        .tut-item { display: flex; align-items: center; margin-bottom: 12px; color: #bbb; font-size: 0.9rem; }
         .tut-item:last-child { margin-bottom: 0; }
+        .tut-icon { margin-right: 12px; font-size: 1.1rem; }
 
-        /* -- HUD -- */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 10px;
-            margin-bottom: 10px;
-        }
-
-        .timer-box {
-            font-size: 0.9rem;
-            font-weight: 400;
-            color: #444;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .target-box {
-            background: rgba(30,30,30, 0.8);
-            padding: 15px;
-            border-radius: 18px;
-            text-align: center;
-            margin: 5px 0 15px 0;
-            min-height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        /* --- SETTINGS SECTION --- */
+        .bottom-section { width: 100%; display: flex; flex-direction: column; gap: 15px; }
+        
+        .selector-group { width: 100%; }
+        .lbl { 
+            font-size: 0.7rem; color: #666; margin-bottom: 8px; display: block; 
+            text-align: center; letter-spacing: 3px; font-family: 'Courier New', monospace; font-weight: bold; 
         }
         
-        .target-text {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--accent-color);
-            line-height: 1.4;
-        }
-
-        .input-display {
-            font-size: 1.3rem;
-            min-height: 40px;
-            border-bottom: 2px solid #444;
-            margin-bottom: 20px;
-            text-align: center;
-            white-space: pre; 
-            color: #fff;
-            font-family: monospace;
-            letter-spacing: 1px;
-        }
-
-        /* -- TURKISH KEYBOARD ADJUSTMENTS -- */
-        .keyboard {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            width: 100%;
-            user-select: none;
-            padding: 0;
-            margin-bottom: 10px;
-        }
-
-        .row { 
-            display: flex; 
-            justify-content: center; 
-            gap: 3px; /* Tighter gap for more keys */
-            width: 100%; 
+        .btn-row { display: flex; justify-content: center; gap: 8px; }
+        
+        .mode-btn {
+            background: transparent; 
+            border: 1px solid #333; 
+            color: #666;
+            padding: 12px; border-radius: 6px; cursor: pointer;
+            font-size: 0.8rem; font-weight: bold; transition: all 0.3s ease; flex: 1; 
+            text-align: center; font-family: 'Courier New', monospace;
         }
         
-        /* Adjust indentation for Turkish Layout */
-        .row:nth-child(2) { padding: 0 10px; }
+        .mode-btn.active { 
+            background: var(--accent-color); 
+            color: #000; 
+            border-color: var(--accent-color); 
+            box-shadow: 0 0 15px var(--glow-color); 
+            transform: scale(1.05);
+        }
 
+        .main-btn {
+            background: var(--accent-color); color: #000; border: none;
+            width: 100%; padding: 18px; font-size: 1.2rem; font-weight: 900;
+            border-radius: 10px; margin-top: 10px; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 2px;
+            box-shadow: 0 0 25px var(--glow-color);
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+        }
+        .main-btn:active { transform: scale(0.98); }
+
+        /* --- GAME SCREENS --- */
+        #game-screen, #result-screen { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: space-between; }
+        #result-screen { justify-content: center; }
+
+        .hud-top { display: flex; justify-content: space-between; margin-bottom: 10px; color: #888; font-family: 'Courier New', monospace; font-size: 0.8rem;}
+        .target-box { 
+            background: rgba(255,255,255,0.05); border: 1px dashed #444; 
+            border-radius: 12px; padding: 20px; min-height: 100px;
+            display: flex; align-items: center; justify-content: center; text-align: center;
+            margin-bottom: 20px; 
+        }
+        .target-text { font-size: 1.3rem; color: #fff; font-weight: 600; line-height: 1.4; }
+        
+        .input-box { 
+            font-size: 1.5rem; color: var(--accent-color); text-align: center; 
+            border-bottom: 2px solid #333; min-height: 40px; margin-bottom: 20px; 
+            font-family: monospace; white-space: pre;
+            transition: color 0.5s ease;
+        }
+        .cursor { display: inline-block; width: 2px; height: 24px; background: var(--accent-color); animation: blink 1s infinite; margin-left:2px; transition: background 0.5s ease;}
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* --- KEYBOARD --- */
+        .keyboard { display: flex; flex-direction: column; width: 100%; background: #000; padding: 5px 2px; }
+        .row { display: flex; justify-content: center; margin-bottom: 8px; width: 100%; }
+        
         .key {
-            background-color: var(--key-bg);
-            border-radius: 5px;
-            height: 52px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 500;
-            font-size: 1.1rem; /* Slightly smaller font for TR keys */
-            cursor: pointer;
-            position: relative;
-            flex: 1;
-            box-shadow: 0 1px 0 rgba(0,0,0,0.3);
-            transition: transform 0.05s;
+            background: var(--key-bg); color: #fff; height: 48px; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            position: relative; cursor: pointer; font-size: 1.4rem;
+            margin: 0 2px; box-shadow: 0 1px 0 #000;
+            flex: 0 0 auto; width: var(--key-width);
+            user-select: none;
         }
 
-        .key.space { flex: 5; font-size: 0.9rem; color: #999; }
-        .key.special { flex: 1.5; background-color: #333; font-size: 0.9rem;}
-        .key.enter { flex: 2.5; background-color: var(--accent-color); color: #121212; font-weight: 800; }
-        
-        /* Ghost Mode: Letters Hidden */
-        .key span { opacity: 0; }
-        .key.special span, .key.enter span, .key.space span { opacity: 1; }
+        .key span { opacity: 0; } 
+        .key.special span, .key.enter span { opacity: 1; }
 
-        .key.active-key { 
-            background-color: var(--key-active) !important;
-            color: var(--key-text-active);
-            transform: scale(1.15);
-            z-index: 10;
-            border-radius: 6px;
+        .key:active, .key.active-key { 
+            background: #555; transform: scale(1.2); z-index: 99; border-radius: 6px; 
+            box-shadow: 0 0 15px rgba(255,255,255,0.2);
         }
+        .key.active-key span { opacity: 1; color: #fff; }
 
-        /* -- SCREENS -- */
-        #game-screen, #result-screen { display: none; height: 100%; flex-direction: column; justify-content: space-between;}
-        #start-screen, #result-screen { text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100%; animation: fadeIn 0.5s ease;}
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        button.cta {
-            background: var(--accent-color);
-            border: none;
-            padding: 18px 40px;
-            font-size: 1.1rem;
-            font-weight: 800;
-            border-radius: 16px;
-            cursor: pointer;
-            margin-top: 25px;
-            color: #121212;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
-        }
-
-        /* RESULT CARD */
-        .result-card {
-            background: #1e1e1e;
-            border-radius: 20px;
-            padding: 25px;
-            border: 1px solid #333;
-            margin-bottom: 20px;
-            position: relative;
+        .key.special { background: #3a3a3c; font-size: 0.9rem; width: 13% !important; }
+        .key.space { flex-grow: 1; width: auto !important; background: var(--key-bg); font-size: 0.8rem; color: #666; }
+        .key.space span { opacity: 1; }
+        .key.enter { 
+            width: 24% !important; 
+            background: var(--accent-color); 
+            color: #000; font-weight: 800;
+            transition: background 0.5s ease;
         }
         
-        .stats-row { display: flex; justify-content: space-around; margin-top: 10px; }
-        .stat-item { display: flex; flex-direction: column; }
-        .stat-val { font-size: 2.5rem; font-weight: 800; color: #fff; line-height: 1;}
-        .stat-lbl { font-size: 0.8rem; color: #888; margin-top: 5px; font-weight: 600;}
-        .wpm-highlight { color: var(--accent-color); }
+        .row.staggered { padding: 0 4%; }
 
-        /* Roast Message */
-        #roast-msg {
-            font-size: 1.1rem;
-            line-height: 1.4;
-            color: #eee;
-            padding: 10px;
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* --- RESULTS --- */
+        .roast-box { 
+            background: #111; border: 1px solid var(--accent-color); color: #fff; 
+            padding: 20px; border-radius: 10px; margin: 20px 0; 
+            text-align: center; font-style: italic; font-family: 'Courier New', monospace; 
+            box-shadow: 0 0 20px var(--glow-color);
+            transition: border-color 0.5s ease, box-shadow 0.5s ease;
         }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-family: 'Courier New', monospace; }
+        .stat-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center; }
+        .stat-num { font-size: 2.2rem; font-weight: bold; color: #fff; display: block; }
+        .stat-lbl { font-size: 0.7rem; color: #666; text-transform: uppercase; }
 
     </style>
 </head>
-<body>
+<body class="theme-easy"> <!-- Default Theme -->
+
+    <div class="scanline"></div>
 
     <div class="container">
         
         <!-- START SCREEN -->
-        <div id="start-screen">
-            <div class="logo">👻</div>
-            <h1 style="font-size: 2.5rem; color:#fff; line-height: 1;">GHOST<br><span style="color:var(--accent-color)">KEYBOARD</span></h1>
-            
-            <!-- TUTORIAL (ENGLISH) -->
-            <div class="tutorial-box">
-                <div class="tut-item">
-                    <span class="tut-icon">👀</span>
-                    <span>Read the phrase.</span>
+        <div id="start-screen" style="display: flex; flex-direction: column; width: 100%; align-items: center; gap: 30px;">
+            <div class="top-section">
+                <div class="logo-area">
+                    <span class="ghost-icon">👻</span>
+                    <h1>GHOST<br><span>KEYBOARD</span></h1>
                 </div>
-                <div class="tut-item">
-                    <span class="tut-icon">⌨️</span>
-                    <span>Type blindly (Keys are invisible).</span>
-                </div>
-                <div class="tut-item">
-                    <span class="tut-icon">🧠</span>
-                    <span>Trust your muscle memory.</span>
+                
+                <div class="tutorial-box">
+                    <div class="tut-item">
+                        <span class="tut-icon">👀</span>
+                        <span>Read the phrase.</span>
+                    </div>
+                    <div class="tut-item">
+                        <span class="tut-icon">⌨️</span>
+                        <span>Type blindly (Keys are invisible).</span>
+                    </div>
+                    <div class="tut-item">
+                        <span class="tut-icon">🧠</span>
+                        <span>Trust your muscle memory.</span>
+                    </div>
                 </div>
             </div>
-            
-            <div id="challenge-msg" style="display:none; background: #222; padding: 10px; border-radius: 8px; margin-top: 15px; border: 1px solid var(--accent-color); color: #fff;"></div>
 
-            <button class="cta">START</button>
+            <div class="bottom-section">
+                <div class="selector-group">
+                    <span class="lbl">DIFFICULTY</span>
+                    <div id="diff-row" class="btn-row">
+                        <div class="mode-btn active" data-val="easy" onclick="setDiff('easy', this)">NOOB</div>
+                        <div class="mode-btn" data-val="normal" onclick="setDiff('normal', this)">PRO</div>
+                        <div class="mode-btn" data-val="hard" onclick="setDiff('hard', this)">HACKER</div>
+                    </div>
+                </div>
+
+                <div class="selector-group">
+                    <span class="lbl">LANGUAGE</span>
+                    <div id="lang-row" class="btn-row">
+                        <div class="mode-btn" onclick="setLang('en', this)">ENG 🇺🇸</div>
+                        <div class="mode-btn active" onclick="setLang('tr', this)">TUR 🇹🇷</div>
+                    </div>
+                </div>
+
+                <button class="main-btn" onclick="startGame()">START GAME</button>
+            </div>
         </div>
 
         <!-- GAME SCREEN -->
         <div id="game-screen">
             <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-                
-                <!-- Subtle Timer -->
-                <div class="top-bar">
-                    <span style="font-size:0.8rem; color:#444;">GHOST MODE</span>
-                    <div id="timer" class="timer-box">0.0s</div>
+                <div class="hud-top">
+                    <span id="mode-display" style="color:var(--accent-color)">NOOB MODE</span>
+                    <span id="timer">0.0s</span>
                 </div>
-                
+
                 <div class="target-box">
                     <span id="target-text" class="target-text">Loading...</span>
                 </div>
 
-                <div id="user-input" class="input-display">|</div>
-            </div>
-
-            <!-- KEYBOARD (TR Layout) -->
-            <div class="keyboard">
-                <div class="row" id="row1"></div> 
-                <div class="row" id="row2"></div> 
-                <div class="row" id="row3"></div> 
-                <div class="row">
-                    <div class="key special" id="key-123"><span>123</span></div>
-                    <div class="key space" id="key-space"><span>space</span></div>
-                    <div class="key enter" id="key-enter"><span>GO</span></div>
+                <div class="input-box">
+                    <span id="user-input"></span><div class="cursor"></div>
+                </div>
+                
+                <div id="hacker-warning" style="display:none; color:#ff003c; font-size:0.7rem; text-align:center; margin-bottom:10px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">
+                    ⚠️ Backspace Disabled ⚠️
                 </div>
             </div>
+
+            <div class="keyboard" id="kb-container"></div>
         </div>
 
         <!-- RESULT SCREEN -->
         <div id="result-screen">
-            <div>
-                <h2 id="roast-header" style="color: var(--accent-color); text-transform: uppercase; margin-bottom: 5px; font-size: 1.5rem;">RESULT</h2>
-                
-                <div class="result-card">
-                    <div class="stats-row">
-                        <div class="stat-item">
-                            <span class="stat-val wpm-highlight" id="res-wpm">0</span>
-                            <span class="stat-lbl">WPM</span>
-                        </div>
-                        <div style="width: 1px; background: #444;"></div>
-                        <div class="stat-item">
-                            <span class="stat-val" id="score-display">0%</span>
-                            <span class="stat-lbl">ACCURACY</span>
-                        </div>
-                    </div>
+            <h2 style="font-size: 2.5rem; color: #fff; font-family: 'Courier New', monospace; margin-bottom: 10px; text-shadow: 0 0 10px rgba(255,255,255,0.3);">GAME OVER</h2>
+            
+            <div class="roast-box">
+                <span id="roast-msg">...</span>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-num" id="res-wpm">0</span>
+                    <span class="stat-lbl">WPM</span>
                 </div>
-
-                <p id="roast-msg">...</p>
-
-                <div style="text-align:left; margin-top: 15px; background: #151515; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 0.8rem; opacity: 0.8;">
-                    <div style="color:#666; font-size: 0.7rem; margin-bottom: 5px;">GOAL</div>
-                    <div style="color:var(--accent-color); margin-bottom:10px; word-wrap: break-word;" id="res-goal"></div>
-                    <div style="color:#666; font-size: 0.7rem; margin-bottom: 5px;">YOU</div>
-                    <div style="color:#fff; word-wrap: break-word;" id="res-user"></div>
+                <div class="stat-card">
+                    <span class="stat-num" id="res-acc">0%</span>
+                    <span class="stat-lbl">ACCURACY</span>
                 </div>
             </div>
 
-            <div>
-                <button class="cta" onclick="shareResult()">CHALLENGE FRIENDS</button>
-                <button style="background:none; border:1px solid #444; color:#888; padding: 12px 30px; border-radius: 50px; margin-top: 15px; cursor:pointer; font-size: 0.9rem; margin-bottom: 10px;" onclick="resetGame()">TRY AGAIN</button>
+            <div style="margin-top: 20px; font-family: monospace; font-size: 0.8rem; background: #111; padding: 15px; border-radius: 8px; text-align: left;">
+                <div style="color: #555; margin-bottom: 5px;">TARGET:</div>
+                <div id="res-target" style="color: var(--accent-color); margin-bottom: 10px;"></div>
+                <div style="color: #555; margin-bottom: 5px;">YOU:</div>
+                <div id="res-typed" style="color: #fff; word-break: break-all;"></div>
             </div>
+
+            <button class="main-btn" onclick="location.reload()">TRY AGAIN</button>
+            <button style="background: transparent; border: 1px solid #333; color: #666; width: 100%; padding: 15px; border-radius: 12px; margin-top: 10px; cursor: pointer;" onclick="shareScore()">SHARE RESULT</button>
         </div>
 
     </div>
 
     <script>
-        // --- PHRASES (ENGLISH) ---
-        const phrases = [
-            "may the force be with you",
-            "you shall not pass",
-            "i am your father",
-            "why so serious",
-            "there is no spoon",
-            "first rule of fight club",
-            "you are a wizard harry",
-            "to infinity and beyond",
-            "show me the money",
-            "winter is coming",
-            "bond james bond",
-            "i see dead people",
-            "hasta la vista baby",
-            "houston we have a problem",
-            "here is johnny",
-            "my precious",
-            "et phone home",
-            "just keep swimming",
-            "meet me in five minutes",
-            "where are we going tonight",
-            "send me the location",
-            "why are you ignoring me",
-            "call me back right now",
-            "i need coffee immediately"
-        ];
+        const config = { diff: 'easy', lang: 'tr', backspace: true };
 
-        let currentPhraseIndex = -1; 
-        let typedText = "";
-        let startTime = 0;
-        let timerInterval = null;
-        let gameActive = false;
-
-        // --- STARTUP ---
-        window.addEventListener('DOMContentLoaded', () => {
-            initKeyboard();
-            setupSpecialKey('key-space', ' ');
-            setupSpecialKey('key-enter', 'ENTER');
-            setupSpecialKey('key-123', '123');
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const challengeIndex = urlParams.get('p');
-            const startBtn = document.querySelector('#start-screen .cta');
-
-            if (challengeIndex !== null && phrases[challengeIndex]) {
-                currentPhraseIndex = parseInt(challengeIndex);
-                document.getElementById('challenge-msg').style.display = 'block';
-                document.getElementById('challenge-msg').innerHTML = "⚠️ <strong>RACE MODE</strong><br>Beat this score.";
-                startBtn.innerText = "ACCEPT";
-                startBtn.addEventListener('click', () => startSpecificGame(currentPhraseIndex));
-            } else {
-                startBtn.addEventListener('click', startGame);
+        const phrases = {
+            en: { 
+                easy: [
+                    "linux", "sudo", "root", "admin", "bug", "glitch", 
+                    "joker", "neo", "yoda", "bond", "stark", "nasa",
+                    "wasd", "noob", "lag", "afk", "ggwp", "tesla", "rm-rf", "danger", "matrix", "frodo",
+                    "bazinga", "muggle", "mordor", "gollum", "frodo",  
+                    "fsociety", "elliot", "darlene", "robot",          
+                    "neo", "trinity", "morpheus", "oracle",            
+                    "hogwarts", "dobby", "draco", "snape",             
+                    "sheldon", "penny", "leonard", "cooper"    
+                ], 
+                normal: [
+                    "hello world", "works on my machine", 
+                    "winter is coming", "may the force be with you", 
+                    "there is no spoon", "show me the money", 
+                    "game over player one", "why so serious",
+                    "just do it", "bond james bond",
+                     "first rule of fight club", "but first coffee", 
+                    "hello friend",              
+                    "my precious",               
+                    "follow the white rabbit",   
+                    "you are a wizard harry",    
+                    "that is my spot",           
+                    "soft kitty warm kitty",     
+                    "there is no spoon",         
+                    "fly you fools",             
+                    "expecto patronum",          
+                    "control is an illusion"     
+                ], 
+                hard: [
+                    "sudo rm -rf /", "console.log('Error');", 
+                    "if (alive) { code(); }", "404: Page not found.", 
+                    "You shall not pass!", "Houston, we have a problem.", 
+                    "To infinity and beyond!", "E = mc^2",
+                    "hasta la vista baby", "my precious", "i need coffee immediately",
+                    "You shall not pass!",       
+                    "Knock, knock, knock, Penny!", 
+                    "I solemnly swear that I am up to no good.", 
+                    "Welcome to the desert of the real.", 
+                    "One Ring to rule them all.", 
+                    "Our democracy has been hacked.", 
+                    "I am not crazy, my mother had me tested.", 
+                    "Master has given Dobby a sock!" 
+                ] 
+            },
+            tr: { 
+                easy: [
+                    "yazilim", "kod", "java", "html", "format",
+                    "ramiz", "polat", "bihter", "leyla", "mecnun",
+                    "gora", "ezel", "kaos", "simit", "kedi", "çay", "okul", "işler güçler",
+                    "bazinga", "muggle", "kiymetli", "yuzuk", "hobbit", 
+                    "neo", "secilmis", "ajan", "matrix",
+                    "fsociety", "hacker", "beyaz", "tavsan",
+                    "asa", "buyu", "voldemort", "potter"
+                ], 
+                normal: [
+                    "kod calisiyor elleme", "kapatip ac duzelir",
+                    "o gemi bir gun gelecek", "mesele olmek degil",
+                    "burasi karisacak",
+                    "muslum baba affeder", "winter is coming",
+                    "seni sectim pikacu", "bir cisim yaklasiyor", "kiymetlimiss", "sen bir buyucusun harry"
+                ], 
+                hard: [
+                    "Noktali virgul nerede;", "SELECT * FROM dertler;",
+                    "Abi bana site yapsana?", "404 Sayfa Bulunamadi.",
+                    "Bir cisim yaklasiyor efendim!", "Zeki Muren de bizi gorecek mi?",
+                    "Dusunuyorum, oyleyse varim.", "Yurtta sulh, cihanda sulh."
+                ] 
             }
-        });
+        };
 
-        // --- TIMER ---
-        function startTimer() {
-            startTime = Date.now();
-            gameActive = true;
-            timerInterval = setInterval(() => {
-                const elapsed = (Date.now() - startTime) / 1000;
-                document.getElementById('timer').innerText = elapsed.toFixed(1) + "s";
+        let state = { active: false, target: "", input: "", start: 0, timer: null };
+
+        // --- AUDIO SYSTEM ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            // Creates a mechanical click sound
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.04);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.05);
+        }
+
+        // --- BUTTON & THEME LOGIC ---
+        function setDiff(val, btn) {
+            config.diff = val;
+            config.backspace = val !== 'hard';
+            
+            // UI Update
+            document.querySelectorAll('#diff-row .mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Theme Switch
+            document.body.className = ''; // Reset classes
+            document.body.classList.add('theme-' + val); // Add new theme
+
+            playSound();
+        }
+        
+        function setLang(val, btn) {
+            config.lang = val;
+            
+            // UI Update
+            document.querySelectorAll('#lang-row .mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            playSound();
+        }
+
+        // --- INTERACTIVE KEYS ---
+        function dummyInteraction(e) {
+            e.preventDefault();
+            if(navigator.vibrate) navigator.vibrate(10);
+            playSound();
+            const el = e.target.closest('.key');
+            if(el) {
+                el.classList.add('active-key');
+                setTimeout(() => el.classList.remove('active-key'), 100);
+            }
+        }
+
+        function initKeyboard() {
+            const container = document.getElementById('kb-container');
+            container.innerHTML = '';
+            let rows = [];
+            
+            if(config.lang === 'tr') {
+                rows = ["qwertyuıopğü", "asdfghjklşi", "zxcvbnmöç"];
+                document.documentElement.style.setProperty('--key-width', '7.8%'); 
+            } else {
+                rows = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
+                document.documentElement.style.setProperty('--key-width', '9.2%'); 
+            }
+
+            // Row 1
+            let r1 = document.createElement('div'); r1.className = 'row';
+            rows[0].split('').forEach(c => r1.appendChild(createKey(c)));
+            container.appendChild(r1);
+
+            // Row 2
+            let r2 = document.createElement('div'); r2.className = 'row staggered';
+            rows[1].split('').forEach(c => r2.appendChild(createKey(c)));
+            container.appendChild(r2);
+
+            // Row 3
+            let r3 = document.createElement('div'); r3.className = 'row';
+            
+            // Shift Key (Interactive Dummy)
+            let shift = document.createElement('div'); 
+            shift.className = 'key special'; 
+            shift.innerHTML = '<span>⇧</span>'; 
+            shift.addEventListener('touchstart', dummyInteraction);
+            shift.addEventListener('mousedown', dummyInteraction);
+            r3.appendChild(shift); 
+
+            rows[2].split('').forEach(c => r3.appendChild(createKey(c)));
+            
+            let bk = document.createElement('div'); 
+            bk.className = 'key special'; 
+            bk.style.opacity = config.backspace ? '1' : '0.3';
+            bk.innerHTML = config.backspace ? '<span>⌫</span>' : '<span>🔒</span>';
+            const bkHandler = (e)=>{
+                e.preventDefault(); 
+                if(config.backspace) handle('BACKSPACE', bk);
+                else if(navigator.vibrate) navigator.vibrate([50,50,50]); 
+            };
+            bk.addEventListener('touchstart', bkHandler);
+            bk.addEventListener('mousedown', bkHandler);
+            r3.appendChild(bk);
+            container.appendChild(r3);
+
+            // Row 4
+            let r4 = document.createElement('div'); r4.className = 'row';
+            
+            // 123 Key (Interactive Dummy)
+            let k123 = document.createElement('div'); k123.className = 'key special'; k123.innerHTML = '<span>123</span>'; 
+            k123.addEventListener('touchstart', dummyInteraction); k123.addEventListener('mousedown', dummyInteraction);
+            r4.appendChild(k123);
+
+            // Emoji Key (Interactive Dummy)
+            let kemj = document.createElement('div'); kemj.className = 'key special'; kemj.innerHTML = '<span>😀</span>'; 
+            kemj.addEventListener('touchstart', dummyInteraction); kemj.addEventListener('mousedown', dummyInteraction);
+            r4.appendChild(kemj);
+            
+            let kspc = document.createElement('div'); kspc.className = 'key space'; kspc.innerHTML = '<span>space</span>';
+            const spcHandler = (e)=>{e.preventDefault(); handle(' ', kspc);};
+            kspc.addEventListener('touchstart', spcHandler);
+            kspc.addEventListener('mousedown', spcHandler);
+            r4.appendChild(kspc);
+            
+            let kent = document.createElement('div'); kent.className = 'key enter'; kent.innerHTML = '<span>GO</span>';
+            const entHandler = (e)=>{e.preventDefault(); finish();};
+            kent.addEventListener('touchstart', entHandler);
+            kent.addEventListener('mousedown', entHandler);
+            r4.appendChild(kent);
+            
+            container.appendChild(r4);
+        }
+
+        function createKey(char) {
+            let k = document.createElement('div'); k.className = 'key letter'; k.innerHTML = `<span>${char.toUpperCase()}</span>`;
+            const press = (e) => { e.preventDefault(); handle(char, k); };
+            k.addEventListener('touchstart', press); k.addEventListener('mousedown', press); return k;
+        }
+
+        function startGame() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            playSound();
+
+            const pool = phrases[config.lang][config.diff];
+            state.target = pool[Math.floor(Math.random() * pool.length)];
+            state.input = ""; state.active = true; state.start = Date.now();
+
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'flex';
+            initKeyboard();
+            
+            document.getElementById('target-text').innerText = state.target;
+            document.getElementById('mode-display').innerText = config.diff.toUpperCase() + " MODE";
+            document.getElementById('hacker-warning').style.display = config.diff === 'hard' ? 'block' : 'none';
+            updateUI();
+
+            if(state.timer) clearInterval(state.timer);
+            state.timer = setInterval(() => {
+                document.getElementById('timer').innerText = ((Date.now()-state.start)/1000).toFixed(1)+'s';
             }, 100);
         }
 
-        function stopTimer() {
-            gameActive = false;
-            clearInterval(timerInterval);
-            return (Date.now() - startTime) / 1000;
+        function handle(char, el) {
+            if(!state.active) return;
+            if(navigator.vibrate) navigator.vibrate(10);
+            playSound();
+            if(el) { el.classList.add('active-key'); setTimeout(()=>el.classList.remove('active-key'), 100); }
+            
+            if(char === 'BACKSPACE') state.input = state.input.slice(0, -1);
+            else state.input += char;
+            updateUI();
         }
 
-        // --- GAME ---
-        function startGame() {
-            const randomIndex = Math.floor(Math.random() * phrases.length);
-            startSpecificGame(randomIndex);
-        }
+        function updateUI() { document.getElementById('user-input').innerText = state.input; }
 
-        function startSpecificGame(index) {
-            currentPhraseIndex = index;
-            document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('result-screen').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'flex';
+        function finish() {
+            if(!state.active) return;
+            state.active = false; clearInterval(state.timer);
             
-            document.getElementById('target-text').innerText = `"${phrases[index]}"`;
-            typedText = "";
-            updateDisplay();
-            
-            document.getElementById('timer').innerText = "0.0s";
-            startTimer();
-        }
+            const t = (Date.now()-state.start)/1000;
+            const acc = calcAcc(state.target, state.input);
+            const wpm = Math.round((state.input.length/5)/(t/60)) || 0;
 
-        function handleKey(key, element) {
-            if(!gameActive) return;
-            
-            if(element) {
-                element.classList.add('active-key');
-                setTimeout(() => element.classList.remove('active-key'), 100);
-            }
-            
-            if (navigator.vibrate) try { navigator.vibrate(10); } catch(e){}
-
-            if (key === 'BACKSPACE') {
-                typedText = typedText.slice(0, -1);
-            } else if (key === '123') {
-                // ignore
-            } else {
-                typedText += key;
-            }
-            updateDisplay();
-        }
-
-        function updateDisplay() {
-            document.getElementById('user-input').innerText = typedText + "|"; 
-        }
-
-        function submitGame() {
-            if(!gameActive) return;
-            const timeTaken = stopTimer();
-            
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('result-screen').style.display = 'flex';
-
-            const target = phrases[currentPhraseIndex];
-            const accuracy = calculateAccuracy(target, typedText);
-            const wpm = Math.round((typedText.length / 5) / (timeTaken / 60)) || 0;
-
-            document.getElementById('score-display').innerText = accuracy + "%";
+            document.getElementById('res-acc').innerText = acc + "%";
             document.getElementById('res-wpm').innerText = wpm;
-            document.getElementById('res-goal').innerText = target;
-            document.getElementById('res-user').innerText = typedText;
+            document.getElementById('res-target').innerText = state.target;
+            document.getElementById('res-typed').innerText = state.input;
+            document.getElementById('roast-msg').innerText = getRoast(acc, wpm);
+        }
 
-            // --- ROASTS (ENGLISH) ---
-            const header = document.getElementById('roast-header');
-            const msg = document.getElementById('roast-msg');
-            const card = document.querySelector('.result-card');
-            card.style.borderColor = "#333"; // reset
+        function calcAcc(a,b) {
+            if (config.diff !== 'hard') { a = a.toLowerCase(); b = b.toLowerCase(); }
+            let m=0; let len = Math.max(a.length, b.length);
+            if (len === 0) return 0;
+            for(let i=0;i<len;i++) if(a[i]===b[i]) m++;
+            return Math.floor((m/len)*100);
+        }
 
-            if (accuracy === 100) {
-                if (wpm > 60) {
-                    header.innerText = "🔥 GOD MODE 🔥";
-                    msg.innerText = "Are you a robot? That was insane. 🤖👀";
-                    card.style.borderColor = "var(--accent-color)";
-                } else if (wpm > 30) {
-                    header.innerText = "CLEAN ✨";
-                    msg.innerText = "Slow and steady wins the race. Respect. 👊";
-                } else {
-                    header.innerText = "GRANDMA? 👵";
-                    msg.innerText = "Perfect typing... but I fell asleep waiting. 💤";
-                }
-            } else if (accuracy >= 80) {
-                if (wpm > 60) {
-                    header.innerText = "CHAOTIC GOOD ⚡️";
-                    msg.innerText = "Fast as hell, but slightly drunk. 🍻";
-                } else {
-                    header.innerText = "NOT BAD 👍";
-                    msg.innerText = "You pass. But you can do better. 📉";
-                }
-            } else if (accuracy >= 50) {
-                 header.innerText = "FAT FINGERS? 🌭";
-                 msg.innerText = "Are you typing with your elbows? 💀";
-            } else {
-                header.innerText = "DISASTER 🤡";
-                msg.innerText = "Close your eyes... oh wait, they were already closed. 🫣";
-                card.style.borderColor = "var(--wrong-color)";
+        function getRoast(acc, wpm) {
+            const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+            // SCENARIO 1: HACKER / GOD MODE
+            if (config.diff === 'hard' && acc > 90) {
+                return pick([
+                    "CYBORG DETECTED 🤖", 
+                    "Are you Mr. Robot? 👨‍💻", 
+                    "He is the One. 🕶️",
+                    "Matrix has you. 👽"
+                ]);
             }
-        }
 
-        function resetGame() {
-            window.history.pushState({}, document.title, window.location.pathname);
-            document.getElementById('result-screen').style.display = 'none';
-            document.getElementById('start-screen').style.display = 'flex';
-            document.getElementById('challenge-msg').style.display = 'none';
-            
-            const startBtn = document.querySelector('#start-screen .cta');
-            const newBtn = startBtn.cloneNode(true);
-            startBtn.parentNode.replaceChild(newBtn, startBtn);
-            newBtn.innerText = "START";
-            newBtn.addEventListener('click', startGame);
-        }
-
-        // --- KEYBOARD LAYOUT (TURKISH) ---
-        function initKeyboard() {
-            // Turkish Characters Layout
-            const row1Keys = "qwertyuıopğü".split("");
-            const row2Keys = "asdfghjklşi".split("");
-            const row3Keys = "zxcvbnmöç".split("");
-            
-            renderRow('row1', row1Keys);
-            renderRow('row2', row2Keys);
-            
-            const r3 = document.getElementById('row3');
-            r3.innerHTML = ''; 
-            
-            let shift = document.createElement('div');
-            shift.className = 'key special';
-            shift.innerHTML = '<span>⬆</span>'; 
-            r3.appendChild(shift);
-            
-            row3Keys.forEach(char => createKey(r3, char));
-            
-            let back = document.createElement('div');
-            back.className = 'key special';
-            back.innerHTML = '<span>⌫</span>';
-            back.addEventListener('touchstart', (e) => { e.preventDefault(); handleKey('BACKSPACE', back); });
-            back.addEventListener('mousedown', (e) => { e.preventDefault(); handleKey('BACKSPACE', back); });
-            r3.appendChild(back);
-        }
-        function renderRow(id, keys) {
-            const row = document.getElementById(id);
-            row.innerHTML = '';
-            keys.forEach(char => createKey(row, char));
-        }
-        function createKey(parent, char) {
-            let k = document.createElement('div');
-            k.className = 'key';
-            k.innerHTML = `<span>${char.toUpperCase()}</span>`;
-            k.addEventListener('touchstart', (e) => { e.preventDefault(); handleKey(char, k); });
-            k.addEventListener('mousedown', (e) => { e.preventDefault(); handleKey(char, k); });
-            parent.appendChild(k);
-        }
-        function setupSpecialKey(id, action) {
-            const el = document.getElementById(id);
-            if(!el) return;
-            const handler = (e) => {
-                e.preventDefault(); 
-                if(action === 'ENTER') submitGame();
-                else handleKey(action, el);
-            };
-            el.addEventListener('touchstart', handler);
-            el.addEventListener('mousedown', handler);
-        }
-
-        // --- ALGORITHMS & SHARE ---
-        function calculateAccuracy(target, attempt) {
-            if (!attempt) return 0;
-            target = target.toLowerCase();
-            attempt = attempt.toLowerCase();
-            const distance = levenshtein(target, attempt);
-            const maxLength = Math.max(target.length, attempt.length);
-            let accuracy = ((maxLength - distance) / maxLength) * 100;
-            return Math.max(0, Math.floor(accuracy));
-        }
-        function levenshtein(a, b) {
-            const matrix = [];
-            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
-            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-            for (let i = 1; i <= b.length; i++) {
-                for (let j = 1; j <= a.length; j++) {
-                    if (b.charAt(i - 1) == a.charAt(j - 1)) {
-                        matrix[i][j] = matrix[i - 1][j - 1];
-                    } else {
-                        matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
-                    }
-                }
+            // SCENARIO 2: GRANDMA MODE
+            if (acc === 100) {
+                if (wpm > 60) return pick(["GOD TIER 🔥", "Touch some grass. 🌿", "Insane speed. 🚀"]);
+                return pick([
+                    "Grandma speed, but perfect. 👵", 
+                    "Slow and steady. 🐢", 
+                    "Did you sleep? 💤"
+                ]);
             }
-            return matrix[b.length][a.length];
-        }
-        async function shareResult() {
-            const acc = document.getElementById('score-display').innerText;
-            const wpm = document.getElementById('res-wpm').innerText;
-            const currentUrl = window.location.href.split('?')[0]; 
-            const challengeLink = `${currentUrl}?p=${currentPhraseIndex}`;
-            const shareData = {
-                title: 'Ghost Keyboard',
-                text: `👻 Ghost Keyboard Score: ${acc} accuracy, ${wpm} WPM.\nCan you beat me?\n`,
-                url: challengeLink
-            };
-            if (navigator.share) {
-                try { await navigator.share(shareData); } catch (err) {}
-            } else {
-                const textToCopy = `${shareData.text} ${challengeLink}`;
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                    const btn = document.querySelector('#result-screen .cta');
-                    btn.innerText = "COPIED!";
-                    setTimeout(() => { btn.innerText = "CHALLENGE FRIENDS"; }, 2000);
-                });
+
+            // SCENARIO 3: ALMOST PERFECT
+            if (acc >= 90) {
+                return pick([
+                    "So close! 🤏", 
+                    "One typo ruined your career. 📉", 
+                    "Not bad at all. 👍"
+                ]);
             }
+
+            // SCENARIO 4: SPAMMER
+            if (wpm > 70 && acc < 60) {
+                return pick([
+                    "Fast fingers, empty brain. 🧠", 
+                    "Calm down chicken. 🐔", 
+                    "Spamming isn't typing. 🗑️"
+                ]);
+            }
+
+            // SCENARIO 5: AVERAGE
+            if (acc >= 50) {
+                return pick([
+                    "Are you typing with your elbows? 💪", 
+                    "Mediocre. 😐", 
+                    "Try using fingers. 🖐️"
+                ]);
+            }
+
+            // SCENARIO 6: DISASTER
+            return pick([
+                "Delete the app. 💀", 
+                "Emotional Damage. 💔", 
+                "My eyes hurt. 🫣"
+            ]);
+        }
+
+        function shareScore() {
+            const txt = `Ghost Keyboard (${config.diff.toUpperCase()}): ${document.getElementById('res-acc').innerText} Acc, ${document.getElementById('res-wpm').innerText} WPM. Beat me! 👻`;
+            navigator.clipboard.writeText(txt).then(()=>alert("Score copied to clipboard!"));
         }
     </script>
 </body>
