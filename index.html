@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ghost Keyboard</title>
     
+    <meta property="og:title" content="Ghost Keyboard Challenge">
+    <meta property="og:description" content="Invisible keys. Can you type blindly?">
+
     <style>
         /* --- THEME VARIABLES --- */
         :root {
@@ -13,7 +16,7 @@
             --key-bg: #2d2d30;
             --key-active: #fff;
             
-            /* Varsayılan (Değişkenler JS ile ezilecek) */
+            /* Varsayılan */
             --accent-color: #00ff9d; 
             --glow-color: rgba(0, 255, 157, 0.4);
             --bg-gradient: radial-gradient(circle at 50% 50%, #05150a 0%, #000 100%);
@@ -21,19 +24,17 @@
 
         /* --- THEME CLASSES --- */
         body.theme-easy {
-            --accent-color: #00f2ff; /* Cyber Blue */
+            --accent-color: #00f2ff;
             --glow-color: rgba(0, 242, 255, 0.4);
             --bg-gradient: radial-gradient(circle at 50% 50%, #0a1525 0%, #000 100%);
         }
-
         body.theme-normal {
-            --accent-color: #00ff9d; /* Matrix Green */
+            --accent-color: #00ff9d;
             --glow-color: rgba(0, 255, 157, 0.4);
             --bg-gradient: radial-gradient(circle at 50% 50%, #05150a 0%, #000 100%);
         }
-
         body.theme-hard {
-            --accent-color: #ff003c; /* Red Alert */
+            --accent-color: #ff003c;
             --glow-color: rgba(255, 0, 60, 0.4);
             --bg-gradient: radial-gradient(circle at 50% 50%, #250505 0%, #000 100%);
         }
@@ -55,7 +56,6 @@
             transition: background 0.5s ease;
         }
 
-        /* Scanline Effect */
         .scanline {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1));
@@ -100,32 +100,26 @@
 
         /* --- SETTINGS SECTION --- */
         .bottom-section { width: 100%; display: flex; flex-direction: column; gap: 15px; }
-        
         .selector-group { width: 100%; }
         .lbl { 
             font-size: 0.7rem; color: #666; margin-bottom: 8px; display: block; 
             text-align: center; letter-spacing: 3px; font-family: 'Courier New', monospace; font-weight: bold; 
         }
-        
         .btn-row { display: flex; justify-content: center; gap: 8px; }
         
         .mode-btn {
-            background: transparent; 
-            border: 1px solid #333; 
-            color: #666;
+            background: transparent; border: 1px solid #333; color: #666;
             padding: 12px; border-radius: 6px; cursor: pointer;
             font-size: 0.8rem; font-weight: bold; transition: all 0.3s ease; flex: 1; 
             text-align: center; font-family: 'Courier New', monospace;
         }
-        
         .mode-btn.active { 
-            background: var(--accent-color); 
-            color: #000; 
+            background: var(--accent-color); color: #000; 
             border-color: var(--accent-color); 
-            box-shadow: 0 0 15px var(--glow-color); 
-            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--glow-color); transform: scale(1.05);
         }
 
+        /* PRIMARY BUTTON (START / TRY AGAIN) */
         .main-btn {
             background: var(--accent-color); color: #000; border: none;
             width: 100%; padding: 18px; font-size: 1.2rem; font-weight: 900;
@@ -136,6 +130,20 @@
             transition: all 0.3s ease;
         }
         .main-btn:active { transform: scale(0.98); }
+
+        /* SECONDARY BUTTON (SHARE) - DÜZELTİLDİ */
+        .secondary-btn {
+            background: transparent; 
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color); /* Yazı rengi neon */
+            width: 100%; padding: 18px; font-size: 1.2rem; font-weight: 900;
+            border-radius: 10px; margin-top: 15px; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 2px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+        }
+        .secondary-btn:active { transform: scale(0.98); background: rgba(255,255,255,0.1); }
 
         /* --- GAME SCREENS --- */
         #game-screen, #result-screen { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: space-between; }
@@ -149,7 +157,6 @@
             margin-bottom: 20px; 
         }
         .target-text { font-size: 1.3rem; color: #fff; font-weight: 600; line-height: 1.4; }
-        
         .input-box { 
             font-size: 1.5rem; color: var(--accent-color); text-align: center; 
             border-bottom: 2px solid #333; min-height: 40px; margin-bottom: 20px; 
@@ -159,10 +166,8 @@
         .cursor { display: inline-block; width: 2px; height: 24px; background: var(--accent-color); animation: blink 1s infinite; margin-left:2px; transition: background 0.5s ease;}
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* --- KEYBOARD --- */
         .keyboard { display: flex; flex-direction: column; width: 100%; background: #000; padding: 5px 2px; }
         .row { display: flex; justify-content: center; margin-bottom: 8px; width: 100%; }
-        
         .key {
             background: var(--key-bg); color: #fff; height: 48px; border-radius: 6px;
             display: flex; align-items: center; justify-content: center;
@@ -171,29 +176,19 @@
             flex: 0 0 auto; width: var(--key-width);
             user-select: none;
         }
-
         .key span { opacity: 0; } 
         .key.special span, .key.enter span { opacity: 1; }
-
         .key:active, .key.active-key { 
             background: #555; transform: scale(1.2); z-index: 99; border-radius: 6px; 
             box-shadow: 0 0 15px rgba(255,255,255,0.2);
         }
         .key.active-key span { opacity: 1; color: #fff; }
-
         .key.special { background: #3a3a3c; font-size: 0.9rem; width: 13% !important; }
         .key.space { flex-grow: 1; width: auto !important; background: var(--key-bg); font-size: 0.8rem; color: #666; }
         .key.space span { opacity: 1; }
-        .key.enter { 
-            width: 24% !important; 
-            background: var(--accent-color); 
-            color: #000; font-weight: 800;
-            transition: background 0.5s ease;
-        }
-        
+        .key.enter { width: 24% !important; background: var(--accent-color); color: #000; font-weight: 800; transition: background 0.5s ease; }
         .row.staggered { padding: 0 4%; }
 
-        /* --- RESULTS --- */
         .roast-box { 
             background: #111; border: 1px solid var(--accent-color); color: #fff; 
             padding: 20px; border-radius: 10px; margin: 20px 0; 
@@ -208,7 +203,7 @@
 
     </style>
 </head>
-<body class="theme-easy"> <!-- Default Theme -->
+<body class="theme-easy">
 
     <div class="scanline"></div>
 
@@ -221,20 +216,10 @@
                     <span class="ghost-icon">👻</span>
                     <h1>GHOST<br><span>KEYBOARD</span></h1>
                 </div>
-                
                 <div class="tutorial-box">
-                    <div class="tut-item">
-                        <span class="tut-icon">👀</span>
-                        <span>Read the phrase.</span>
-                    </div>
-                    <div class="tut-item">
-                        <span class="tut-icon">⌨️</span>
-                        <span>Type blindly (Keys are invisible).</span>
-                    </div>
-                    <div class="tut-item">
-                        <span class="tut-icon">🧠</span>
-                        <span>Trust your muscle memory.</span>
-                    </div>
+                    <div class="tut-item"><span class="tut-icon">👀</span><span>Read the phrase.</span></div>
+                    <div class="tut-item"><span class="tut-icon">⌨️</span><span>Type blindly (Keys are invisible).</span></div>
+                    <div class="tut-item"><span class="tut-icon">🧠</span><span>Trust your muscle memory.</span></div>
                 </div>
             </div>
 
@@ -247,7 +232,6 @@
                         <div class="mode-btn" data-val="hard" onclick="setDiff('hard', this)">HACKER</div>
                     </div>
                 </div>
-
                 <div class="selector-group">
                     <span class="lbl">LANGUAGE</span>
                     <div id="lang-row" class="btn-row">
@@ -255,7 +239,6 @@
                         <div class="mode-btn active" onclick="setLang('tr', this)">TUR 🇹🇷</div>
                     </div>
                 </div>
-
                 <button class="main-btn" onclick="startGame()">START GAME</button>
             </div>
         </div>
@@ -267,20 +250,10 @@
                     <span id="mode-display" style="color:var(--accent-color)">NOOB MODE</span>
                     <span id="timer">0.0s</span>
                 </div>
-
-                <div class="target-box">
-                    <span id="target-text" class="target-text">Loading...</span>
-                </div>
-
-                <div class="input-box">
-                    <span id="user-input"></span><div class="cursor"></div>
-                </div>
-                
-                <div id="hacker-warning" style="display:none; color:#ff003c; font-size:0.7rem; text-align:center; margin-bottom:10px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">
-                    ⚠️ Backspace Disabled ⚠️
-                </div>
+                <div class="target-box"><span id="target-text" class="target-text">...</span></div>
+                <div class="input-box"><span id="user-input"></span><div class="cursor"></div></div>
+                <div id="hacker-warning" style="display:none; color:#ff003c; font-size:0.7rem; text-align:center; margin-bottom:10px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">⚠️ Backspace Disabled ⚠️</div>
             </div>
-
             <div class="keyboard" id="kb-container"></div>
         </div>
 
@@ -288,19 +261,11 @@
         <div id="result-screen">
             <h2 style="font-size: 2.5rem; color: #fff; font-family: 'Courier New', monospace; margin-bottom: 10px; text-shadow: 0 0 10px rgba(255,255,255,0.3);">GAME OVER</h2>
             
-            <div class="roast-box">
-                <span id="roast-msg">...</span>
-            </div>
+            <div class="roast-box"><span id="roast-msg">...</span></div>
 
             <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-num" id="res-wpm">0</span>
-                    <span class="stat-lbl">WPM</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-num" id="res-acc">0%</span>
-                    <span class="stat-lbl">ACCURACY</span>
-                </div>
+                <div class="stat-card"><span class="stat-num" id="res-wpm">0</span><span class="stat-lbl">WPM</span></div>
+                <div class="stat-card"><span class="stat-num" id="res-acc">0%</span><span class="stat-lbl">ACCURACY</span></div>
             </div>
 
             <div style="margin-top: 20px; font-family: monospace; font-size: 0.8rem; background: #111; padding: 15px; border-radius: 8px; text-align: left;">
@@ -311,7 +276,8 @@
             </div>
 
             <button class="main-btn" onclick="location.reload()">TRY AGAIN</button>
-            <button style="background: transparent; border: 1px solid #333; color: #666; width: 100%; padding: 15px; border-radius: 12px; margin-top: 10px; cursor: pointer;" onclick="shareScore()">SHARE RESULT</button>
+            <!-- Fixed Share Button Style -->
+            <button class="secondary-btn" onclick="shareResult()">SHARE RESULT</button>
         </div>
 
     </div>
@@ -321,77 +287,19 @@
 
         const phrases = {
             en: { 
-                easy: [
-                    "linux", "sudo", "root", "admin", "bug", "glitch", 
-                    "joker", "neo", "yoda", "bond", "stark", "nasa",
-                    "wasd", "noob", "lag", "afk", "ggwp", "tesla", "rm-rf", "danger", "matrix", "frodo",
-                    "bazinga", "muggle", "mordor", "gollum", "frodo",  
-                    "fsociety", "elliot", "darlene", "robot",          
-                    "neo", "trinity", "morpheus", "oracle",            
-                    "hogwarts", "dobby", "draco", "snape",             
-                    "sheldon", "penny", "leonard", "cooper"    
-                ], 
-                normal: [
-                    "hello world", "works on my machine", 
-                    "winter is coming", "may the force be with you", 
-                    "there is no spoon", "show me the money", 
-                    "game over player one", "why so serious",
-                    "just do it", "bond james bond",
-                     "first rule of fight club", "but first coffee", 
-                    "hello friend",              
-                    "my precious",               
-                    "follow the white rabbit",   
-                    "you are a wizard harry",    
-                    "that is my spot",           
-                    "soft kitty warm kitty",     
-                    "there is no spoon",         
-                    "fly you fools",             
-                    "expecto patronum",          
-                    "control is an illusion"     
-                ], 
-                hard: [
-                    "sudo rm -rf /", "console.log('Error');", 
-                    "if (alive) { code(); }", "404: Page not found.", 
-                    "You shall not pass!", "Houston, we have a problem.", 
-                    "To infinity and beyond!", "E = mc^2",
-                    "hasta la vista baby", "my precious", "i need coffee immediately",
-                    "You shall not pass!",       
-                    "Knock, knock, knock, Penny!", 
-                    "I solemnly swear that I am up to no good.", 
-                    "Welcome to the desert of the real.", 
-                    "One Ring to rule them all.", 
-                    "Our democracy has been hacked.", 
-                    "I am not crazy, my mother had me tested.", 
-                    "Master has given Dobby a sock!" 
-                ] 
+                easy: ["linux", "sudo", "root", "admin", "bug", "glitch", "joker", "neo", "yoda", "bond", "stark", "nasa", "wasd", "noob", "lag", "afk", "ggwp", "tesla", "rm-rf", "danger", "matrix", "frodo", "bazinga", "muggle", "mordor", "gollum", "frodo", "fsociety", "elliot", "darlene", "robot", "neo", "trinity", "morpheus", "oracle", "hogwarts", "dobby", "draco", "snape", "sheldon", "penny", "leonard", "cooper"], 
+                normal: ["hello world", "works on my machine", "winter is coming", "may the force be with you", "there is no spoon", "show me the money", "game over player one", "why so serious", "just do it", "bond james bond", "first rule of fight club", "but first coffee", "hello friend", "my precious", "follow the white rabbit", "you are a wizard harry", "that is my spot", "soft kitty warm kitty", "there is no spoon", "fly you fools", "expecto patronum", "control is an illusion"], 
+                hard: ["sudo rm -rf /", "console.log('Error');", "if (alive) { code(); }", "404: Page not found.", "You shall not pass!", "Houston, we have a problem.", "To infinity and beyond!", "E = mc^2", "hasta la vista baby", "my precious", "i need coffee immediately", "You shall not pass!", "Knock, knock, knock, Penny!", "I solemnly swear that I am up to no good.", "Welcome to the desert of the real.", "One Ring to rule them all.", "Our democracy has been hacked.", "I am not crazy, my mother had me tested.", "Master has given Dobby a sock!"] 
             },
             tr: { 
-                easy: [
-                    "yazilim", "kod", "java", "html", "format",
-                    "ramiz", "polat", "bihter", "leyla", "mecnun",
-                    "gora", "ezel", "kaos", "simit", "kedi", "çay", "okul", "işler güçler",
-                    "bazinga", "muggle", "kiymetli", "yuzuk", "hobbit", 
-                    "neo", "secilmis", "ajan", "matrix",
-                    "fsociety", "hacker", "beyaz", "tavsan",
-                    "asa", "buyu", "voldemort", "potter"
-                ], 
-                normal: [
-                    "kod calisiyor elleme", "kapatip ac duzelir",
-                    "o gemi bir gun gelecek", "mesele olmek degil",
-                    "burasi karisacak",
-                    "muslum baba affeder", "winter is coming",
-                    "seni sectim pikacu", "bir cisim yaklasiyor", "kiymetlimiss", "sen bir buyucusun harry"
-                ], 
-                hard: [
-                    "Noktali virgul nerede;", "SELECT * FROM dertler;",
-                    "Abi bana site yapsana?", "404 Sayfa Bulunamadi.",
-                    "Bir cisim yaklasiyor efendim!", "Zeki Muren de bizi gorecek mi?",
-                    "Dusunuyorum, oyleyse varim.", "Yurtta sulh, cihanda sulh."
-                ] 
+                easy: ["yazilim", "kod", "java", "html", "format", "ramiz", "polat", "bihter", "leyla", "mecnun", "gora", "ezel", "kaos", "simit", "kedi", "çay", "okul", "işler güçler", "bazinga", "muggle", "kiymetli", "yuzuk", "hobbit", "neo", "secilmis", "ajan", "matrix", "fsociety", "hacker", "beyaz", "tavsan", "asa", "buyu", "voldemort", "potter"], 
+                normal: ["kod calisiyor elleme", "kapatip ac duzelir", "o gemi bir gun gelecek", "mesele olmek degil", "burasi karisacak", "muslum baba affeder", "winter is coming", "seni sectim pikacu", "bir cisim yaklasiyor", "kiymetlimiss", "sen bir buyucusun harry"], 
+                hard: ["Noktali virgul nerede;", "SELECT * FROM dertler;", "Abi bana site yapsana?", "404 Sayfa Bulunamadi.", "Bir cisim yaklasiyor efendim!", "Zeki Muren de bizi gorecek mi?", "Dusunuyorum, oyleyse varim.", "Yurtta sulh, cihanda sulh."] 
             }
         };
 
         let state = { active: false, target: "", input: "", start: 0, timer: null };
+        let currentPhraseIndex = -1; // Added for sharing logic
 
         // --- AUDIO SYSTEM ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -400,46 +308,30 @@
             if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            
-            // Creates a mechanical click sound
             osc.frequency.setValueAtTime(800, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.04);
             gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
-            
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.05);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.05);
         }
 
-        // --- BUTTON & THEME LOGIC ---
         function setDiff(val, btn) {
             config.diff = val;
             config.backspace = val !== 'hard';
-            
-            // UI Update
             document.querySelectorAll('#diff-row .mode-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
-            // Theme Switch
-            document.body.className = ''; // Reset classes
-            document.body.classList.add('theme-' + val); // Add new theme
-
+            document.body.className = ''; document.body.classList.add('theme-' + val); 
             playSound();
         }
         
         function setLang(val, btn) {
             config.lang = val;
-            
-            // UI Update
             document.querySelectorAll('#lang-row .mode-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
             playSound();
         }
 
-        // --- INTERACTIVE KEYS ---
         function dummyInteraction(e) {
             e.preventDefault();
             if(navigator.vibrate) navigator.vibrate(10);
@@ -455,7 +347,6 @@
             const container = document.getElementById('kb-container');
             container.innerHTML = '';
             let rows = [];
-            
             if(config.lang === 'tr') {
                 rows = ["qwertyuıopğü", "asdfghjklşi", "zxcvbnmöç"];
                 document.documentElement.style.setProperty('--key-width', '7.8%'); 
@@ -464,68 +355,37 @@
                 document.documentElement.style.setProperty('--key-width', '9.2%'); 
             }
 
-            // Row 1
             let r1 = document.createElement('div'); r1.className = 'row';
             rows[0].split('').forEach(c => r1.appendChild(createKey(c)));
             container.appendChild(r1);
 
-            // Row 2
             let r2 = document.createElement('div'); r2.className = 'row staggered';
             rows[1].split('').forEach(c => r2.appendChild(createKey(c)));
             container.appendChild(r2);
 
-            // Row 3
             let r3 = document.createElement('div'); r3.className = 'row';
-            
-            // Shift Key (Interactive Dummy)
-            let shift = document.createElement('div'); 
-            shift.className = 'key special'; 
-            shift.innerHTML = '<span>⇧</span>'; 
-            shift.addEventListener('touchstart', dummyInteraction);
-            shift.addEventListener('mousedown', dummyInteraction);
-            r3.appendChild(shift); 
-
+            let shift = document.createElement('div'); shift.className = 'key special'; shift.innerHTML = '<span>⇧</span>'; 
+            shift.addEventListener('touchstart', dummyInteraction); shift.addEventListener('mousedown', dummyInteraction); r3.appendChild(shift); 
             rows[2].split('').forEach(c => r3.appendChild(createKey(c)));
             
-            let bk = document.createElement('div'); 
-            bk.className = 'key special'; 
+            let bk = document.createElement('div'); bk.className = 'key special'; 
             bk.style.opacity = config.backspace ? '1' : '0.3';
             bk.innerHTML = config.backspace ? '<span>⌫</span>' : '<span>🔒</span>';
-            const bkHandler = (e)=>{
-                e.preventDefault(); 
-                if(config.backspace) handle('BACKSPACE', bk);
-                else if(navigator.vibrate) navigator.vibrate([50,50,50]); 
-            };
-            bk.addEventListener('touchstart', bkHandler);
-            bk.addEventListener('mousedown', bkHandler);
-            r3.appendChild(bk);
+            const bkHandler = (e)=>{ e.preventDefault(); if(config.backspace) handle('BACKSPACE', bk); else if(navigator.vibrate) navigator.vibrate([50,50,50]); };
+            bk.addEventListener('touchstart', bkHandler); bk.addEventListener('mousedown', bkHandler); r3.appendChild(bk);
             container.appendChild(r3);
 
-            // Row 4
             let r4 = document.createElement('div'); r4.className = 'row';
-            
-            // 123 Key (Interactive Dummy)
             let k123 = document.createElement('div'); k123.className = 'key special'; k123.innerHTML = '<span>123</span>'; 
-            k123.addEventListener('touchstart', dummyInteraction); k123.addEventListener('mousedown', dummyInteraction);
-            r4.appendChild(k123);
-
-            // Emoji Key (Interactive Dummy)
+            k123.addEventListener('touchstart', dummyInteraction); k123.addEventListener('mousedown', dummyInteraction); r4.appendChild(k123);
             let kemj = document.createElement('div'); kemj.className = 'key special'; kemj.innerHTML = '<span>😀</span>'; 
-            kemj.addEventListener('touchstart', dummyInteraction); kemj.addEventListener('mousedown', dummyInteraction);
-            r4.appendChild(kemj);
-            
+            kemj.addEventListener('touchstart', dummyInteraction); kemj.addEventListener('mousedown', dummyInteraction); r4.appendChild(kemj);
             let kspc = document.createElement('div'); kspc.className = 'key space'; kspc.innerHTML = '<span>space</span>';
             const spcHandler = (e)=>{e.preventDefault(); handle(' ', kspc);};
-            kspc.addEventListener('touchstart', spcHandler);
-            kspc.addEventListener('mousedown', spcHandler);
-            r4.appendChild(kspc);
-            
+            kspc.addEventListener('touchstart', spcHandler); kspc.addEventListener('mousedown', spcHandler); r4.appendChild(kspc);
             let kent = document.createElement('div'); kent.className = 'key enter'; kent.innerHTML = '<span>GO</span>';
             const entHandler = (e)=>{e.preventDefault(); finish();};
-            kent.addEventListener('touchstart', entHandler);
-            kent.addEventListener('mousedown', entHandler);
-            r4.appendChild(kent);
-            
+            kent.addEventListener('touchstart', entHandler); kent.addEventListener('mousedown', entHandler); r4.appendChild(kent);
             container.appendChild(r4);
         }
 
@@ -538,24 +398,20 @@
         function startGame() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             playSound();
-
             const pool = phrases[config.lang][config.diff];
-            state.target = pool[Math.floor(Math.random() * pool.length)];
+            const randomIndex = Math.floor(Math.random() * pool.length);
+            state.target = pool[randomIndex];
+            currentPhraseIndex = randomIndex; // For sharing context if needed
             state.input = ""; state.active = true; state.start = Date.now();
-
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'flex';
             initKeyboard();
-            
             document.getElementById('target-text').innerText = state.target;
             document.getElementById('mode-display').innerText = config.diff.toUpperCase() + " MODE";
             document.getElementById('hacker-warning').style.display = config.diff === 'hard' ? 'block' : 'none';
             updateUI();
-
             if(state.timer) clearInterval(state.timer);
-            state.timer = setInterval(() => {
-                document.getElementById('timer').innerText = ((Date.now()-state.start)/1000).toFixed(1)+'s';
-            }, 100);
+            state.timer = setInterval(() => { document.getElementById('timer').innerText = ((Date.now()-state.start)/1000).toFixed(1)+'s'; }, 100);
         }
 
         function handle(char, el) {
@@ -563,7 +419,6 @@
             if(navigator.vibrate) navigator.vibrate(10);
             playSound();
             if(el) { el.classList.add('active-key'); setTimeout(()=>el.classList.remove('active-key'), 100); }
-            
             if(char === 'BACKSPACE') state.input = state.input.slice(0, -1);
             else state.input += char;
             updateUI();
@@ -574,11 +429,9 @@
         function finish() {
             if(!state.active) return;
             state.active = false; clearInterval(state.timer);
-            
             const t = (Date.now()-state.start)/1000;
             const acc = calcAcc(state.target, state.input);
             const wpm = Math.round((state.input.length/5)/(t/60)) || 0;
-
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('result-screen').style.display = 'flex';
             document.getElementById('res-acc').innerText = acc + "%";
@@ -598,65 +451,40 @@
 
         function getRoast(acc, wpm) {
             const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
-            // SCENARIO 1: HACKER / GOD MODE
-            if (config.diff === 'hard' && acc > 90) {
-                return pick([
-                    "CYBORG DETECTED 🤖", 
-                    "Are you Mr. Robot? 👨‍💻", 
-                    "He is the One. 🕶️",
-                    "Matrix has you. 👽"
-                ]);
-            }
-
-            // SCENARIO 2: GRANDMA MODE
+            if (config.diff === 'hard' && acc > 90) return pick(["CYBORG DETECTED 🤖", "Are you Mr. Robot? 👨‍💻", "He is the One. 🕶️"]);
             if (acc === 100) {
                 if (wpm > 60) return pick(["GOD TIER 🔥", "Touch some grass. 🌿", "Insane speed. 🚀"]);
-                return pick([
-                    "Grandma speed, but perfect. 👵", 
-                    "Slow and steady. 🐢", 
-                    "Did you sleep? 💤"
-                ]);
+                return pick(["Grandma speed, but perfect. 👵", "Slow and steady. 🐢", "Did you sleep? 💤"]);
             }
-
-            // SCENARIO 3: ALMOST PERFECT
-            if (acc >= 90) {
-                return pick([
-                    "So close! 🤏", 
-                    "One typo ruined your career. 📉", 
-                    "Not bad at all. 👍"
-                ]);
-            }
-
-            // SCENARIO 4: SPAMMER
-            if (wpm > 70 && acc < 60) {
-                return pick([
-                    "Fast fingers, empty brain. 🧠", 
-                    "Calm down chicken. 🐔", 
-                    "Spamming isn't typing. 🗑️"
-                ]);
-            }
-
-            // SCENARIO 5: AVERAGE
-            if (acc >= 50) {
-                return pick([
-                    "Are you typing with your elbows? 💪", 
-                    "Mediocre. 😐", 
-                    "Try using fingers. 🖐️"
-                ]);
-            }
-
-            // SCENARIO 6: DISASTER
-            return pick([
-                "Delete the app. 💀", 
-                "Emotional Damage. 💔", 
-                "My eyes hurt. 🫣"
-            ]);
+            if (acc >= 90) return pick(["So close! 🤏", "One typo ruined your career. 📉", "Not bad at all. 👍"]);
+            if (wpm > 80 && acc < 60) return pick(["Fast fingers, empty brain. 🧠", "Calm down chicken. 🐔", "Spamming isn't typing. 🗑️"]);
+            if (acc >= 50) return pick(["Are you typing with your elbows? 💪", "Mediocre. 😐", "Try using fingers. 🖐️"]);
+            return pick(["Delete the app. 💀", "Emotional Damage. 💔", "My eyes hurt. 🫣"]);
         }
 
-        function shareScore() {
-            const txt = `Ghost Keyboard (${config.diff.toUpperCase()}): ${document.getElementById('res-acc').innerText} Acc, ${document.getElementById('res-wpm').innerText} WPM. Beat me! 👻`;
-            navigator.clipboard.writeText(txt).then(()=>alert("Score copied to clipboard!"));
+        // --- NATIVE SHARE FUNCTION ---
+        async function shareResult() {
+            const acc = document.getElementById('res-acc').innerText;
+            const wpm = document.getElementById('res-wpm').innerText;
+            const diff = config.diff.toUpperCase();
+            
+            const shareData = {
+                title: 'Ghost Keyboard',
+                text: `👻 Ghost Keyboard (${diff})\nScore: ${acc} Accuracy, ${wpm} WPM.\nCan you beat me?`,
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                try { await navigator.share(shareData); } catch (err) {}
+            } else {
+                const textToCopy = `${shareData.text}\n${shareData.url}`;
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    const btn = document.querySelector('.secondary-btn');
+                    const originalText = btn.innerText;
+                    btn.innerText = "COPIED!";
+                    setTimeout(() => { btn.innerText = originalText; }, 2000);
+                });
+            }
         }
     </script>
 </body>
