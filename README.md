@@ -86,5 +86,5 @@ Read the phrase, type it on a **blank virtual keyboard**, then see your **WPM**,
 ### 1. Clone or Download
 
 ```bash
-git clone <your-repo-url>.git
+git clone https://github.com/yaseminezgii/ghost_keyboard.git
 cd ghost-keyboard
