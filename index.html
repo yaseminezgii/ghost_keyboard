@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Ghost Keyboard v2.1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ghost Keyboard v2.2 (Fixed)</title>
     
     <!-- Screenshot Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        /* --- TEMEL AYARLAR & MOBİL UYUMLULUK --- */
+        /* --- STYLES (ORIGINAL RESTORED) --- */
         :root {
             --bg-color: #050505; --text-color: #e0e0e0; --key-bg: #2d2d30; --key-active: #fff;
             --accent-color: #00ff9d; --glow-color: rgba(0, 255, 157, 0.4);
@@ -29,111 +29,119 @@
             background: var(--bg-gradient); 
             color: var(--text-color); 
             font-family: 'Courier New', Courier, monospace;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; /* Restore scroll capability */
             margin: 0; 
-            /* Mobil Kaydırma Sorunu Çözümü */
-            height: 100dvh; 
-            width: 100vw;
-            overflow: hidden; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            touch-action: manipulation;
+            overflow-x: hidden;
+            overflow-y: auto; /* Allow scrolling again */
+            touch-action: manipulation; 
             transition: background 0.5s ease;
         }
+        
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .shake-screen { animation: shake 0.3s; }
+        .error-glow { text-shadow: 0 0 15px #ff0000 !important; color: #ff5555 !important; }
 
         .scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1)); background-size: 100% 4px; pointer-events: none; z-index: 0; }
         
         .container { 
             width: 100%; 
             max-width: 850px; 
-            height: 100%;
+            min-height: 100vh;
             display: flex; 
             flex-direction: column; 
             justify-content: center; 
             align-items: center; 
             padding: 20px; 
+            gap: 20px; 
             position: relative; 
             z-index: 2; 
         }
-
-        /* --- BAŞLANGIÇ EKRANI --- */
-        .start-layout { 
-            display: flex; 
-            flex-direction: column; 
-            width: 100%; 
-            height: 100%;
-            justify-content: center; /* Dikey ortalama */
-            align-items: center; 
-            gap: 20px;
-        }
         
+        .start-layout { display: flex; flex-direction: column; width: 100%; gap: 30px; align-items: center; padding-bottom: 50px; }
         @media (min-width: 768px) { 
-            .start-layout { flex-direction: row; align-items: flex-start; justify-content: space-between; height: auto; padding-top: 50px; } 
+            .start-layout { flex-direction: row; align-items: flex-start; justify-content: space-between; padding-bottom: 0; } 
             .left-panel, .right-panel { flex: 1; width: 100%; } 
             .right-panel { max-width: 350px; } 
         }
 
-        .logo-area { text-align: center; margin-bottom: 10px; }
-        .ghost-icon { font-size: 3rem; display: block; animation: float 3s infinite; filter: drop-shadow(0 0 10px var(--glow-color)); }
+        .logo-area { text-align: center; margin-bottom: 20px; }
+        .ghost-icon { font-size: 3.5rem; display: block; animation: float 3s infinite; filter: drop-shadow(0 0 10px var(--glow-color)); }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        h1 { font-size: 1.8rem; margin: 0; color: #fff; line-height: 0.9; }
+        h1 { font-size: 2rem; margin: 0; color: #fff; line-height: 0.9; }
         h1 span { color: var(--accent-color); text-shadow: 0 0 15px var(--glow-color); }
 
-        .tutorial-box { background: #111; border: 1px solid #333; border-radius: 12px; padding: 10px; width: 100%; text-align: left; margin-bottom: 15px; display: none; } /* Mobilde yer kaplamasın diye gizli */
-        @media (min-width: 768px) { .tutorial-box { display: block; } }
+        .tutorial-box { background: #111; border: 1px solid #333; border-radius: 12px; padding: 15px; width: 100%; text-align: left; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .tut-item { display: flex; align-items: center; margin-bottom: 8px; color: #bbb; font-size: 0.85rem; }
+        .tut-icon { margin-right: 10px; font-size: 1.1rem; }
 
         .name-input { background: transparent; border: none; border-bottom: 2px solid var(--accent-color); color: #fff; font-family: 'Courier New', monospace; font-size: 1.2rem; width: 100%; text-align: center; padding: 10px; outline: none; margin-bottom: 20px; }
-        
-        .btn-row { display: flex; width: 100%; margin-bottom: 10px; gap: 5px; }
-        .mode-btn { background: transparent; border: 1px solid #333; color: #666; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold; flex: 1; text-align: center; transition: 0.2s; }
+        .mode-btn { background: transparent; border: 1px solid #333; color: #666; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold; flex: 1; text-align: center; margin: 0 2px; transition: 0.2s; }
         .mode-btn.active { background: var(--accent-color); color: #000; border-color: var(--accent-color); box-shadow: 0 0 10px var(--glow-color); }
-        
-        .main-btn { background: var(--accent-color); color: #000; border: none; width: 100%; padding: 16px; font-size: 1.2rem; font-weight: 900; border-radius: 10px; cursor: pointer; box-shadow: 0 0 20px var(--glow-color); margin-top: 10px; }
+        .btn-row { display: flex; width: 100%; margin-bottom: 10px; }
+        .main-btn { background: var(--accent-color); color: #000; border: none; width: 100%; padding: 16px; font-size: 1.2rem; font-weight: 900; border-radius: 10px; cursor: pointer; box-shadow: 0 0 20px var(--glow-color); }
+
+        .leaderboard-wrapper { width: 100%; background: rgba(15, 15, 15, 0.9); border: 1px solid #333; border-radius: 12px; padding: 20px; height: 100%; min-height: 300px; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .lb-header { width: 100%; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .lb-title { color: var(--accent-color); font-size: 1rem; text-align: center; margin: 0; padding: 0; font-weight: bold; letter-spacing: 1px;}
+        .countdown-box { font-size: 0.8rem; color: #666; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 4px; border: 1px solid #222; display: flex; gap: 8px; font-family: 'Courier New', monospace; letter-spacing: 1px; }
+        #daily-timer { color: var(--accent-color); font-weight: bold; }
+
+        .lb-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 8px 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .lb-row.highlight { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        .lb-row:last-child { border-bottom: none; }
+        .lb-rank { width: 30px; color: #666; font-weight: bold; }
+        .lb-name { flex-grow: 1; color: #ddd; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;}
+        .lb-score { color: var(--accent-color); font-weight: bold; }
+        .lb-loading { text-align: center; color: #666; margin-top: 20px; font-size: 0.8rem; }
+
+        .timer-container { text-align: center; margin-bottom: 10px; }
+        #timer { font-size: 3.5rem; font-weight: 900; color: var(--accent-color); text-shadow: 0 0 20px var(--glow-color); font-variant-numeric: tabular-nums; letter-spacing: 2px; }
+        .timer-label { font-size: 0.7rem; color: #666; letter-spacing: 3px; display: block; margin-top: -5px; }
+        .target-box { background: rgba(255,255,255,0.05); border: 1px dashed #444; border-radius: 12px; padding: 15px; min-height: 80px; display: flex; align-items: center; justify-content: center; text-align: center; margin-bottom: 10px; width: 100%; max-width: 450px;}
+        .target-text { font-size: 1.3rem; color: #fff; font-weight: 600; line-height: 1.4; transition: color 0.1s; }
+        .input-box { font-size: 1.5rem; color: var(--accent-color); border-bottom: 2px solid #333; min-height: 40px; margin: 15px 0; text-align: center; white-space: pre; width: 100%; max-width: 450px; transition: color 0.1s, text-shadow 0.1s;}
+        .keyboard { display: flex; flex-direction: column; width: 100%; max-width: 450px; padding: 5px 0; }
+        .row { display: flex; justify-content: center; margin-bottom: 6px; width: 100%; }
+        .key { background: var(--key-bg); color: #fff; height: 46px; border-radius: 5px; display: flex; align-items: center; justify-content: center; margin: 0 2px; flex: 0 0 auto; width: var(--key-width); cursor: pointer; user-select: none; }
+        .key span { opacity: 0; } .key.special span, .key.enter span { opacity: 1; }
+        .key:active, .key.active-key { background: #555; transform: scale(1.1); }
+        .key.enter { width: 22% !important; background: var(--accent-color); color: #000; font-weight: bold; }
+        .key.space { flex-grow: 1; width: auto !important; font-size: 0.8rem; }
+        .row.staggered { padding: 0 4%; }
+
+        .roast-box { background: #111; border: 1px solid var(--accent-color); color: #fff; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center; font-style: italic; box-shadow: 0 0 15px var(--glow-color); width: 100%; max-width: 400px; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; width: 100%; max-width: 400px; }
+        .stat-card { background: #151515; padding: 10px; border-radius: 8px; text-align: center; }
+        .stat-val { font-size: 1.5rem; font-weight: bold; color: #fff; display: block; }
+        .stat-lbl { font-size: 0.6rem; color: #666; margin-top: 5px; }
         .secondary-btn { background: transparent; border: 2px solid var(--accent-color); color: var(--accent-color); width: 100%; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 10px; max-width: 400px; }
 
-        /* --- OYUN EKRANI --- */
-        .timer-container { text-align: center; margin-bottom: 5px; }
-        #timer { font-size: 3rem; font-weight: 900; color: var(--accent-color); text-shadow: 0 0 20px var(--glow-color); font-variant-numeric: tabular-nums; }
+        #start-screen { display: none; width: 100%; }
+        #game-screen, #result-screen { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: center; align-items: center;}
         
-        .target-box { background: rgba(255,255,255,0.05); border: 1px dashed #444; border-radius: 12px; padding: 15px; min-height: 70px; display: flex; align-items: center; justify-content: center; text-align: center; margin-bottom: 10px; width: 100%; max-width: 450px;}
-        .target-text { font-size: 1.1rem; color: #fff; font-weight: 600; line-height: 1.3; }
-        
-        .input-box { font-size: 1.3rem; color: var(--accent-color); border-bottom: 2px solid #333; min-height: 35px; margin: 10px 0; text-align: center; white-space: pre; width: 100%; max-width: 450px; }
-        
-        .keyboard { display: flex; flex-direction: column; width: 100%; max-width: 450px; padding: 5px 0; gap: 5px; }
-        .row { display: flex; justify-content: center; width: 100%; gap: 3px; }
-        .key { background: var(--key-bg); color: #fff; height: 44px; border-radius: 5px; display: flex; align-items: center; justify-content: center; flex: 1; cursor: pointer; }
-        .key span { opacity: 0; } .key.special span, .key.enter span { opacity: 1; }
-        .key:active, .key.active-key { background: #555; transform: scale(0.95); }
-        .key.enter { flex: 2; background: var(--accent-color); color: #000; font-weight: bold; }
-        .key.space { flex: 5; font-size: 0.8rem; }
-        .row.staggered { padding: 0 10px; }
-
-        /* --- SONUÇ EKRANI --- */
+        /* Result Capture Area Fix */
         #result-capture-area {
             width: 100%; 
-            max-width: 380px; 
+            max-width: 400px; 
             padding: 20px; 
             background: #050505; 
             text-align: center; 
             border: 1px solid #333; 
             border-radius: 15px;
+            position: relative;
+            overflow: hidden;
             margin: 0 auto;
         }
-        .roast-box { background: #111; border: 1px solid var(--accent-color); color: #fff; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-style: italic; font-size: 0.9rem; line-height: 1.4; box-shadow: 0 0 10px var(--glow-color); }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px; }
-        .stat-card { background: #151515; padding: 8px; border-radius: 8px; text-align: center; }
-        .stat-val { font-size: 1.2rem; font-weight: bold; color: #fff; display: block; }
-        .stat-lbl { font-size: 0.6rem; color: #666; margin-top: 2px; }
-
-        /* Sallanma Animasyonu */
-        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } 100% { transform: translateX(0); } }
-        .shake-screen { animation: shake 0.3s; }
-        .error-glow { text-shadow: 0 0 15px #ff0000 !important; color: #ff5555 !important; }
-
-        #start-screen { display: none; width: 100%; }
-        #game-screen, #result-screen { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: center; align-items: center;}
     </style>
 </head>
 <body class="theme-easy">
@@ -144,32 +152,43 @@
         <!-- START SCREEN -->
         <div id="start-screen">
             <div class="start-layout">
-                <div class="logo-area">
-                    <span class="ghost-icon">👻</span>
-                    <h1>GHOST<br><span>KEYBOARD</span></h1>
-                </div>
-                
-                <div class="tutorial-box">
-                    <div>👀 Read. ⌨️ Type blindly. 🧠 Muscle memory.</div>
-                </div>
-
-                <div style="width:100%; max-width: 350px;">
+                <div class="left-panel">
+                    <div class="logo-area">
+                        <span class="ghost-icon">👻</span>
+                        <h1>GHOST<br><span>KEYBOARD</span></h1>
+                    </div>
+                    <div class="tutorial-box">
+                        <div class="tut-item"><span class="tut-icon">👀</span><span>Read the phrase.</span></div>
+                        <div class="tut-item"><span class="tut-icon">⌨️</span><span>Type blindly (Invisible Keys).</span></div>
+                        <div class="tut-item"><span class="tut-icon">🧠</span><span>Trust your muscle memory.</span></div>
+                    </div>
                     <input type="text" id="username-input" class="name-input" placeholder="ENTER USERNAME" maxlength="12" onchange="saveUsername(this.value)">
-                    
-                    <div class="btn-row" id="diff-row">
-                        <div class="mode-btn active" onclick="setDiff('easy', this)">NOOB</div>
-                        <div class="mode-btn" onclick="setDiff('normal', this)">PRO</div>
-                        <div class="mode-btn" onclick="setDiff('hard', this)">HACKER</div>
+                    <div style="width:100%">
+                        <div class="btn-row" id="diff-row">
+                            <div class="mode-btn active" onclick="setDiff('easy', this)">NOOB</div>
+                            <div class="mode-btn" onclick="setDiff('normal', this)">PRO</div>
+                            <div class="mode-btn" onclick="setDiff('hard', this)">HACKER</div>
+                        </div>
+                        <div class="btn-row" id="lang-row">
+                            <div class="mode-btn" onclick="setLang('en', this)">ENG 🇺🇸</div>
+                            <div class="mode-btn active" onclick="setLang('tr', this)">TUR 🇹🇷</div>
+                        </div>
+                        <button class="main-btn" onclick="startGame()">START GAME</button>
                     </div>
-                    <div class="btn-row" id="lang-row">
-                        <div class="mode-btn" onclick="setLang('en', this)">ENG 🇺🇸</div>
-                        <div class="mode-btn active" onclick="setLang('tr', this)">TUR 🇹🇷</div>
-                    </div>
-                    
-                    <button class="main-btn" onclick="startGame()">START GAME</button>
-                    
-                    <div style="margin-top:20px; text-align:center; font-size:0.8rem; color:#444;">
-                        TOP HACKER: <span id="top-hacker">Loading...</span>
+                </div>
+                <!-- RESTORED LEADERBOARD PANEL -->
+                <div class="right-panel">
+                    <div class="leaderboard-wrapper">
+                        <div class="lb-header">
+                            <div class="lb-title">🏆 TOP HACKERS</div>
+                            <div class="countdown-box">
+                                <span>RESET:</span>
+                                <span id="daily-timer">00:00:00</span>
+                            </div>
+                        </div>
+                        <div id="lb-content">
+                            <div class="lb-loading">Connecting to Database...</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -179,70 +198,58 @@
         <div id="game-screen">
             <div class="timer-container">
                 <div id="timer">0.0</div>
+                <span class="timer-label">SECONDS</span>
             </div>
-            <div class="target-box"><span class="target-text" id="target-text">...</span></div>
-            <div class="input-box" id="input-box-area"><span id="user-input"></span><span style="animation:blink 1s infinite">|</span></div>
+            <div class="target-box"><span class="target-text" id="target-text">Loading...</span></div>
+            <div class="input-box" id="input-box-area"><span id="user-input"></span><div class="cursor"></div></div>
             <div class="keyboard" id="kb-container"></div>
         </div>
 
         <!-- RESULT SCREEN -->
         <div id="result-screen">
             <div id="result-capture-area">
-                <h2 style="color:#fff; margin:0 0 10px 0; text-shadow: 0 0 10px rgba(255,255,255,0.5); font-family: 'Courier New', monospace;">GAME OVER</h2>
-                
+                <h2 style="color:#fff; margin-bottom:10px; text-shadow: 0 0 10px rgba(255,255,255,0.5); font-family: 'Courier New', monospace;">GAME OVER</h2>
                 <div class="roast-box" id="roast-msg">...</div>
-                
                 <div style="margin-bottom:15px;">
                     <span style="font-size:3rem; font-weight:900; color:var(--accent-color); display:block;" id="res-score">0</span>
-                    <span style="font-size:0.7rem; color:#666; letter-spacing:2px;">TOTAL SCORE</span>
+                    <span style="font-size:0.8rem; color:#666; letter-spacing:2px;">TOTAL SCORE</span>
                 </div>
-                
                 <div class="stats-grid">
                     <div class="stat-card"><span class="stat-val" id="res-wpm">0</span><span class="stat-lbl">WPM</span></div>
                     <div class="stat-card"><span class="stat-val" id="res-acc">0%</span><span class="stat-lbl">ACC</span></div>
                     <div class="stat-card"><span class="stat-val" id="res-time">0s</span><span class="stat-lbl">TIME</span></div>
                 </div>
-                
-                <div style="font-size:0.8rem; color:#888;">
-                    HACKER: <span id="res-player" style="color:#fff;"></span>
+                <div style="margin-top:10px; font-size:0.9rem; color:#888; font-family:monospace;">
+                    HACKER: <span id="res-player" style="color:#fff; font-weight:bold;"></span>
                 </div>
-                <div style="font-size:0.6rem; color:#444; margin-top:5px;">ghostkeyboard.net</div>
+                <div style="font-size:0.7rem; color:#444; margin-top:5px;">ghostkeyboard.net</div>
             </div>
-            
-            <div style="width:100%; max-width:380px; margin-top:15px;">
-                <button class="main-btn" onclick="resetGame()">AGAIN</button>
+            <div style="width:100%; max-width:400px; margin-top:10px;">
+                <button class="main-btn" onclick="resetGame()">TRY AGAIN</button>
                 <button class="secondary-btn" id="share-btn" onclick="shareScreenshot()">📸 SHARE RESULT</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- CONFIG ---
+        // --- SUPABASE CONFIG ---
         const SUPABASE_URL = 'https://dhqegitqiarogxivzcyv.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRocWVnaXRxaWFyb2d4aXZ6Y3l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5NzAwMzMsImV4cCI6MjA3OTU0NjAzM30.qnBHT5grVgmoMk1yCQA2_R8J-Q5MBXW3W05bXRS7Xoc';
+        
         let supabase;
-        try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e){}
-
-        // --- DATA ---
-        const phrases = {
-            en: {
-                easy: ["linux", "sudo", "code", "joker", "bond", "nasa", "tesla", "mars", "apple", "swift", "react", "node", "java", "ruby", "perl", "bash", "root", "user", "data", "byte", "file", "disk", "hack", "wifi", "grid", "neon", "flux", "core", "bios", "cmos"],
-                normal: ["hello world", "winter is coming", "show me the money", "just do it", "control is an illusion", "there is no spoon", "access denied", "system failure", "buffer overflow", "blue screen of death", "fatal error", "stack trace", "brute force", "neural network", "machine learning", "quantum computing", "artificial intelligence","Her şey aşk için", "bizde aileye yamuk olmaz", "Ben aslında yoğumm"],
-                hard: ["sudo rm -rf /", "console.log('Error');", "404: Page not found.", "Houston, we have a problem.", "DROP TABLE users;", "alert('XSS Attack');", "while(true){fork();}", "git commit -m 'fix bug'", "docker-compose up -d", "kubectl get pods","Ay bu küçük, narin, hassas ve orantılı kulaklarım neler duyuyor", "Ne kadar da inanarak boş konuşuyor"]
-            },
-            tr: {
-                easy: ["yazilim", "kod", "kaos", "simit", "kedi", "ezel", "ramiz", "uzay", "vatan", "millet", "veri", "fare", "ekran", "kasa", "modem", "kablo", "dosya", "klasor", "sifre", "hakim", "savci", "polis", "radar", "pilot", "robot", "siber", "bulut", "sunucu", "linux", "sudo", "code", "joker", "bond", "nasa", "tesla", "mars", "apple", "swift", "react", "node", "java", "ruby", "perl", "bash", "root", "user", "data", "byte", "file", "disk", "hack", "wifi", "grid", "neon", "flux", "core", "bios", "cmos"],
-                normal: ["kod calisiyor elleme", "o gemi bir gun gelecek", "mesele olmek degil", "burasi karisacak", "sisteme giris yapildi", "baglanti koptu", "guvenlik duvari", "veri tabani hatasi", "mavi ekran verdi", "format atmak lazim", "klavye delikanlisi", "yasasin irkimiz", "bir gece ansizin", "hello world", "winter is coming", "show me the money", "just do it", "control is an illusion", "there is no spoon", "access denied", "system failure", "buffer overflow", "blue screen of death", "fatal error", "stack trace", "brute force", "neural network", "machine learning", "quantum computing", "artificial intelligence", "Her şey aşk için", "biz de aileye yamuk olmaz", "Ben aslında yoğumm"],
-                hard: ["Noktali virgul nerede;", "SELECT * FROM dertler;", "Abi bana site yapsana?", "404 Sayfa Bulunamadi.", "sudo apt-get update", "console.log('Selam');", "if(money < 0) panic();", "git push origin master", "npm install dertler", "Bugün de başkası adına utandık", "kubectl get pods", "sudo rm -rf /", "console.log('Error');", "404: Page not found.", "Houston, we have a problem.", "DROP TABLE users;", "alert('XSS Attack');", "while(true){fork();}", "git commit -m 'fix bug'", "docker-compose up -d", "Ay bu küçük, narin, hassas ve orantılı kulaklarım neler duyuyor", "Ne kadar da inanarak boş konuşuyor"]
+        try {
+            if (typeof window.supabase !== 'undefined') {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             }
-        };
+        } catch(e) { console.error("Supabase Error:", e); }
 
-        // --- STATE & AUDIO ---
+        // --- STATE ---
         const config = { diff: 'easy', lang: 'tr', backspace: true };
         let state = { active: false, target: "", input: "", start: 0, timer: null };
         let username = "";
         let audioCtx = null;
 
+        /* --- AUDIO FIX (MOBILE) --- */
         function initAudio() {
             if (!audioCtx) {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -251,38 +258,48 @@
             if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
         }
 
-        function playClick(isEnter = false) {
-            if(!audioCtx) return;
-            try {
-                const t = audioCtx.currentTime;
-                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-                osc.frequency.setValueAtTime(isEnter ? 600 : 800, t);
-                osc.frequency.exponentialRampToValueAtTime(100, t + 0.05);
-                gain.gain.setValueAtTime(0.1, t); gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-                osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(t + 0.05);
-            } catch(e) {}
-        }
-
-        window.onload = () => {
-            const saved = localStorage.getItem('ghostUsername');
-            if(saved) username = sanitizeUsername(saved);
-            document.getElementById('start-screen').style.display = 'block';
-            getTopScore();
+        /* --- NEW WORD POOLS --- */
+        const phrases = {
+            en: { 
+                easy: ["linux", "sudo", "code", "joker", "bond", "nasa", "tesla", "mars", "apple", "swift", "react", "node", "java", "ruby", "perl", "bash", "root", "user", "data", "byte", "file", "disk", "hack", "wifi", "grid", "neon", "flux", "core", "bios", "cmos"],
+                normal: ["hello world", "winter is coming", "show me the money", "just do it", "control is an illusion", "there is no spoon", "access denied", "system failure", "buffer overflow", "blue screen of death", "fatal error", "stack trace", "brute force", "neural network", "machine learning", "quantum computing", "artificial intelligence","Her şey aşk için", "bizde aileye yamuk olmaz", "Ben aslında yoğumm"], 
+                hard: ["sudo rm -rf /", "console.log('Error');", "404: Page not found.", "Houston, we have a problem.", "DROP TABLE users;", "alert('XSS Attack');", "while(true){fork();}", "git commit -m 'fix bug'", "docker-compose up -d", "kubectl get pods","Ay bu küçük, narin, hassas ve orantılı kulaklarım neler duyuyor", "Ne kadar da inanarak boş konuşuyor"] 
+            },
+            tr: { 
+                easy: ["yazilim", "kod", "kaos", "simit", "kedi", "ezel", "ramiz", "uzay", "vatan", "millet", "veri", "fare", "ekran", "kasa", "modem", "kablo", "dosya", "klasor", "sifre", "hakim", "savci", "polis", "radar", "pilot", "robot", "siber", "bulut", "sunucu", "linux", "sudo", "code", "joker", "bond", "nasa", "tesla", "mars", "apple", "swift", "react", "node", "java", "ruby", "perl", "bash", "root", "user", "data", "byte", "file", "disk", "hack", "wifi", "grid", "neon", "flux", "core", "bios", "cmos"], 
+                normal: ["kod calisiyor elleme", "o gemi bir gun gelecek", "mesele olmek degil", "burasi karisacak", "sisteme giris yapildi", "baglanti koptu", "guvenlik duvari", "veri tabani hatasi", "mavi ekran verdi", "format atmak lazim", "klavye delikanlisi", "yasasin irkimiz", "bir gece ansizin", "hello world", "winter is coming", "show me the money", "just do it", "control is an illusion", "there is no spoon", "access denied", "system failure", "buffer overflow", "blue screen of death", "fatal error", "stack trace", "brute force", "neural network", "machine learning", "quantum computing", "artificial intelligence", "Her şey aşk için", "biz de aileye yamuk olmaz", "Ben aslında yoğumm"], 
+                hard: ["Noktali virgul nerede;", "SELECT * FROM dertler;", "Abi bana site yapsana?", "404 Sayfa Bulunamadi.", "sudo apt-get update", "console.log('Selam');", "if(money < 0) panic();", "git push origin master", "npm install dertler", "Bugün de başkası adına utandık", "kubectl get pods", "sudo rm -rf /", "console.log('Error');", "404: Page not found.", "Houston, we have a problem.", "DROP TABLE users;", "alert('XSS Attack');", "while(true){fork();}", "git commit -m 'fix bug'", "docker-compose up -d", "Ay bu küçük, narin, hassas ve orantılı kulaklarım neler duyuyor", "Ne kadar da inanarak boş konuşuyor"] 
+            }
         };
 
-        async function getTopScore() {
-            if(!supabase) return;
-            const { data } = await supabase.from('scores').select('username, score').order('score', {ascending:false}).limit(1);
-            if(data && data[0]) document.getElementById('top-hacker').textContent = `${data[0].username} (${data[0].score})`;
-        }
+        /* --- INITIALIZATION --- */
+        window.onload = () => {
+            try {
+                const savedName = localStorage.getItem('ghostUsername');
+                if(savedName) {
+                    username = sanitizeUsername(savedName); 
+                }
+                if(supabase) {
+                    fetchLeaderboard();
+                    setupRealtimeSubscription();
+                }
+                startCountdown(); 
+                document.getElementById('start-screen').style.display = 'block';
+                try { initKeyboard(); } catch(e) {}
+            } catch (e) {
+                document.getElementById('start-screen').style.display = 'block';
+            }
+        };
 
-        // --- GAME LOGIC ---
+        // --- GAMEPLAY ---
         function startGame() {
-            initAudio(); // MOBİLDE SES İÇİN KRİTİK
-
+            initAudio(); // MOBILE FIX: Start Audio Context on user click
+            
             const inputEl = document.getElementById('username-input');
             username = sanitizeUsername(inputEl.value);
-            if(!username || username.length < 2) { alert("Enter a valid username!"); inputEl.focus(); return; }
+            if(!username || username.length < 2) {
+                alert("Enter a valid username (min 2 characters)!"); inputEl.focus(); return;
+            }
             saveUsername(username);
             playClick();
 
@@ -297,6 +314,7 @@
             initKeyboard();
             document.getElementById('target-text').textContent = state.target;
             document.getElementById('user-input').textContent = "";
+            document.getElementById('user-input').className = "";
             
             if(state.timer) clearInterval(state.timer);
             state.timer = setInterval(() => {
@@ -321,11 +339,19 @@
             document.getElementById('res-score').textContent = finalScore;
             document.getElementById('res-wpm').textContent = wpm;
             document.getElementById('res-acc').textContent = acc + "%";
-            document.getElementById('res-time').textContent = timeTaken.toFixed(1) + "s";
+            document.getElementById('res-time').textContent = timeTaken.toFixed(2) + "s";
             document.getElementById('roast-msg').textContent = getRoast(acc, wpm);
             document.getElementById('res-player').textContent = username;
         }
 
+        function resetGame() {
+            if(supabase) fetchLeaderboard();
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'block';
+            document.getElementById('username-input').value = username;
+        }
+
+        // --- INPUT HANDLING ---
         function handle(char, el) {
             if(!state.active) return;
             if(navigator.vibrate) navigator.vibrate(5);
@@ -339,21 +365,75 @@
                 let expected = config.diff !== 'hard' ? (state.target[idx] || "").toLowerCase() : (state.target[idx] || "");
                 let inputChar = config.diff !== 'hard' ? char.toLowerCase() : char;
                 
-                if (expected && inputChar !== expected) {
-                    document.body.classList.add('shake-screen');
-                    document.getElementById('input-box-area').classList.add('error-glow');
-                    setTimeout(() => {
-                        document.body.classList.remove('shake-screen');
-                        document.getElementById('input-box-area').classList.remove('error-glow');
-                    }, 300);
-                } else {
-                    playClick();
-                }
+                if (expected && inputChar !== expected) triggerShake();
+                else playClick();
             }
             document.getElementById('user-input').textContent = state.input;
         }
 
-        // --- NEW ROAST LOGIC ---
+        function initKeyboard() {
+            const c = document.getElementById('kb-container'); if(!c) return; c.innerHTML = '';
+            let r = config.lang === 'tr' ? ["qwertyuıopğü", "asdfghjklşi", "zxcvbnmöç"] : ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
+            const makeRow = (chars) => {
+                let div = document.createElement('div'); div.className='row';
+                chars.split('').forEach(ch => {
+                    let k = document.createElement('div'); k.className='key'; k.innerHTML=`<span>${ch.toUpperCase()}</span>`;
+                    const h = (e)=>{e.preventDefault(); handle(ch, k)}; k.ontouchstart=h; k.onmousedown=h; div.appendChild(k);
+                }); return div;
+            };
+            c.appendChild(makeRow(r[0]));
+            let r2 = makeRow(r[1]); r2.classList.add('staggered'); c.appendChild(r2);
+            let r3 = document.createElement('div'); r3.className='row';
+            let sh = document.createElement('div'); sh.className='key special'; sh.innerHTML='<span>⇧</span>'; r3.appendChild(sh);
+            r[2].split('').forEach(ch => {
+                let k = document.createElement('div'); k.className='key'; k.innerHTML=`<span>${ch.toUpperCase()}</span>`;
+                const h = (e)=>{e.preventDefault(); handle(ch, k)}; k.ontouchstart=h; k.onmousedown=h; r3.appendChild(k);
+            });
+            let bk = document.createElement('div'); bk.className='key special'; bk.innerHTML=config.backspace?'<span>⌫</span>':'<span>🔒</span>';
+            const bh = (e)=>{e.preventDefault(); if(config.backspace) handle('BACKSPACE', bk)}; bk.ontouchstart=bh; bk.onmousedown=bh; r3.appendChild(bk);
+            c.appendChild(r3);
+            let r4 = document.createElement('div'); r4.className='row';
+            let k123 = document.createElement('div'); k123.className='key special'; k123.innerHTML='<span>123</span>'; r4.appendChild(k123);
+            let kemj = document.createElement('div'); kemj.className='key special'; kemj.innerHTML='<span>😀</span>'; r4.appendChild(kemj);
+            let spc = document.createElement('div'); spc.className='key space'; spc.innerHTML='<span>space</span>';
+            const sh2 = (e)=>{e.preventDefault(); handle(' ', spc)}; spc.ontouchstart=sh2; spc.onmousedown=sh2; r4.appendChild(spc);
+            let ent = document.createElement('div'); ent.className='key enter'; ent.innerHTML='<span>GO</span>';
+            const eh = (e)=>{e.preventDefault(); finish(); playClick(true);}; ent.ontouchstart=eh; ent.onmousedown=eh; r4.appendChild(ent);
+            c.appendChild(r4);
+        }
+
+        // --- UTILS ---
+        function playClick(isEnter = false) {
+            if(!audioCtx) return;
+            try {
+                const t = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.frequency.setValueAtTime(isEnter ? 600 : 800, t);
+                osc.frequency.exponentialRampToValueAtTime(100, t + 0.05);
+                gain.gain.setValueAtTime(0.3, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
+                osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(t + 0.05);
+            } catch(e) {}
+        }
+
+        function triggerShake() {
+            document.body.classList.add('shake-screen');
+            document.getElementById('input-box-area').classList.add('error-glow');
+            if(audioCtx && audioCtx.state === 'running') {
+                try {
+                    const t = audioCtx.currentTime;
+                    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, t);
+                    gain.gain.setValueAtTime(0.1, t);
+                    osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(t + 0.1);
+                } catch(e){}
+            }
+            setTimeout(() => {
+                document.body.classList.remove('shake-screen');
+                document.getElementById('input-box-area').classList.remove('error-glow');
+            }, 300);
+        }
+
+        /* --- NEW ROAST LOGIC --- */
         function getRoast(acc, wpm) {
             const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
             if (wpm === 0) return "AFK? Did you fall asleep? 💤";
@@ -394,77 +474,10 @@
             return "Emotional Damage. 💔 (Try again)";
         }
 
-        // --- MOBILE SHARE LOGIC (FIXED) ---
-        async function shareScreenshot() {
-            const btn = document.getElementById('share-btn');
-            const originalText = "📸 SHARE RESULT";
-            btn.textContent = "⏳ Processing..."; btn.disabled = true;
-
-            const resultArea = document.getElementById('result-capture-area');
-
-            try {
-                const canvas = await html2canvas(resultArea, { backgroundColor: '#050505', scale: 2, logging: false, useCORS: true, allowTaint: true });
-                canvas.toBlob(async (blob) => {
-                    if (!blob) { alert("Error generating image."); resetBtn(); return; }
-                    
-                    const file = new File([blob], "ghost_score.png", { type: "image/png" });
-                    const shareData = { title: 'Ghost Keyboard', text: `I scored ${document.getElementById('res-score').textContent} on Ghost Keyboard! 👻`, files: [file] };
-
-                    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-                        try { await navigator.share(shareData); btn.textContent = "✅ Shared!"; } 
-                        catch (err) { if (err.name !== 'AbortError') downloadImage(canvas); }
-                    } else {
-                        downloadImage(canvas);
-                    }
-                    resetBtn();
-                }, 'image/png');
-            } catch (e) { console.error(e); alert("Failed to capture."); resetBtn(); }
-
-            function resetBtn() { setTimeout(() => { btn.textContent = originalText; btn.disabled = false; }, 2000); }
-            function downloadImage(cnv) {
-                const link = document.createElement('a'); link.download = `ghost_score_${Date.now()}.png`; link.href = cnv.toDataURL();
-                document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                btn.textContent = "⬇️ Downloaded";
-            }
-        }
-
-        // --- KEYBOARD BUILDER ---
-        function initKeyboard() {
-            const c = document.getElementById('kb-container'); if(!c) return; c.innerHTML = '';
-            let r = config.lang === 'tr' ? ["qwertyuıopğü", "asdfghjklşi", "zxcvbnmöç"] : ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
-            
-            const makeRow = (chars) => {
-                let div = document.createElement('div'); div.className='row';
-                chars.split('').forEach(ch => {
-                    let k = document.createElement('div'); k.className='key'; k.innerHTML=`<span>${ch.toUpperCase()}</span>`;
-                    const h = (e)=>{e.preventDefault(); handle(ch, k)}; k.ontouchstart=h; k.onmousedown=h; div.appendChild(k);
-                }); return div;
-            };
-            c.appendChild(makeRow(r[0]));
-            let r2 = makeRow(r[1]); r2.classList.add('staggered'); c.appendChild(r2);
-            
-            let r3 = document.createElement('div'); r3.className='row';
-            let sh = document.createElement('div'); sh.className='key special'; sh.innerHTML='<span>⇧</span>'; r3.appendChild(sh);
-            r[2].split('').forEach(ch => {
-                let k = document.createElement('div'); k.className='key'; k.innerHTML=`<span>${ch.toUpperCase()}</span>`;
-                const h = (e)=>{e.preventDefault(); handle(ch, k)}; k.ontouchstart=h; k.onmousedown=h; r3.appendChild(k);
-            });
-            let bk = document.createElement('div'); bk.className='key special'; bk.innerHTML=config.backspace?'<span>⌫</span>':'<span>🔒</span>';
-            const bh = (e)=>{e.preventDefault(); if(config.backspace) handle('BACKSPACE', bk)}; bk.ontouchstart=bh; bk.onmousedown=bh; r3.appendChild(bk);
-            c.appendChild(r3);
-
-            let r4 = document.createElement('div'); r4.className='row';
-            let k123 = document.createElement('div'); k123.className='key special'; k123.innerHTML='<span>123</span>'; r4.appendChild(k123);
-            let spc = document.createElement('div'); spc.className='key space'; spc.innerHTML='<span>space</span>';
-            const sh2 = (e)=>{e.preventDefault(); handle(' ', spc)}; spc.ontouchstart=sh2; spc.onmousedown=sh2; r4.appendChild(spc);
-            let ent = document.createElement('div'); ent.className='key enter'; ent.innerHTML='<span>GO</span>';
-            const eh = (e)=>{e.preventDefault(); finish(); playClick(true);}; ent.ontouchstart=eh; ent.onmousedown=eh; r4.appendChild(ent);
-            c.appendChild(r4);
-        }
-
-        // --- UTILS ---
         function sanitizeUsername(v) { return v ? v.trim().replace(/[<>'"&]/g, '').substring(0,12) : ''; }
         function saveUsername(v) { username = sanitizeUsername(v); localStorage.setItem('ghostUsername', username); }
+        function validateNumber(v, min, max) { return !isNaN(parseFloat(v)) && v >= min && v <= max; }
+        function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
         function calcAcc(a,b) {
             if (config.diff !== 'hard') { a = a.toLowerCase(); b = b.toLowerCase(); }
             let m=0, len = Math.max(a.length, b.length); if(len===0)return 0;
@@ -472,10 +485,132 @@
         }
         function setDiff(val, btn) { config.diff = val; config.backspace = val !== 'hard'; document.querySelectorAll('#diff-row .mode-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); document.body.className = ''; document.body.classList.add('theme-' + val); playClick(); }
         function setLang(val, btn) { config.lang = val; document.querySelectorAll('#lang-row .mode-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); playClick(); }
-        function resetGame() { document.getElementById('result-screen').style.display = 'none'; document.getElementById('start-screen').style.display = 'block'; document.getElementById('username-input').value = username; }
+
+        /* --- BACKEND --- */
+        async function fetchLeaderboard() {
+            if (!supabase) return;
+            const container = document.getElementById('lb-content');
+            const today = new Date(); today.setHours(0,0,0,0);
+            try {
+                const { data } = await supabase.from('scores').select('*').gte('created_at', today.toISOString()).order('score', {ascending:false}).limit(10);
+                container.innerHTML = '';
+                if(!data || data.length===0) container.innerHTML = '<div class="lb-loading">New day, new chance!</div>';
+                else {
+                    let rank = 1;
+                    data.forEach(item => {
+                        const row = document.createElement('div');
+                        row.className = 'lb-row' + (item.username===username ? ' highlight' : '');
+                        row.innerHTML = `<span class="lb-rank">#${rank++}</span><span class="lb-name">${escapeHtml(item.username)}</span><span class="lb-score">${item.score}</span>`;
+                        container.appendChild(row);
+                    });
+                }
+            } catch(e) { console.log("LB Error", e); }
+        }
+
+        function setupRealtimeSubscription() {
+            if(!supabase) return;
+            supabase.channel('public:scores').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'scores' }, fetchLeaderboard).subscribe();
+        }
+
         async function saveScoreToCloud(score, wpm, acc, time) {
             if (!supabase || wpm > 350 || acc > 100) return;
-            await supabase.rpc('submit_score_secure', { p_username: username, p_score: Math.floor(score), p_wpm: Math.floor(wpm), p_accuracy: Math.floor(acc), p_time_taken: time });
+            try {
+                await supabase.rpc('submit_score_secure', { p_username: username, p_score: Math.floor(score), p_wpm: Math.floor(wpm), p_accuracy: Math.floor(acc), p_time_taken: time });
+                fetchLeaderboard();
+            } catch(e) { console.error("Save Error", e); }
+        }
+
+        function startCountdown() {
+            setInterval(() => {
+                const now = new Date(); const tmr = new Date(now); tmr.setHours(24,0,0,0);
+                const diff = tmr - now;
+                const h = Math.floor((diff / 3600000) % 24), m = Math.floor((diff / 60000) % 60), s = Math.floor((diff / 1000) % 60);
+                const el = document.getElementById('daily-timer');
+                if(el) el.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            }, 1000);
+        }
+
+        /* --- SHARE FUNCTION (MOBILE FIX) --- */
+        async function shareScreenshot() {
+            const btn = document.getElementById('share-btn');
+            const originalText = "📸 SHARE RESULT";
+            
+            // Kullanıcıya işlem yapıldığını göster
+            btn.textContent = "⏳ Oluşturuluyor...";
+            btn.disabled = true;
+
+            const resultArea = document.getElementById('result-capture-area');
+
+            try {
+                // 1. Görüntüyü Al
+                const canvas = await html2canvas(resultArea, {
+                    backgroundColor: '#050505',
+                    scale: 2, // Retina ekranlar için netlik
+                    logging: false,
+                    useCORS: true,
+                    allowTaint: true
+                });
+
+                // 2. Blob'a çevir
+                canvas.toBlob(async (blob) => {
+                    if (!blob) {
+                        alert("Görüntü oluşturulamadı :(");
+                        resetBtn();
+                        return;
+                    }
+
+                    // Dosya nesnesi oluştur
+                    const file = new File([blob], "ghost_score.png", { type: "image/png" });
+                    
+                    // Paylaşılacak veri
+                    const shareData = {
+                        title: 'Ghost Keyboard',
+                        text: `Skorum: ${document.getElementById('res-score').textContent} puan! 👻`,
+                        files: [file]
+                    };
+
+                    // 3. Mobil Paylaşım Menüsünü Aç
+                    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                        try {
+                            await navigator.share(shareData);
+                            btn.textContent = "✅ Paylaşıldı!";
+                        } catch (err) {
+                            // Kullanıcı menüyü kapatırsa hata vermesin
+                            if (err.name !== 'AbortError') {
+                                console.error("Paylaşım hatası:", err);
+                                downloadImage(canvas);
+                            }
+                        }
+                    } else {
+                        // PC veya desteklemeyen tarayıcılar için direkt indir
+                        downloadImage(canvas);
+                    }
+                    
+                    resetBtn();
+                }, 'image/png');
+
+            } catch (e) {
+                console.error("Hata:", e);
+                alert("Bir hata oluştu.");
+                resetBtn();
+            }
+
+            function resetBtn() {
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            }
+
+            function downloadImage(cnv) {
+                const link = document.createElement('a');
+                link.download = `ghost_score_${Date.now()}.png`;
+                link.href = cnv.toDataURL();
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                btn.textContent = "⬇️ İndirildi";
+            }
         }
     </script>
 </body>
