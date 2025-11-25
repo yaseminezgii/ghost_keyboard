@@ -6,7 +6,7 @@
     <title>Ghost Keyboard v2.0</title>
     
     <!-- Screenshot Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -255,19 +255,19 @@
             if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
         }
 
-        /* --- WORD POOLS (FULL & FUNNY VERSION) --- */
- const phrases = {
-        en: { 
-            easy: ["linux", "sudo", "code", "joker", "bond", "nasa", "tesla", "mars", "apple", "swift", "react", "node", "java", "ruby", "perl", "bash", "root", "user", "data", "byte", "file", "disk", "hack", "wifi", "grid", "neon", "flux", "core", "bios", "cmos"],
-            normal: ["hello world", "winter is coming", "show me the money", "just do it", "control is an illusion", "there is no spoon", "access denied", "system failure", "buffer overflow", "blue screen of death", "fatal error", "stack trace", "brute force", "neural network", "machine learning", "quantum computing", "artificial intelligence","Her şey aşk için", "bizde aileye yamuk olmaz", "Ben aslında yoğumm"], 
-            hard: ["sudo rm -rf /", "console.log('Error');", "404: Page not found.", "Houston, we have a problem.", "DROP TABLE users;", "alert('XSS Attack');", "while(true){fork();}", "git commit -m 'fix bug'", "docker-compose up -d", "kubectl get pods","Ay bu küçük, narin, hassas ve orantılı kulaklarım neler duyuyor", "Ne kadar da inanarak boş konuşuyor"] 
-        },
-        tr: { 
-            easy: ["yazilim", "kod", "kaos", "simit", "kedi", "ezel", "ramiz", "uzay", "vatan", "millet", "veri", "fare", "ekran", "kasa", "modem", "kablo", "dosya", "klasor", "sifre", "hakim", "savci", "polis", "radar", "pilot", "robot", "siber", "bulut", "sunucu", "linux", "sudo", "code", "joker", "bond", "nasa", "tesla", "mars", "apple", "swift", "react", "node", "java", "ruby", "perl", "bash", "root", "user", "data", "byte", "file", "disk", "hack", "wifi", "grid", "neon", "flux", "core", "bios", "cmos"], 
-            normal: ["kod calisiyor elleme", "o gemi bir gun gelecek", "mesele olmek degil", "burasi karisacak", "sisteme giris yapildi", "baglanti koptu", "guvenlik duvari", "veri tabani hatasi", "mavi ekran verdi", "format atmak lazim", "klavye delikanlisi", "yasasin irkimiz", "bir gece ansizin", "hello world", "winter is coming", "show me the money", "just do it", "control is an illusion", "there is no spoon", "access denied", "system failure", "buffer overflow", "blue screen of death", "fatal error", "stack trace", "brute force", "neural network", "machine learning", "quantum computing", "artificial intelligence", "Her şey aşk için", "biz de aileye yamuk olmaz", "Ben aslında yoğumm"], 
-            hard: ["Noktali virgul nerede;", "SELECT * FROM dertler;", "Abi bana site yapsana?", "404 Sayfa Bulunamadi.", "sudo apt-get update", "console.log('Selam');", "if(money < 0) panic();", "git push origin master", "npm install dertler", "Bugün de başkası adına utandık", "kubectl get pods", "sudo rm -rf /", "console.log('Error');", "404: Page not found.", "Houston, we have a problem.", "DROP TABLE users;", "alert('XSS Attack');", "while(true){fork();}", "git commit -m 'fix bug'", "docker-compose up -d", "Ay bu küçük, narin, hassas ve orantılı kulaklarım neler duyuyor", "Ne kadar da inanarak boş konuşuyor"] 
-        }
-    };
+        /* --- WORD POOLS --- */
+        const phrases = {
+            en: { 
+                easy: ["linux", "sudo", "code", "joker", "bond", "nasa", "tesla", "mars", "apple", "swift", "react", "node", "java", "ruby", "perl", "bash", "root", "user", "data", "byte", "file", "disk", "hack", "wifi", "grid", "neon", "flux", "core", "bios", "cmos"],
+                normal: ["hello world", "winter is coming", "show me the money", "just do it", "control is an illusion", "there is no spoon", "access denied", "system failure", "buffer overflow", "blue screen of death", "fatal error", "stack trace", "brute force", "neural network", "machine learning", "quantum computing", "artificial intelligence","Her şey aşk için", "bizde aileye yamuk olmaz", "Ben aslında yoğumm"], 
+                hard: ["sudo rm -rf /", "console.log('Error');", "404: Page not found.", "Houston, we have a problem.", "DROP TABLE users;", "alert('XSS Attack');", "while(true){fork();}", "git commit -m 'fix bug'", "docker-compose up -d", "kubectl get pods","Ay bu küçük, narin, hassas ve orantılı kulaklarım neler duyuyor", "Ne kadar da inanarak boş konuşuyor"] 
+            },
+            tr: { 
+                easy: ["yazilim", "kod", "kaos", "simit", "kedi", "ezel", "ramiz", "uzay", "vatan", "millet", "veri", "fare", "ekran", "kasa", "modem", "kablo", "dosya", "klasor", "sifre", "hakim", "savci", "polis", "radar", "pilot", "robot", "siber", "bulut", "sunucu", "linux", "sudo", "code", "joker", "bond", "nasa", "tesla", "mars", "apple", "swift", "react", "node", "java", "ruby", "perl", "bash", "root", "user", "data", "byte", "file", "disk", "hack", "wifi", "grid", "neon", "flux", "core", "bios", "cmos"], 
+                normal: ["kod calisiyor elleme", "o gemi bir gun gelecek", "mesele olmek degil", "burasi karisacak", "sisteme giris yapildi", "baglanti koptu", "guvenlik duvari", "veri tabani hatasi", "mavi ekran verdi", "format atmak lazim", "klavye delikanlisi", "yasasin irkimiz", "bir gece ansizin", "hello world", "winter is coming", "show me the money", "just do it", "control is an illusion", "there is no spoon", "access denied", "system failure", "buffer overflow", "blue screen of death", "fatal error", "stack trace", "brute force", "neural network", "machine learning", "quantum computing", "artificial intelligence", "Her şey aşk için", "biz de aileye yamuk olmaz", "Ben aslında yoğumm"], 
+                hard: ["Noktali virgul nerede;", "SELECT * FROM dertler;", "Abi bana site yapsana?", "404 Sayfa Bulunamadi.", "sudo apt-get update", "console.log('Selam');", "if(money < 0) panic();", "git push origin master", "npm install dertler", "Bugün de başkası adına utandık", "kubectl get pods", "sudo rm -rf /", "console.log('Error');", "404: Page not found.", "Houston, we have a problem.", "DROP TABLE users;", "alert('XSS Attack');", "while(true){fork();}", "git commit -m 'fix bug'", "docker-compose up -d", "Ay bu küçük, narin, hassas ve orantılı kulaklarım neler duyuyor", "Ne kadar da inanarak boş konuşuyor"] 
+            }
+        };
 
         /* --- INITIALIZATION --- */
         window.onload = () => {
@@ -429,6 +429,7 @@
             }, 300);
         }
 
+
         /* --- ROAST LOGIC (FULL & FUNNY) --- */
         function getRoast(acc, wpm) {
             const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -478,7 +479,6 @@
 
             return "Emotional Damage. 💔 (Try again)";
         }
-
         function sanitizeUsername(v) { return v ? v.trim().replace(/[<>'"&]/g, '').substring(0,12) : ''; }
         function saveUsername(v) { username = sanitizeUsername(v); localStorage.setItem('ghostUsername', username); }
         function validateNumber(v, min, max) { return !isNaN(parseFloat(v)) && v >= min && v <= max; }
@@ -549,24 +549,20 @@
                     
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                         try { await navigator.share({ title: 'Ghost Keyboard', text: `I scored ${document.getElementById('res-score').textContent} points! 👻`, files: [file] }); btn.textContent = "✅"; } 
-                        catch (err) { downloadImage(canvas); btn.textContent = "💾"; }
+                        catch (err) { 
+                            // Eğer paylaşım iptal edilirse sadece ikonu eski haline getir, İNDİRME YAPMA.
+                            btn.textContent = originalText; 
+                        }
                     } else {
-                        downloadImage(canvas); btn.textContent = "💾";
+                        // Paylaşım desteklenmiyorsa da indirme yapma, sadece hata veya bilgi ver
+                        alert("Sharing not supported on this device.");
+                        btn.textContent = originalText;
                     }
                     setTimeout(() => btn.textContent = originalText, 2000);
                 }, 'image/png');
             } catch (e) { 
                 console.error(e); btn.textContent = "❌"; setTimeout(() => btn.textContent = originalText, 2000); 
             }
-        }
-
-        function downloadImage(canvas) {
-            const link = document.createElement('a');
-            link.download = 'ghost_score.png';
-            link.href = canvas.toDataURL("image/png");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
     </script>
     <div id="input-box-area" class="input-box" style="display:none"></div>
