@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ghost Keyboard v2.5 (Challenge Mode)</title>
+    <title>Ghost Keyboard v2.6 (Auto Reset)</title>
     
     <meta property="og:title" content="Ghost Keyboard Challenge">
     <meta property="og:description" content="Invisible keys. Can you type blindly?">
@@ -321,9 +321,14 @@
             if(!username || username.length<2){ alert("Enter username!"); return;}
             saveUsername(username);
             
-            // --- KELİME SEÇİMİ GÜNCELLENDİ ---
+            // --- GÜNCELLENDİ: Kelimeyi seç ve değişkeni temizle ---
             if (challengeModePhrase) {
                 state.target = challengeModePhrase;
+                // BU SATIR YENİ: Bir kere kullandıktan sonra değişkeni boşaltıyoruz.
+                challengeModePhrase = null; 
+                
+                // URL'yi temizleyerek sayfa yenilendiğinde tekrar challenge gelmesini de engelleyebiliriz (Opsiyonel ama iyi UX)
+                window.history.replaceState({}, document.title, window.location.pathname);
             } else {
                 const pool = phrases[config.lang][config.diff];
                 state.target = pool[Math.floor(Math.random()*pool.length)];
@@ -371,15 +376,8 @@
             else {
                 state.input+=char;
                 let idx = state.input.length-1;
-                // Challenge modunda zorluk seçimi olmadığı için her zaman sıkı kontrol yapmayabiliriz 
-                // ya da varsayılan olarak 'hard' gibi davranabiliriz.
-                // Burada mevcut mantığı koruyoruz:
                 let exp = config.diff!=='hard'?(state.target[idx]||"").toLowerCase():(state.target[idx]||"");
                 let inp = config.diff!=='hard'?char.toLowerCase():char;
-                
-                // Challenge modunda harf duyarlılığını biraz esnetmek istersen burayı düzenleyebilirsin
-                // Şu an config.diff neyse ona göre çalışır. Challenge modda diff değiştirmediğimiz için
-                // varsayılan 'easy' ayarıyla (küçük harf toleranslı) çalışır.
                 
                 if(exp && inp!==exp) {
                     document.body.classList.add('shake-screen');
@@ -397,13 +395,11 @@
             
             // --- PAYLAŞIM URL VE METİN GÜNCELLENDİ ---
             const encodedTarget = encodeURIComponent(state.target);
-            // Mevcut URL'nin sonuna ?c=kelime ekliyoruz (önceki parametreleri temizleyerek)
             const baseUrl = window.location.href.split('?')[0];
             const shareUrl = `${baseUrl}?c=${encodedTarget}`;
             
             const shareData = {
                 title: 'Ghost Keyboard Challenge',
-                // Mesaj metninde kelime görünüyor:
                 text: `👻 Ghost Keyboard\nCan you type: "${state.target}"?\nMy Score: ${score} | WPM: ${wpm}\n\nChallenge Link:`,
                 url: shareUrl
             };
@@ -466,7 +462,33 @@
         function calcAcc(a,b) { if(config.diff!=='hard'){a=a.toLowerCase();b=b.toLowerCase();} let m=0,l=Math.max(a.length,b.length); if(l===0)return 0; for(let i=0;i<l;i++)if(a[i]===b[i])m++; return Math.floor((m/l)*100); }
         function setDiff(v,b) { config.diff=v; config.backspace=v!=='hard'; document.querySelectorAll('#diff-row .mode-btn').forEach(k=>k.classList.remove('active')); b.classList.add('active'); document.body.className='theme-'+v; playClick(); }
         function setLang(v,b) { config.lang=v; document.querySelectorAll('#lang-row .mode-btn').forEach(k=>k.classList.remove('active')); b.classList.add('active'); playClick(); }
-        function resetGame() { if(supabase) fetchLeaderboard(); document.getElementById('result-screen').style.display='none'; document.getElementById('start-screen').style.display='block'; document.getElementById('username-input').value=username; }
+        
+        // --- YENİ RESET GAME FONKSİYONU ---
+        function resetGame() { 
+            if(supabase) fetchLeaderboard(); 
+            document.getElementById('result-screen').style.display='none'; 
+            document.getElementById('start-screen').style.display='block'; 
+            document.getElementById('username-input').value=username; 
+
+            // Eğer challenge modu bittiyse (değişken null ise), normal arayüzü geri getir
+            if (!challengeModePhrase) {
+                document.getElementById('diff-row').style.display = 'flex'; // Butonları göster
+                document.getElementById('lang-row').style.display = 'flex'; // Butonları göster
+                
+                // Başlığı eski haline getir
+                const titleSpan = document.querySelector('.logo-area h1 span');
+                titleSpan.textContent = "KEYBOARD";
+                titleSpan.style.color = "";
+                titleSpan.classList.remove('shake-screen');
+
+                // Tutorial metnini eski haline getir
+                document.querySelector('.tutorial-box').innerHTML = `
+                    <div class="tut-item"><span class="tut-icon">👀</span><span>Read the phrase.</span></div>
+                    <div class="tut-item"><span class="tut-icon">⌨️</span><span>Type blindly (Invisible Keys).</span></div>
+                    <div class="tut-item"><span class="tut-icon">🧠</span><span>Trust your muscle memory.</span></div>`;
+            }
+        }
+        // ----------------------------------
 
         /* --- DB INSERT FIX --- */
         async function fetchLeaderboard() {
