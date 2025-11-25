@@ -1,7 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
+    <!-- GÜVENLİK: Content Security Policy (CSP) -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self'; 
+        script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; 
+        style-src 'self' 'unsafe-inline'; 
+        connect-src 'self' https://*.supabase.co wss://*.supabase.co; 
+        img-src 'self' data: blob:;
+    ">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ghost Keyboard v2.0</title>
@@ -69,10 +76,8 @@
         .main-btn { background: var(--accent-color); color: #000; border: none; width: 100%; padding: 16px; font-size: 1.2rem; font-weight: 900; border-radius: 10px; cursor: pointer; box-shadow: 0 0 20px var(--glow-color); }
 
         .leaderboard-wrapper { width: 100%; background: rgba(15, 15, 15, 0.9); border: 1px solid #333; border-radius: 12px; padding: 20px; height: 100%; min-height: 300px; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
         .lb-header { width: 100%; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .lb-title { color: var(--accent-color); font-size: 1rem; text-align: center; margin: 0; padding: 0; font-weight: bold; letter-spacing: 1px;}
-        
         .countdown-box { font-size: 0.8rem; color: #666; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 4px; border: 1px solid #222; display: flex; gap: 8px; font-family: 'Courier New', monospace; letter-spacing: 1px; }
         #daily-timer { color: var(--accent-color); font-weight: bold; }
 
@@ -202,6 +207,7 @@
     <script>
         // --- SUPABASE CONFIGURATION ---
         const SUPABASE_URL = 'https://dhqegitqiarogxivzcyv.supabase.co';
+        // Public Anon Key (Safe due to RLS/RPC)
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRocWVnaXRxaWFyb2d4aXZ6Y3l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5NzAwMzMsImV4cCI6MjA3OTU0NjAzM30.qnBHT5grVgmoMk1yCQA2_R8J-Q5MBXW3W05bXRS7Xoc';
         
         let supabase;
@@ -251,7 +257,16 @@
         const config = { diff: 'easy', lang: 'tr', backspace: true };
         let state = { active: false, target: "", input: "", start: 0, timer: null };
         let username = "";
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // SES SİSTEMİ (GÜVENLİ / LAZY INIT)
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) {
+                try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } 
+                catch(e) { console.log("Audio not supported"); }
+            }
+            if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        }
 
         /* --- WORD POOLS --- */
         const phrases = {
@@ -269,18 +284,26 @@
 
         /* --- INITIALIZATION --- */
         window.onload = () => {
-            const savedName = localStorage.getItem('ghostUsername');
-            if(savedName) {
-                username = sanitizeUsername(savedName); 
-                localStorage.setItem('ghostUsername', username); 
-                document.getElementById('username-input').value = username;
+            try {
+                const savedName = localStorage.getItem('ghostUsername');
+                if(savedName) {
+                    username = sanitizeUsername(savedName); 
+                    localStorage.setItem('ghostUsername', username); 
+                    document.getElementById('username-input').value = username;
+                }
+                
+                if(supabase) {
+                    fetchLeaderboard();
+                    setupRealtimeSubscription();
+                }
+                startCountdown(); 
+                document.getElementById('start-screen').style.display = 'block';
+                
+                try { initKeyboard(); } catch(e) {}
+            } catch (e) {
+                console.log("Init error", e);
+                document.getElementById('start-screen').style.display = 'block';
             }
-            
-            fetchLeaderboard();
-            setupRealtimeSubscription();
-            startCountdown();
-            document.getElementById('start-screen').style.display = 'block';
-            initKeyboard();
         };
 
         /* --- COUNTDOWN LOGIC --- */
@@ -295,8 +318,8 @@
                 const m = Math.floor((diff / (1000 * 60)) % 60);
                 const s = Math.floor((diff / 1000) % 60);
 
-                document.getElementById('daily-timer').innerText = 
-                    `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                const timerEl = document.getElementById('daily-timer');
+                if(timerEl) timerEl.innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             }
             update();
             setInterval(update, 1000);
@@ -362,10 +385,7 @@
         async function saveScoreToCloud(score, wpm, acc, timeTaken) {
             if (!supabase) return;
             
-            if (wpm > 350 || acc > 100 || !rateLimiter.canSubmit()) {
-                console.warn("Invalid stats or rate limit");
-                return;
-            }
+            if (wpm > 350 || acc > 100 || !rateLimiter.canSubmit()) return;
 
             try {
                 const { error } = await supabase.rpc('submit_score_secure', {
@@ -376,12 +396,7 @@
                     p_time_taken: timeTaken
                 });
 
-                if (error) {
-                    console.error("Score rejected by server:", error.message);
-                } else {
-                    fetchLeaderboard();
-                }
-
+                if (!error) fetchLeaderboard();
             } catch (e) {
                 console.error("Network error:", e);
             }
@@ -399,7 +414,9 @@
             }
             
             saveUsername(username);
-            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            
+            // Audio init on user interaction
+            initAudio();
             playClick();
 
             const pool = phrases[config.lang][config.diff];
@@ -634,8 +651,9 @@
 
         /* --- INPUT & SOUND --- */
         function playClick(isEnter = false) {
-            const t = audioCtx.currentTime;
+            if(!audioCtx || audioCtx.state !== 'running') return;
             
+            const t = audioCtx.currentTime;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.frequency.setValueAtTime(isEnter ? 600 : 800, t);
@@ -660,16 +678,19 @@
             document.body.classList.add('shake-screen');
             document.getElementById('input-box-area').classList.add('error-glow');
             
-            const t = audioCtx.currentTime;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(100, t);
-            osc.frequency.linearRampToValueAtTime(50, t + 0.1);
-            gain.gain.setValueAtTime(0.1, t);
-            gain.gain.linearRampToValueAtTime(0, t + 0.1);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(t + 0.1);
+            // Error Beep
+            if(audioCtx && audioCtx.state === 'running') {
+                const t = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, t);
+                osc.frequency.linearRampToValueAtTime(50, t + 0.1);
+                gain.gain.setValueAtTime(0.1, t);
+                gain.gain.linearRampToValueAtTime(0, t + 0.1);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(t + 0.1);
+            }
 
             setTimeout(() => {
                 document.body.classList.remove('shake-screen');
@@ -711,6 +732,15 @@
             }
             
             document.getElementById('user-input').textContent = state.input;
+        }
+
+        function calcAcc(a,b) {
+            if (config.diff !== 'hard') { a = a.toLowerCase(); b = b.toLowerCase(); }
+            let m=0; 
+            let len = Math.max(a.length, b.length); 
+            if (len === 0) return 0;
+            for(let i=0;i<len;i++) if(a[i]===b[i]) m++;
+            return Math.floor((m/len)*100);
         }
 
         async function shareScreenshot() {
