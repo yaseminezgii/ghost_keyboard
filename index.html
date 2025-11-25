@@ -19,7 +19,7 @@
             --accent-color: #00ff9d; --glow-color: rgba(0, 255, 157, 0.4);
             --bg-gradient: radial-gradient(circle at 50% 50%, #05150a 0%, #000 100%);
             /* DEĞİŞİKLİK 1: Tuş genişliği %9'dan %8.5'e çekildi */
-            --key-width: 8.5%;
+            --key-width: 8%;
         }
         body.theme-easy { --accent-color: #00f2ff; --glow-color: rgba(0, 242, 255, 0.4); --bg-gradient: radial-gradient(circle at 50% 50%, #0a1525 0%, #000 100%); }
         body.theme-normal { --accent-color: #00ff9d; --glow-color: rgba(0, 255, 157, 0.4); --bg-gradient: radial-gradient(circle at 50% 50%, #05150a 0%, #000 100%); }
@@ -115,12 +115,12 @@
         .input-box { font-size: 1.5rem; color: var(--accent-color); border-bottom: 2px solid #333; min-height: 40px; margin: 15px 0; text-align: center; white-space: pre; width: 100%; max-width: 450px; }
         
         /* DEĞİŞİKLİK 2: Klavye container %100 yapıldı, max-width korundu */
-        .keyboard { display: flex; flex-direction: column; width: 100%; max-width: 500px; padding: 5px 0; }
+        .keyboard { display: flex; flex-direction: column; width: 100%; max-width: 420px; padding: 5px 0; }
         
-        .row { display: flex; justify-content: center; margin-bottom: 6px; width: 100%; }
+        .row { display: flex; justify-content: center; margin-bottom: 4px; width: 100%; }
         
         /* DEĞİŞİKLİK 3: Tuşların yan boşlukları 2px'den 1px'e indirildi (Sıkıştırma) */
-        .key { background: var(--key-bg); color: #fff; height: 46px; border-radius: 5px; display: flex; align-items: center; justify-content: center; margin: 0 1px; flex: 0 0 auto; width: var(--key-width); cursor: pointer; }
+        .key { background: var(--key-bg); color: #fff; height: 40px; border-radius: 5px; display: flex; align-items: center; justify-content: center; margin: 0 1px; flex: 0 0 auto; width: var(--key-width); cursor: pointer; }
         
         .key span { opacity: 0; } .key.special span, .key.enter span { opacity: 1; }
         .key:active, .key.active-key { background: #555; transform: scale(1.1); }
