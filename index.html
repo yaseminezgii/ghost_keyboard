@@ -32,7 +32,6 @@
             flex-direction: column; 
             align-items: center; 
             min-height: 100vh;
-            /* Mobilde adres çubuğu sorununu çözer */
             min-height: 100dvh; 
             margin: 0; 
             overflow-x: hidden;
@@ -43,10 +42,8 @@
 
         .container { 
             width: 100%; max-width: 850px; 
-            /* Minimum yükseklik ekran boyu kadar */
             min-height: 100vh; min-height: 100dvh;
             display: flex; flex-direction: column; 
-            /* DEĞİŞİKLİK: İçeriği dikeyde tam ortalar */
             justify-content: center;
             align-items: center;
             padding: 10px; gap: 15px;
@@ -56,7 +53,6 @@
         .scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 50%); background-size: 100% 4px; pointer-events: none; z-index: 0; }
 
         /* --- START SCREEN --- */
-        /* Start ekranı uzun olabilir, o yüzden flex-start kullanıp margin ile itiyoruz */
         #start-screen { width: 100%; display: none; margin: auto 0; }
         
         .start-layout { display: flex; flex-direction: column; width: 100%; gap: 30px; align-items: center; }
@@ -114,13 +110,9 @@
 
         /* --- GAME UI --- */
         #game-screen { 
-            display: none; 
-            width: 100%; 
-            /* Flex-grow ile container içinde yer kaplamasını sağla, ama ortala */
-            flex: 1; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center;
+            display: none; width: 100%; 
+            flex: 1; flex-direction: column; 
+            justify-content: center; align-items: center;
         }
 
         .timer-container { text-align: center; margin-bottom: 10px; }
@@ -143,14 +135,10 @@
         }
         
         .keyboard { display: flex; flex-direction: column; width: 100%; max-width: 420px; padding: 5px 0; }
-        
         .row { display: flex; justify-content: center; margin-bottom: 4px; width: 100%; }
-        
         .key { background: var(--key-bg); color: #fff; height: 42px; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin: 0 1px; flex: 0 0 auto; width: var(--key-width); cursor: pointer; }
-        
         .key span { opacity: 0; } .key.special span, .key.enter span { opacity: 1; }
         .key:active, .key.active-key { background: #555; transform: scale(1.1); }
-        
         .key.enter { width: 18% !important; background: var(--accent-color); color: #000; font-weight: bold; }
         .key.space { flex-grow: 1; width: auto !important; font-size: 0.8rem; }
         .row.staggered { padding: 0 1.5%; }
@@ -169,7 +157,6 @@
         .stat-card { background: #151515; padding: 10px; border-radius: 8px; text-align: center; }
         .stat-val { font-size: 1.5rem; font-weight: bold; color: #fff; display: block; }
         .stat-lbl { font-size: 0.6rem; color: #666; margin-top: 5px; }
-
         .shake-screen { animation: shake 0.3s; }
         @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
         .error-glow { text-shadow: 0 0 15px #ff0000 !important; color: #ff5555 !important; }
@@ -214,7 +201,7 @@
                             <div class="lb-title">🏆 TOP HACKERS</div>
                             <div class="countdown-box"><span>RESET:</span><span id="daily-timer">00:00:00</span></div>
                         </div>
-                        <div id="lb-content"><div style="text-align:center;color:#666; margin-top:20px;">Loading...</div></div>
+                        <div id="lb-content"><div style="text-align:center;color:#666;margin-top:20px">Loading...</div></div>
                     </div>
                 </div>
             </div>
@@ -360,7 +347,6 @@
             document.getElementById('user-input').textContent=state.input;
         }
 
-        /* --- NATIVE SHARE FUNCTION (TEXT BASED) --- */
         async function shareResult() {
             const acc = document.getElementById('res-acc').textContent;
             const wpm = document.getElementById('res-wpm').textContent;
@@ -386,71 +372,45 @@
             }
         }
 
-/* --- UTILS --- */
-function getRoast(acc, wpm) {
-    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+        function getRoast(acc, wpm) {
+            const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            if (wpm === 0) return "AFK? Did you fall asleep? 💤";
+            if (acc === 0) return "You missed everything. Are you a Stormtrooper? 🔫";
+            if (wpm > 250) return pick(["Nice script, bro. 🤖", "CYBORG DETECTED 🤖", "He is the One. 🕶️", "Are you Mr. Robot? 👨‍💻"]);
+            if (wpm >= 100 && acc >= 90) {
+                const opts = ["UNLIMITED POWER! ⚡"];
+                if (acc >= 98) opts.push("He is the One. 🕶️ (Matrix Code Rain)");
+                return pick(opts);
+            }
+            if (wpm >= 80 && acc >= 85) {
+                const opts = ["The Force is strong. 🌌", "So close! 🤏"];
+                if (acc >= 95) opts.push("Legolas aim! 🏹 (Elven precision)");
+                return pick(opts);
+            }
+            if (wpm >= 60 && acc < 85) {
+                const opts = ["Slow down!"];
+                if (wpm >= 80 && acc < 60) opts.push("My eyes! 😵 Too fast, too furious, too wrong!");
+                if (wpm >= 60 && acc < 70) opts.push("Stormtrooper Aim detected. Pew pew! 🔫 (0 hits)");
+                if (wpm >= 70) opts.push("Control yourself, Padawan. 🧘", "One typo ruined your career. 📉");
+                return pick(opts);
+            }
+            if (wpm < 50 && acc >= 90) {
+                const opts = ["Slow... but safe. 🚗", "Grandma speed. 👵"];
+                if (wpm < 30 && acc >= 95) opts.push("Dial-up Internet vibes... 🐌");
+                if (wpm < 40 && acc >= 95) opts.push("Ent-ish speed. 🌳");
+                return pick(opts);
+            }
+            if (wpm >= 40 && acc >= 60) {
+                const opts = ["Not great, not terrible. ☢️"];
+                if (wpm < 60) opts.push("NPC Energy. 😐 (Need more coffee)");
+                return pick(opts);
+            }
+            if (wpm < 40 || acc < 60) {
+                return pick(["Toaster typing? 🍞", "Using elbows? 💪", "My eyes hurt. 🫣", "Try using fingers. 🖐️", "You shall not pass! 🧙‍♂️ (Because you failed)", "Please delete the app. 💀"]);
+            }
+            return "Emotional Damage. 💔 (Try again)";
+        }
 
-    // 1. AŞIRI UÇ DURUMLAR (0 veya Hile)
-    if (wpm === 0) return "AFK? Did you fall asleep? 💤";
-    if (acc === 0) return "You missed everything. Are you a Stormtrooper? 🔫";
-    if (wpm > 250) return pick(["Nice script, bro. 🤖", "CYBORG DETECTED 🤖", "He is the One. 🕶️", "Are you Mr. Robot? 👨‍💻"]);
-
-    // 2. ÇOK HIZLI VE İSABETLİ (WPM 100+)
-    if (wpm >= 100 && acc >= 90) {
-        const opts = ["UNLIMITED POWER! ⚡"];
-        if (acc >= 98) opts.push("He is the One. 🕶️ (Matrix Code Rain)");
-        return pick(opts);
-    }
-
-    // 3. HIZLI VE İYİ (WPM 80-99)
-    if (wpm >= 80 && acc >= 85) {
-        const opts = ["The Force is strong. 🌌", "So close! 🤏"];
-        if (acc >= 95) opts.push("Legolas aim! 🏹 (Elven precision)");
-        return pick(opts);
-    }
-
-    // 4. HIZLI AMA DİKKATSİZ (Hız var ama isabet düşük)
-    if (wpm >= 60 && acc < 85) {
-        const opts = ["Slow down!"]; // Varsayılan
-        if (wpm >= 80 && acc < 60) opts.push("My eyes! 😵 Too fast, too furious, too wrong!");
-        if (wpm >= 60 && acc < 70) opts.push("Stormtrooper Aim detected. Pew pew! 🔫 (0 hits)");
-        if (wpm >= 70) opts.push("Control yourself, Padawan. 🧘", "One typo ruined your career. 📉");
-        return pick(opts);
-    }
-
-    // 5. YAVAŞ AMA GÜVENLİ (Düşük hız, Yüksek isabet)
-    if (wpm < 50 && acc >= 90) {
-        const opts = ["Slow... but safe. 🚗", "Grandma speed. 👵"];
-        if (wpm < 30 && acc >= 95) opts.push("Dial-up Internet vibes... 🐌");
-        if (wpm < 40 && acc >= 95) opts.push("Ent-ish speed. 🌳");
-        return pick(opts);
-    }
-
-    // 6. ORTALAMA / STANDART (WPM 40-79 arası ve isabeti fena olmayanlar)
-    // Önceki kodda burası boşluktaydı, şimdi WPM 40 üstü ve Acc 60 üstü herkesi kapsar.
-    if (wpm >= 40 && acc >= 60) {
-        const opts = ["Not great, not terrible. ☢️"];
-        if (wpm < 60) opts.push("NPC Energy. 😐 (Need more coffee)");
-        // WPM 75 Acc 88 gibi değerler buraya düşecek artık.
-        return pick(opts);
-    }
-
-    // 7. KÖTÜ PERFORMANS (Kalan tüm düşük durumlar)
-    // WPM 40 altı VEYA isabeti çok düşük olanlar
-    if (wpm < 40 || acc < 60) {
-        return pick([
-            "Toaster typing? 🍞", 
-            "Using elbows? 💪", 
-            "My eyes hurt. 🫣", 
-            "Try using fingers. 🖐️", 
-            "You shall not pass! 🧙‍♂️ (Because you failed)", 
-            "Please delete the app. 💀"
-        ]);
-    }
-
-    // 8. HİÇBİR ŞEYE UYMAZSA (Çok nadir)
-    return "Emotional Damage. 💔 (Try again)";
-}
         function sanitizeUsername(v) { return v?v.trim().replace(/[<>'"&]/g,'').substring(0,12):''; }
         function saveUsername(v) { username=sanitizeUsername(v); localStorage.setItem('ghostUsername', username); }
         function calcAcc(a,b) { if(config.diff!=='hard'){a=a.toLowerCase();b=b.toLowerCase();} let m=0,l=Math.max(a.length,b.length); if(l===0)return 0; for(let i=0;i<l;i++)if(a[i]===b[i])m++; return Math.floor((m/l)*100); }
@@ -458,7 +418,7 @@ function getRoast(acc, wpm) {
         function setLang(v,b) { config.lang=v; document.querySelectorAll('#lang-row .mode-btn').forEach(k=>k.classList.remove('active')); b.classList.add('active'); playClick(); }
         function resetGame() { if(supabase) fetchLeaderboard(); document.getElementById('result-screen').style.display='none'; document.getElementById('start-screen').style.display='block'; document.getElementById('username-input').value=username; }
 
-        /* --- DB --- */
+        /* --- DB INSERT FIX --- */
         async function fetchLeaderboard() {
             if(!supabase) return; const c=document.getElementById('lb-content'); const t=new Date(); t.setHours(0,0,0,0);
             const {data}=await supabase.from('scores').select('*').gte('created_at',t.toISOString()).order('score',{ascending:false}).limit(10);
@@ -466,7 +426,21 @@ function getRoast(acc, wpm) {
             else { let r=1; data.forEach(d=>{ const row=document.createElement('div'); row.className='lb-row'+(d.username===username?' highlight':''); row.innerHTML=`<span class="lb-rank">#${r++}</span><span class="lb-name">${d.username}</span><span class="lb-score">${d.score}</span>`; c.appendChild(row); }); }
         }
         function setupRealtimeSubscription() { if(supabase) supabase.channel('public:scores').on('postgres_changes',{event:'INSERT',schema:'public',table:'scores'},fetchLeaderboard).subscribe(); }
-        async function saveScoreToCloud(s,w,a,t) { if(supabase && w<=350 && a<=100) await supabase.rpc('submit_score_secure',{p_username:username,p_score:s,p_wpm:w,p_accuracy:a,p_time_taken:t}); fetchLeaderboard(); }
+        
+        async function saveScoreToCloud(s,w,a,t) { 
+            // BURADA RPC YERİNE INSERT KULLANIYORUZ
+            if(supabase && w<=350 && a<=100) {
+                await supabase.from('scores').insert({
+                    username: username,
+                    score: s,
+                    wpm: w,
+                    accuracy: a,
+                    time_taken: t
+                });
+            }
+            fetchLeaderboard(); 
+        }
+        
         function startCountdown() { setInterval(()=>{ const n=new Date(), t=new Date(n); t.setHours(24,0,0,0); const d=t-n; const h=Math.floor((d/3600000)%24),m=Math.floor((d/60000)%60),s=Math.floor((d/1000)%60); document.getElementById('daily-timer').innerText=`${h}:${m}:${s}`; },1000); }
 
         function initKeyboard() {
