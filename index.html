@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ghost Keyboard v2.0</title>
@@ -13,21 +12,32 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        /* --- STYLES --- */
+        /* --- STYLES (DÜZELTİLMİŞ) --- */
         :root {
             --bg-color: #050505; --text-color: #e0e0e0; --key-bg: #2d2d30; --key-active: #fff;
             --accent-color: #00ff9d; --glow-color: rgba(0, 255, 157, 0.4);
             --bg-gradient: radial-gradient(circle at 50% 50%, #05150a 0%, #000 100%);
+            --key-width: 9%; /* Varsayılan genişlik */
         }
         body.theme-easy { --accent-color: #00f2ff; --glow-color: rgba(0, 242, 255, 0.4); --bg-gradient: radial-gradient(circle at 50% 50%, #0a1525 0%, #000 100%); }
         body.theme-normal { --accent-color: #00ff9d; --glow-color: rgba(0, 255, 157, 0.4); --bg-gradient: radial-gradient(circle at 50% 50%, #05150a 0%, #000 100%); }
         body.theme-hard { --accent-color: #ff003c; --glow-color: rgba(255, 0, 60, 0.4); --bg-gradient: radial-gradient(circle at 50% 50%, #250505 0%, #000 100%); }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        
         body {
-            background: var(--bg-gradient); color: var(--text-color); font-family: 'Courier New', Courier, monospace;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100dvh; margin: 0; overflow: hidden; touch-action: none; transition: background 0.5s ease;
+            background: var(--bg-gradient); 
+            color: var(--text-color); 
+            font-family: 'Courier New', Courier, monospace;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            /* height: 100dvh yerine min-height kullandık ki taşma olursa scroll açılsın */
+            min-height: 100dvh; 
+            margin: 0; 
+            overflow-y: auto; /* Mobilde içerik taşarsa kaydırmaya izin ver */
+            touch-action: manipulation; 
+            transition: background 0.5s ease;
         }
         
         @keyframes shake {
@@ -47,8 +57,23 @@
         .error-glow { text-shadow: 0 0 15px #ff0000 !important; color: #ff5555 !important; }
 
         .scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1)); background-size: 100% 4px; pointer-events: none; z-index: 0; }
-        .container { width: 100%; max-width: 850px; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; gap: 20px; position: relative; z-index: 2; }
         
+        /* Container yapısı düzeltildi */
+        .container { 
+            width: 100%; 
+            max-width: 850px; 
+            min-height: 100dvh; /* Sayfa boyu kadar yer kaplasın */
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 20px; 
+            gap: 20px; 
+            position: relative; 
+            z-index: 2; 
+        }
+        
+        /* Layout */
         .start-layout { display: flex; flex-direction: column; width: 100%; gap: 30px; align-items: center; }
         @media (min-width: 768px) { .start-layout { flex-direction: row; align-items: flex-start; justify-content: space-between; } .left-panel, .right-panel { flex: 1; width: 100%; } .right-panel { max-width: 350px; } }
 
@@ -105,7 +130,7 @@
         .secondary-btn { background: transparent; border: 2px solid var(--accent-color); color: var(--accent-color); width: 100%; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 10px; max-width: 400px; }
 
         #start-screen { display: none; width: 100%; }
-        #game-screen, #result-screen { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: center; align-items: center;}
+        #game-screen, #result-screen { display: none; width: 100%; flex-direction: column; justify-content: center; align-items: center;}
     </style>
 </head>
 <body class="theme-easy">
@@ -200,59 +225,21 @@
     <script>
         // --- SUPABASE CONFIGURATION ---
         const SUPABASE_URL = 'https://dhqegitqiarogxivzcyv.supabase.co';
-        // Public Anon Key (Safe due to RLS/RPC)
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRocWVnaXRxaWFyb2d4aXZ6Y3l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5NzAwMzMsImV4cCI6MjA3OTU0NjAzM30.qnBHT5grVgmoMk1yCQA2_R8J-Q5MBXW3W05bXRS7Xoc';
         
         let supabase;
         try {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        } catch(e) {
-            console.log("Supabase error:", e);
-        }
-
-        /* ========================================
-           🔒 SECURITY UTILITIES
-        ======================================== */
-        
-        function sanitizeUsername(input) {
-            if (!input) return '';
-            return input
-                .trim()
-                .replace(/[<>'"&]/g, '') 
-                .replace(/[^\w\s\u00C0-\u024F\u0400-\u04FF]/g, '') 
-                .substring(0, 12);
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function validateNumber(value, min, max) {
-            const num = parseFloat(value);
-            if (isNaN(num)) return false;
-            return num >= min && num <= max;
-        }
-
-        const rateLimiter = {
-            lastSubmit: 0,
-            minInterval: 5000,
-            canSubmit: function() {
-                const now = Date.now();
-                if (now - this.lastSubmit < this.minInterval) return false;
-                this.lastSubmit = now;
-                return true;
+            if (typeof window.supabase !== 'undefined') {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             }
-        };
+        } catch(e) { console.error("Supabase Error:", e); }
 
-        /* --- STATE --- */
+        /* --- STATE & CONFIG --- */
         const config = { diff: 'easy', lang: 'tr', backspace: true };
         let state = { active: false, target: "", input: "", start: 0, timer: null };
         let username = "";
-        
-        // SES SİSTEMİ (GÜVENLİ / LAZY INIT)
         let audioCtx = null;
+
         function initAudio() {
             if (!audioCtx) {
                 try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } 
@@ -282,133 +269,38 @@
                 if(savedName) {
                     username = sanitizeUsername(savedName); 
                     localStorage.setItem('ghostUsername', username); 
-                    document.getElementById('username-input').value = username;
+                    const inputEl = document.getElementById('username-input');
+                    if(inputEl) inputEl.value = username;
                 }
                 
-                if(supabase) {
+                if(typeof supabase !== 'undefined' && supabase) {
                     fetchLeaderboard();
                     setupRealtimeSubscription();
                 }
-                startCountdown(); 
-                document.getElementById('start-screen').style.display = 'block';
                 
+                startCountdown();
                 try { initKeyboard(); } catch(e) {}
-            } catch (e) {
-                console.log("Init error", e);
+                
+            } catch (error) {
+                console.error("Init Error:", error);
+            } finally {
+                // Her durumda ekranı aç
                 document.getElementById('start-screen').style.display = 'block';
             }
         };
 
-        /* --- COUNTDOWN LOGIC --- */
-        function startCountdown() {
-            function update() {
-                const now = new Date();
-                const tomorrow = new Date(now);
-                tomorrow.setHours(24, 0, 0, 0); 
-                const diff = tomorrow - now;
-                
-                const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
-                const m = Math.floor((diff / (1000 * 60)) % 60);
-                const s = Math.floor((diff / 1000) % 60);
-
-                const timerEl = document.getElementById('daily-timer');
-                if(timerEl) timerEl.innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-            }
-            update();
-            setInterval(update, 1000);
-        }
-
-        /* --- LEADERBOARD SYSTEM --- */
-        async function fetchLeaderboard() {
-            if (!supabase) return;
-            const container = document.getElementById('lb-content');
-            
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const todayISO = today.toISOString();
-
-            try {
-                const { data, error } = await supabase
-                    .from('scores')
-                    .select('*')
-                    .gte('created_at', todayISO)
-                    .order('score', { ascending: false })
-                    .limit(10);
-
-                if (error) throw error;
-                
-                container.innerHTML = '';
-                if(!data || data.length === 0) {
-                    container.innerHTML = '<div class="lb-loading">New day, new chance!<br>Be the first.</div>';
-                    return;
-                }
-
-                let rank = 1;
-                data.forEach((item) => {
-                    if (!item.username || !validateNumber(item.score, 0, 50000)) return;
-                    
-                    const isMe = item.username === username;
-                    const row = document.createElement('div');
-                    row.className = 'lb-row' + (isMe ? ' highlight' : '');
-                    row.innerHTML = `
-                        <span class="lb-rank">#${rank++}</span>
-                        <span class="lb-name">${escapeHtml(item.username)}</span>
-                        <span class="lb-score">${escapeHtml(item.score.toString())}</span>
-                    `;
-                    container.appendChild(row);
-                });
-
-            } catch (error) {
-                console.error("LB Error:", error);
-                container.innerHTML = '<div class="lb-loading">Failed to load leaderboard</div>';
-            }
-        }
-
-        function setupRealtimeSubscription() {
-            if(!supabase) return;
-            supabase
-                .channel('public:scores')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'scores' }, payload => {
-                    fetchLeaderboard();
-                })
-                .subscribe();
-        }
-
-        /* --- SCORE SUBMISSION --- */
-        async function saveScoreToCloud(score, wpm, acc, timeTaken) {
-            if (!supabase) return;
-            
-            if (wpm > 350 || acc > 100 || !rateLimiter.canSubmit()) return;
-
-            try {
-                const { error } = await supabase.rpc('submit_score_secure', {
-                    p_username: username,
-                    p_score: Math.floor(score),
-                    p_wpm: Math.floor(wpm),
-                    p_accuracy: Math.floor(acc),
-                    p_time_taken: timeTaken
-                });
-
-                if (!error) fetchLeaderboard();
-            } catch (e) {
-                console.error("Network error:", e);
-            }
-        }
-
-        /* --- GAME LOGIC --- */
+        /* --- CORE FUNCTIONS --- */
         function startGame() {
-            const inputValue = document.getElementById('username-input').value;
-            username = sanitizeUsername(inputValue);
+            const inputEl = document.getElementById('username-input');
+            username = sanitizeUsername(inputEl.value);
             
             if(!username || username.length < 2) {
                 alert("Enter a valid username (min 2 characters)!");
-                document.getElementById('username-input').focus();
+                inputEl.focus();
                 return;
             }
             
             saveUsername(username);
-            
-            // Audio init on user interaction
             initAudio();
             playClick();
 
@@ -457,255 +349,183 @@
         }
 
         function resetGame() {
-            fetchLeaderboard();
+            if(supabase) fetchLeaderboard();
             document.getElementById('result-screen').style.display = 'none';
             document.getElementById('start-screen').style.display = 'block';
         }
 
+        /* --- UTILS --- */
+        function sanitizeUsername(input) {
+            if (!input) return '';
+            return input.trim().replace(/[<>'"&]/g, '').substring(0, 12);
+        }
         function saveUsername(value) {
             username = sanitizeUsername(value);
             localStorage.setItem('ghostUsername', username);
-            document.getElementById('username-input').value = username;
+        }
+        function validateNumber(v, min, max) { return !isNaN(parseFloat(v)) && v >= min && v <= max; }
+        function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+        function calcAcc(a,b) {
+            if (config.diff !== 'hard') { a = a.toLowerCase(); b = b.toLowerCase(); }
+            let m=0; let len = Math.max(a.length, b.length); if (len === 0) return 0;
+            for(let i=0;i<len;i++) if(a[i]===b[i]) m++;
+            return Math.floor((m/len)*100);
         }
 
-        /* --- ROAST LOGIC (FIXED) --- */
+        /* --- ROAST LOGIC (CORRECTED) --- */
         function getRoast(acc, wpm) {
             const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-            // 0. AFK / ZERO EFFORT
-            if (wpm === 0) return "AFK? Did you fall asleep on the keyboard? 💤";
-            if (acc === 0) return "You missed everything. Are you a Stormtrooper? 🔫";
+            if (wpm === 0) return "AFK? Did you fall asleep? 💤";
+            if (acc === 0) return "Stormtrooper aim detected. 🔫";
 
-            // 1. CHEATER / BOT
-            if (wpm > 250) {
-                return pick([
-                    "Nice script, bro. 🤖 (Ban Hammer incoming)",
-                    "CYBORG DETECTED 🤖",
-                    "Are you Mr. Robot? 👨‍💻",
-                    "He is the One. 🕶️"
-                ]);
-            }
+            if (wpm > 250) return pick(["Nice script, bro. 🤖", "CYBORG DETECTED 🤖", "He is the One. 🕶️"]);
 
-            // 2. GOD TIER
             if (wpm >= 100 && acc >= 90) {
-                const options = ["UNLIMITED POWER! ⚡ (Palpatine likes this)"];
-                if (acc >= 98) options.push("He is the One. 🕶️ (Matrix Code Rain)");
-                return pick(options);
+                const opts = ["UNLIMITED POWER! ⚡"];
+                if (acc >= 98) opts.push("He is the One. 🕶️");
+                return pick(opts);
             }
 
-            // 3. LEGENDARY
             if (wpm >= 80 && wpm < 100 && acc >= 85) {
-                const options = ["The Force is strong with this one. 🌌", "So close! 🤏"];
-                if (acc >= 95) options.push("Legolas aim! 🏹 (Elven precision)");
-                return pick(options);
+                const opts = ["The Force is strong. 🌌", "So close! 🤏"];
+                if (acc >= 95) opts.push("Legolas aim! 🏹");
+                return pick(opts);
             }
 
-            // 4. FAST BUT CLUMSY
             if (wpm >= 60 && acc < 85) {
-                const options = [];
-                if (wpm >= 80 && acc < 60) options.push("My eyes! 😵 Too fast, too furious, too wrong.");
-                if (wpm >= 60 && acc < 70) options.push("Stormtrooper Aim detected. Pew pew! 🔫 (0 hits)");
-                if (wpm >= 70) options.push("You have speed, but you lack control, young Padawan. 🧘");
-                if (acc < 85) options.push("One typo ruined your career. 📉");
-                
-                if (options.length === 0) return "Slow down and focus! 🛑";
-                return pick(options);
+                const opts = [];
+                if (wpm >= 80 && acc < 60) opts.push("My eyes! 😵 Too fast!");
+                if (wpm >= 60 && acc < 70) opts.push("Stormtrooper Aim. 🔫");
+                if (wpm >= 70) opts.push("Control yourself, Padawan. 🧘");
+                if (opts.length === 0) return "Slow down!";
+                return pick(opts);
             }
 
-            // 5. SLOW BUT PERFECT
             if (wpm < 50 && acc >= 90) {
-                const options = ["Slow... but safe. Like a Volvo. 🚗", "Grandma speed, but perfect. 👵"];
-                if (wpm < 30 && acc === 100) options.push("Dial-up Internet vibes... 🐌 (Connecting...)");
-                if (wpm < 40 && acc >= 95) options.push("An Ent taking 5 hours to say 'Hello'. 🌳 (LOTR)");
-                return pick(options);
+                const opts = ["Slow... but safe. 🚗", "Grandma speed. 👵"];
+                if (wpm < 30 && acc === 100) opts.push("Dial-up Internet vibes... 🐌");
+                if (wpm < 40 && acc >= 95) opts.push("Ent-ish speed. 🌳");
+                return pick(opts);
             }
 
-            // 6. AVERAGE / NPC
             if (wpm >= 40 && wpm < 70 && acc >= 85) {
-                const options = ["Not great, not terrible. (3.6 Roentgen) ☢️"];
-                if (wpm < 60) options.push("NPC Energy. 😐 (Need more coffee)");
-                return pick(options);
+                const opts = ["Not great, not terrible. ☢️"];
+                if (wpm < 60) opts.push("NPC Energy. 😐");
+                return pick(opts);
             }
 
-            // 7. DISASTER
             if (wpm < 40 && acc < 60) {
-                return pick([
-                    "Are you typing with a toaster? 🍞",
-                    "My grandma types faster... with her nose. 👃",
-                    "You shall not pass! 🧙‍♂️ (Because you failed)",
-                    "Are you typing with your elbows? 💪",
-                    "Try using fingers. 🖐️",
-                    "Please delete the app. 💀",
-                    "My eyes hurt. 🫣"
-                ]);
+                return pick(["Toaster typing? 🍞", "Using elbows? 💪", "My eyes hurt. 🫣"]);
             }
 
             return "Emotional Damage. 💔 (Try again)";
         }
 
-        function setDiff(val, btn) {
-            config.diff = val; 
-            config.backspace = val !== 'hard';
-            document.querySelectorAll('#diff-row .mode-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.body.className = ''; 
-            document.body.classList.add('theme-' + val); 
-            playClick();
-        }
-        
-        function setLang(val, btn) {
-            config.lang = val;
-            document.querySelectorAll('#lang-row .mode-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active'); 
-            playClick();
+        /* --- LEADERBOARD & DB --- */
+        async function fetchLeaderboard() {
+            if (!supabase) return;
+            const container = document.getElementById('lb-content');
+            const today = new Date(); today.setHours(0,0,0,0);
+            
+            try {
+                const { data } = await supabase.from('scores').select('*').gte('created_at', today.toISOString()).order('score', { ascending: false }).limit(10);
+                
+                container.innerHTML = '';
+                if(!data || data.length === 0) {
+                    container.innerHTML = '<div class="lb-loading">New day, new chance!<br>Be the first.</div>';
+                } else {
+                    let rank = 1;
+                    data.forEach((item) => {
+                        if (!item.username) return;
+                        const row = document.createElement('div');
+                        row.className = 'lb-row' + (item.username === username ? ' highlight' : '');
+                        row.innerHTML = `<span class="lb-rank">#${rank++}</span><span class="lb-name">${escapeHtml(item.username)}</span><span class="lb-score">${item.score}</span>`;
+                        container.appendChild(row);
+                    });
+                }
+            } catch (e) { console.log("LB Error", e); }
         }
 
+        function setupRealtimeSubscription() {
+            if(!supabase) return;
+            supabase.channel('public:scores').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'scores' }, fetchLeaderboard).subscribe();
+        }
+
+        async function saveScoreToCloud(score, wpm, acc, time) {
+            if (!supabase) return;
+            // Basic Frontend Check
+            if (wpm > 350 || acc > 100) return; 
+            
+            try {
+                await supabase.rpc('submit_score_secure', {
+                    p_username: username, p_score: Math.floor(score), p_wpm: Math.floor(wpm), p_accuracy: Math.floor(acc), p_time_taken: time
+                });
+                fetchLeaderboard();
+            } catch (e) { console.error("Save Error", e); }
+        }
+
+        function startCountdown() {
+            setInterval(() => {
+                const now = new Date();
+                const tmr = new Date(now); tmr.setHours(24,0,0,0);
+                const diff = tmr - now;
+                const h = Math.floor((diff / 3600000) % 24), m = Math.floor((diff / 60000) % 60), s = Math.floor((diff / 1000) % 60);
+                const el = document.getElementById('daily-timer');
+                if(el) el.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            }, 1000);
+        }
+
+        /* --- KEYBOARD & INPUT --- */
         function initKeyboard() {
             const c = document.getElementById('kb-container'); 
+            if(!c) return;
             c.innerHTML = '';
             let r = config.lang === 'tr' ? ["qwertyuıopğü", "asdfghjklşi", "zxcvbnmöç"] : ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
-            document.documentElement.style.setProperty('--key-width', config.lang === 'tr' ? '7.8%' : '9.2%');
             
             const makeRow = (chars) => {
-                let div = document.createElement('div'); 
-                div.className='row';
+                let div = document.createElement('div'); div.className='row';
                 chars.split('').forEach(ch => {
-                    let k = document.createElement('div'); 
-                    k.className='key'; 
-                    k.innerHTML=`<span>${ch.toUpperCase()}</span>`;
+                    let k = document.createElement('div'); k.className='key'; k.innerHTML=`<span>${ch.toUpperCase()}</span>`;
                     const h = (e)=>{e.preventDefault(); handle(ch, k)}; 
-                    k.ontouchstart=h; 
-                    k.onmousedown=h; 
-                    div.appendChild(k);
+                    k.ontouchstart=h; k.onmousedown=h; div.appendChild(k);
                 }); 
                 return div;
             };
             
             c.appendChild(makeRow(r[0]));
-            let r2 = makeRow(r[1]); 
-            r2.classList.add('staggered'); 
-            c.appendChild(r2);
+            let r2 = makeRow(r[1]); r2.classList.add('staggered'); c.appendChild(r2);
             
-            let r3 = document.createElement('div'); 
-            r3.className='row';
-            let sh = document.createElement('div'); 
-            sh.className='key special'; 
-            sh.innerHTML='<span>⇧</span>'; 
-            r3.appendChild(sh);
-            
+            let r3 = document.createElement('div'); r3.className='row';
+            let sh = document.createElement('div'); sh.className='key special'; sh.innerHTML='<span>⇧</span>'; r3.appendChild(sh);
             r[2].split('').forEach(ch => {
-                let k = document.createElement('div'); 
-                k.className='key'; 
-                k.innerHTML=`<span>${ch.toUpperCase()}</span>`;
-                const h = (e)=>{e.preventDefault(); handle(ch, k)}; 
-                k.ontouchstart=h; 
-                k.onmousedown=h; 
-                r3.appendChild(k);
+                let k = document.createElement('div'); k.className='key'; k.innerHTML=`<span>${ch.toUpperCase()}</span>`;
+                const h = (e)=>{e.preventDefault(); handle(ch, k)}; k.ontouchstart=h; k.onmousedown=h; r3.appendChild(k);
             });
-            
-            let bk = document.createElement('div'); 
-            bk.className='key special'; 
-            bk.innerHTML=config.backspace?'<span>⌫</span>':'<span>🔒</span>';
-            const bh = (e)=>{e.preventDefault(); if(config.backspace) handle('BACKSPACE', bk)}; 
-            bk.ontouchstart=bh; 
-            bk.onmousedown=bh; 
-            r3.appendChild(bk);
+            let bk = document.createElement('div'); bk.className='key special'; bk.innerHTML=config.backspace?'<span>⌫</span>':'<span>🔒</span>';
+            const bh = (e)=>{e.preventDefault(); if(config.backspace) handle('BACKSPACE', bk)}; bk.ontouchstart=bh; bk.onmousedown=bh; r3.appendChild(bk);
             c.appendChild(r3);
             
-            let r4 = document.createElement('div'); 
-            r4.className='row';
-            let k123 = document.createElement('div'); 
-            k123.className='key special'; 
-            k123.innerHTML='<span>123</span>'; 
-            r4.appendChild(k123);
-            
-            let kemj = document.createElement('div'); 
-            kemj.className='key special'; 
-            kemj.innerHTML='<span>😀</span>'; 
-            r4.appendChild(kemj);
-            
-            let spc = document.createElement('div'); 
-            spc.className='key space'; 
-            spc.innerHTML='<span>space</span>';
-            const sh2 = (e)=>{e.preventDefault(); handle(' ', spc)}; 
-            spc.ontouchstart=sh2; 
-            spc.onmousedown=sh2; 
-            r4.appendChild(spc);
-            
-            let ent = document.createElement('div'); 
-            ent.className='key enter'; 
-            ent.innerHTML='<span>GO</span>';
-            const eh = (e)=>{e.preventDefault(); finish(); playClick(true);}; 
-            ent.ontouchstart=eh; 
-            ent.onmousedown=eh; 
-            r4.appendChild(ent);
+            let r4 = document.createElement('div'); r4.className='row';
+            let k123 = document.createElement('div'); k123.className='key special'; k123.innerHTML='<span>123</span>'; r4.appendChild(k123);
+            let kemj = document.createElement('div'); kemj.className='key special'; kemj.innerHTML='<span>😀</span>'; r4.appendChild(kemj);
+            let spc = document.createElement('div'); spc.className='key space'; spc.innerHTML='<span>space</span>';
+            const sh2 = (e)=>{e.preventDefault(); handle(' ', spc)}; spc.ontouchstart=sh2; spc.onmousedown=sh2; r4.appendChild(spc);
+            let ent = document.createElement('div'); ent.className='key enter'; ent.innerHTML='<span>GO</span>';
+            const eh = (e)=>{e.preventDefault(); finish(); playClick(true);}; ent.ontouchstart=eh; ent.onmousedown=eh; r4.appendChild(ent);
             c.appendChild(r4);
-        }
-
-        /* --- INPUT & SOUND --- */
-        function playClick(isEnter = false) {
-            if(!audioCtx || audioCtx.state !== 'running') return;
-            
-            const t = audioCtx.currentTime;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(isEnter ? 600 : 800, t);
-            osc.frequency.exponentialRampToValueAtTime(100, t + 0.05);
-            gain.gain.setValueAtTime(0.3, t);
-            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(t + 0.05);
-
-            const osc2 = audioCtx.createOscillator();
-            const gain2 = audioCtx.createGain();
-            osc2.type = 'square';
-            osc2.frequency.setValueAtTime(150, t);
-            osc2.frequency.exponentialRampToValueAtTime(40, t + 0.1);
-            gain2.gain.setValueAtTime(0.1, t);
-            gain2.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
-            osc2.connect(gain2); gain2.connect(audioCtx.destination);
-            osc2.start(); osc2.stop(t + 0.1);
-        }
-
-        function triggerShake() {
-            document.body.classList.add('shake-screen');
-            document.getElementById('input-box-area').classList.add('error-glow');
-            
-            // Error Beep
-            if(audioCtx && audioCtx.state === 'running') {
-                const t = audioCtx.currentTime;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(100, t);
-                osc.frequency.linearRampToValueAtTime(50, t + 0.1);
-                gain.gain.setValueAtTime(0.1, t);
-                gain.gain.linearRampToValueAtTime(0, t + 0.1);
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.start(); osc.stop(t + 0.1);
-            }
-
-            setTimeout(() => {
-                document.body.classList.remove('shake-screen');
-                document.getElementById('input-box-area').classList.remove('error-glow');
-            }, 300);
         }
 
         function handle(char, el) {
             if(!state.active) return;
             if(navigator.vibrate) navigator.vibrate(5);
-            
-            if(el) { 
-                el.classList.add('active-key'); 
-                setTimeout(()=>el.classList.remove('active-key'), 100); 
-            }
+            if(el) { el.classList.add('active-key'); setTimeout(()=>el.classList.remove('active-key'), 100); }
 
             if(char === 'BACKSPACE') {
                 playClick();
                 state.input = state.input.slice(0, -1);
             } else {
                 state.input += char;
-                
                 const currentIndex = state.input.length - 1;
                 let expectedChar = "";
                 let inputChar = char;
@@ -717,23 +537,62 @@
                     expectedChar = state.target[currentIndex] || "";
                 }
 
-                if (expectedChar && inputChar !== expectedChar) {
-                    triggerShake();
-                } else {
-                    playClick();
-                }
+                if (expectedChar && inputChar !== expectedChar) triggerShake();
+                else playClick();
             }
-            
             document.getElementById('user-input').textContent = state.input;
         }
 
-        function calcAcc(a,b) {
-            if (config.diff !== 'hard') { a = a.toLowerCase(); b = b.toLowerCase(); }
-            let m=0; 
-            let len = Math.max(a.length, b.length); 
-            if (len === 0) return 0;
-            for(let i=0;i<len;i++) if(a[i]===b[i]) m++;
-            return Math.floor((m/len)*100);
+        function playClick(isEnter = false) {
+            if(!audioCtx || audioCtx.state !== 'running') return;
+            try {
+                const t = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.frequency.setValueAtTime(isEnter ? 600 : 800, t);
+                osc.frequency.exponentialRampToValueAtTime(100, t + 0.05);
+                gain.gain.setValueAtTime(0.3, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(t + 0.05);
+            } catch(e) {}
+        }
+
+        function triggerShake() {
+            document.body.classList.add('shake-screen');
+            document.getElementById('input-box-area').classList.add('error-glow');
+            if(audioCtx && audioCtx.state === 'running') {
+                try {
+                    const t = audioCtx.currentTime;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(100, t);
+                    osc.frequency.linearRampToValueAtTime(50, t + 0.1);
+                    gain.gain.setValueAtTime(0.1, t);
+                    gain.gain.linearRampToValueAtTime(0, t + 0.1);
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.start(); osc.stop(t + 0.1);
+                } catch(e){}
+            }
+            setTimeout(() => {
+                document.body.classList.remove('shake-screen');
+                document.getElementById('input-box-area').classList.remove('error-glow');
+            }, 300);
+        }
+
+        function setDiff(val, btn) {
+            config.diff = val; config.backspace = val !== 'hard';
+            document.querySelectorAll('#diff-row .mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.body.className = ''; document.body.classList.add('theme-' + val); 
+            playClick();
+        }
+        function setLang(val, btn) {
+            config.lang = val;
+            document.querySelectorAll('#lang-row .mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active'); 
+            playClick();
         }
 
         async function shareScreenshot() {
@@ -743,38 +602,18 @@
             const captureElement = document.getElementById('result-capture-area');
             
             try {
-                const canvas = await html2canvas(captureElement, { 
-                    backgroundColor: '#050505', 
-                    scale: 2 
-                });
-                
+                const canvas = await html2canvas(captureElement, { backgroundColor: '#050505', scale: 2 });
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], "ghost_score.png", { type: "image/png" });
-                    
                     if (navigator.share && navigator.canShare({ files: [file] })) {
-                        try { 
-                            await navigator.share({ 
-                                title: 'Ghost Keyboard', 
-                                text: `I scored ${document.getElementById('res-score').textContent} points! 👻`, 
-                                files: [file] 
-                            }); 
-                            btn.textContent = "SHARED!"; 
-                        } catch (err) { 
-                            btn.textContent = "SHARE RESULT"; 
-                        }
+                        try { await navigator.share({ title: 'Ghost Keyboard', text: `I scored ${document.getElementById('res-score').textContent} points! 👻`, files: [file] }); btn.textContent = "SHARED!"; } catch (err) { btn.textContent = "SHARE RESULT"; }
                     } else {
-                        const link = document.createElement('a'); 
-                        link.download = 'ghost_score.png'; 
-                        link.href = canvas.toDataURL(); 
-                        link.click(); 
-                        btn.textContent = "SAVED!";
+                        const link = document.createElement('a'); link.download = 'ghost_score.png'; link.href = canvas.toDataURL(); link.click(); btn.textContent = "SAVED!";
                     }
                     setTimeout(() => btn.textContent = originalText, 2000);
                 });
             } catch (e) { 
-                console.error(e); 
-                btn.textContent = "ERROR"; 
-                setTimeout(() => btn.textContent = originalText, 2000);
+                btn.textContent = "ERROR"; setTimeout(() => btn.textContent = originalText, 2000); 
             }
         }
     </script>
