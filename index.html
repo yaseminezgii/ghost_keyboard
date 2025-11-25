@@ -251,6 +251,7 @@
         const config = { diff: 'easy', lang: 'tr', backspace: true };
         let state = { active: false, target: "", input: "", start: 0, timer: null };
         let username = "";
+        let challengePhrase = null;
         let audioCtx = null;
         
         const phrases = {
@@ -265,11 +266,23 @@
         hard: ["Noktali virgul nerede;", "SELECT FROM dertler;", "Abi bana site yapsana?", "404 Sayfa Bulunamadi.", "sudo apt-get update", "console log Selam;", "git push origin master", "npm install dertler", "Bugün de başkası adına utandık", "kubectl get pods", "sudo rm rf ", "404 Page not found.", "Houston, we have a problem.", "DROP TABLE users;", "alert XSS Attack", "while true fork ", "git commit m 'fix bug'",  "Ay bu küçük, narin, hassas ve orantılı kulaklarım neler duyuyor", "Ne kadar da inanarak boş konuşuyor","sudo rm rf /", "console.log('Error');", "404 Page not found.", "Houston, we have a problem.", "DROP TABLE users;", "while(true){fork();}", "git commit -m 'fix bug'", "kubectl get pods"]
         }
         };
-        window.onload = () => {
+window.onload = () => {
             const savedName = localStorage.getItem('ghostUsername');
             if(savedName) username = sanitizeUsername(savedName);
             if(supabase) { fetchLeaderboard(); setupRealtimeSubscription(); }
             startCountdown();
+            
+            // LİNKTEN GELEN MEYDAN OKUMAYI YAKALA
+            const urlParams = new URLSearchParams(window.location.search);
+            const q = urlParams.get('q');
+            if(q) {
+                challengePhrase = decodeURIComponent(q);
+                // Kullanıcıya meydan okuma geldiğini göster
+                document.querySelector('.tutorial-box').innerHTML = 
+                    `<div style="color:var(--accent-color); font-weight:bold;">⚔️ CHALLENGE ACCEPTED</div>
+                     <div style="color:#fff; margin-top:5px; font-style:italic;">"${challengePhrase}"</div>`;
+            }
+
             document.getElementById('start-screen').style.display = 'block';
         };
 
@@ -287,14 +300,21 @@
             osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(t+0.05);
         }
 
-        function startGame() {
+function startGame() {
             initAudio(); playClick();
             const inp = document.getElementById('username-input'); username = sanitizeUsername(inp.value);
             if(!username || username.length<2){ alert("Enter username!"); return;}
             saveUsername(username);
             
-            const pool = phrases[config.lang][config.diff];
-            state.target = pool[Math.floor(Math.random()*pool.length)];
+            // EĞER CHALLENGE VARSA ONU KULLAN, YOKSA RASTGELE SEÇ
+            if (challengePhrase) {
+                state.target = challengePhrase;
+                challengePhrase = null; // Bir sonraki tur normale dönsün
+            } else {
+                const pool = phrases[config.lang][config.diff];
+                state.target = pool[Math.floor(Math.random()*pool.length)];
+            }
+
             state.input = ""; state.active = true; state.start = Date.now();
 
             document.getElementById('start-screen').style.display='none';
@@ -353,10 +373,14 @@
             const score = document.getElementById('res-score').textContent;
             const diff = config.diff.toUpperCase();
             
+            // URL OLUŞTURMA: Oynanan kelimeyi linke ekle (?q=kelime)
+            const baseUrl = window.location.href.split('?')[0];
+            const challengeUrl = `${baseUrl}?q=${encodeURIComponent(state.target)}`;
+
             const shareData = {
                 title: 'Ghost Keyboard',
-                text: `👻 Ghost Keyboard (${diff})\nScore: ${score}\nACC: ${acc} | WPM: ${wpm}\nCan you beat me?`,
-                url: window.location.href
+                text: `👻 Ghost Keyboard (${diff})\nTarget: "${state.target}"\nScore: ${score}\nACC: ${acc} | WPM: ${wpm}\nCan you beat me? 👇`,
+                url: challengeUrl
             };
 
             if (navigator.share) {
