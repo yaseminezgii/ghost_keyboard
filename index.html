@@ -11,9 +11,9 @@
     ">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ghost Keyboard - Hacker Edition</title>
+    <title>Ghost Keyboard v2.0</title>
     
-    <!-- Screenshot Library -->
+    <!-- Screenshot Library (SRI Hash ile Güvenli Hale Getirildi) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
     <!-- Supabase SDK -->
@@ -37,6 +37,7 @@
             height: 100dvh; margin: 0; overflow: hidden; touch-action: none; transition: background 0.5s ease;
         }
         
+        /* Shake Animation */
         @keyframes shake {
             0% { transform: translate(1px, 1px) rotate(0deg); }
             10% { transform: translate(-1px, -2px) rotate(-1deg); }
@@ -56,6 +57,7 @@
         .scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1)); background-size: 100% 4px; pointer-events: none; z-index: 0; }
         .container { width: 100%; max-width: 850px; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; gap: 20px; position: relative; z-index: 2; }
         
+        /* Layout */
         .start-layout { display: flex; flex-direction: column; width: 100%; gap: 30px; align-items: center; }
         @media (min-width: 768px) { .start-layout { flex-direction: row; align-items: flex-start; justify-content: space-between; } .left-panel, .right-panel { flex: 1; width: 100%; } .right-panel { max-width: 350px; } }
 
@@ -75,6 +77,7 @@
         .btn-row { display: flex; width: 100%; margin-bottom: 10px; }
         .main-btn { background: var(--accent-color); color: #000; border: none; width: 100%; padding: 16px; font-size: 1.2rem; font-weight: 900; border-radius: 10px; cursor: pointer; box-shadow: 0 0 20px var(--glow-color); }
 
+        /* LEADERBOARD STYLES (UPDATED FOR COUNTDOWN) */
         .leaderboard-wrapper { width: 100%; background: rgba(15, 15, 15, 0.9); border: 1px solid #333; border-radius: 12px; padding: 20px; height: 100%; min-height: 300px; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
         .lb-header { width: 100%; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
@@ -225,7 +228,11 @@
         
         function sanitizeUsername(input) {
             if (!input) return '';
-            return input.trim().replace(/[<>'"&]/g, '').replace(/[^\w\s\u00C0-\u024F\u0400-\u04FF]/g, '').substring(0, 12);
+            return input
+                .trim()
+                .replace(/[<>'"&]/g, '') 
+                .replace(/[^\w\s\u00C0-\u024F\u0400-\u04FF]/g, '') 
+                .substring(0, 12);
         }
 
         function escapeHtml(text) {
@@ -261,13 +268,13 @@
         const phrases = {
             en: { 
                 easy: ["linux", "sudo", "code", "joker", "bond", "nasa", "tesla", "mars", "apple", "swift", "react", "node", "java", "ruby", "perl", "bash", "root", "user", "data", "byte", "file", "disk", "hack", "wifi", "grid", "neon", "flux", "core", "bios", "cmos"],
-                normal: ["hello world", "winter is coming", "show me the money", "just do it", "control is an illusion", "there is no spoon", "access denied", "system failure", "buffer overflow", "blue screen of death", "fatal error", "stack trace", "brute force", "neural network", "machine learning", "quantum computing", "artificial intelligence"], 
-                hard: ["sudo rm -rf /", "console.log('Error');", "404: Page not found.", "Houston, we have a problem.", "DROP TABLE users;", "alert('XSS Attack');", "while(true){fork();}", "git commit -m 'fix bug'", "docker-compose up -d", "kubectl get pods"] 
+                normal: ["hello world", "winter is coming", "show me the money", "just do it", "control is an illusion", "there is no spoon", "access denied", "system failure", "buffer overflow", "blue screen of death", "fatal error", "stack trace", "brute force", "neural network", "machine learning", "quantum computing", "artificial intelligence","Her şey aşk için", "bizde aileye yamuk olmaz", "Ben aslında yoğumm"], 
+                hard: ["sudo rm -rf /", "console.log('Error');", "404: Page not found.", "Houston, we have a problem.", "DROP TABLE users;", "alert('XSS Attack');", "while(true){fork();}", "git commit -m 'fix bug'", "docker-compose up -d", "kubectl get pods","Ay bu küçük, narin, hassas ve orantılı kulaklarım neler duyuyor", "Ne kadar da inanarak boş konuşuyor"] 
             },
             tr: { 
-                easy: ["yazilim", "kod", "kaos", "simit", "kedi", "ezel", "ramiz", "uzay", "vatan", "millet", "veri", "fare", "ekran", "kasa", "modem", "kablo", "dosya", "klasor", "sifre", "hakim", "savci", "polis", "radar", "pilot", "robot", "siber", "bulut", "sunucu"], 
-                normal: ["kod calisiyor elleme", "o gemi bir gun gelecek", "mesele olmek degil", "burasi karisacak", "sisteme giris yapildi", "baglanti koptu", "guvenlik duvari", "veri tabani hatasi", "mavi ekran verdi", "format atmak lazim", "klavye delikanlisi", "yasasin irkimiz", "bir gece ansizin"], 
-                hard: ["Noktali virgul nerede;", "SELECT * FROM dertler;", "Abi bana site yapsana?", "404 Sayfa Bulunamadi.", "sudo apt-get update", "console.log('Selam');", "if(money < 0) panic();", "git push origin master", "npm install dertler"] 
+                easy: ["yazilim", "kod", "kaos", "simit", "kedi", "ezel", "ramiz", "uzay", "vatan", "millet", "veri", "fare", "ekran", "kasa", "modem", "kablo", "dosya", "klasor", "sifre", "hakim", "savci", "polis", "radar", "pilot", "robot", "siber", "bulut", "sunucu", "linux", "sudo", "code", "joker", "bond", "nasa", "tesla", "mars", "apple", "swift", "react", "node", "java", "ruby", "perl", "bash", "root", "user", "data", "byte", "file", "disk", "hack", "wifi", "grid", "neon", "flux", "core", "bios", "cmos"], 
+                normal: ["kod calisiyor elleme", "o gemi bir gun gelecek", "mesele olmek degil", "burasi karisacak", "sisteme giris yapildi", "baglanti koptu", "guvenlik duvari", "veri tabani hatasi", "mavi ekran verdi", "format atmak lazim", "klavye delikanlisi", "yasasin irkimiz", "bir gece ansizin", "hello world", "winter is coming", "show me the money", "just do it", "control is an illusion", "there is no spoon", "access denied", "system failure", "buffer overflow", "blue screen of death", "fatal error", "stack trace", "brute force", "neural network", "machine learning", "quantum computing", "artificial intelligence", "Her şey aşk için", "biz de aileye yamuk olmaz", "Ben aslında yoğumm"], 
+                hard: ["Noktali virgul nerede;", "SELECT * FROM dertler;", "Abi bana site yapsana?", "404 Sayfa Bulunamadi.", "sudo apt-get update", "console.log('Selam');", "if(money < 0) panic();", "git push origin master", "npm install dertler", "Bugün de başkası adına utandık", "kubectl get pods", "sudo rm -rf /", "console.log('Error');", "404: Page not found.", "Houston, we have a problem.", "DROP TABLE users;", "alert('XSS Attack');", "while(true){fork();}", "git commit -m 'fix bug'", "docker-compose up -d", "Ay bu küçük, narin, hassas ve orantılı kulaklarım neler duyuyor", "Ne kadar da inanarak boş konuşuyor"] 
             }
         };
 
@@ -275,6 +282,7 @@
         window.onload = () => {
             const savedName = localStorage.getItem('ghostUsername');
             if(savedName) {
+                // LocalStorage Hygiene: Read, Sanitize, Re-save
                 username = sanitizeUsername(savedName); 
                 localStorage.setItem('ghostUsername', username); 
                 document.getElementById('username-input').value = username;
@@ -282,7 +290,7 @@
             
             fetchLeaderboard();
             setupRealtimeSubscription();
-            startCountdown();
+            startCountdown(); // Start the daily countdown
             document.getElementById('start-screen').style.display = 'block';
             initKeyboard();
         };
@@ -292,7 +300,7 @@
             function update() {
                 const now = new Date();
                 const tomorrow = new Date(now);
-                tomorrow.setHours(24, 0, 0, 0); 
+                tomorrow.setHours(24, 0, 0, 0); // Next Midnight
                 const diff = tomorrow - now;
                 
                 const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
@@ -311,6 +319,7 @@
             if (!supabase) return;
             const container = document.getElementById('lb-content');
             
+            // Daily Reset Logic: Get scores from today midnight
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const todayISO = today.toISOString();
@@ -362,16 +371,18 @@
                 .subscribe();
         }
 
-        /* --- SCORE SUBMISSION --- */
+        /* --- SCORE SUBMISSION (SECURE RPC) --- */
         async function saveScoreToCloud(score, wpm, acc, timeTaken) {
             if (!supabase) return;
             
+            // Frontend validation
             if (wpm > 350 || acc > 100 || !rateLimiter.canSubmit()) {
                 console.warn("Invalid stats or rate limit");
                 return;
             }
 
             try {
+                // CALLING THE SECURE SQL FUNCTION
                 const { error } = await supabase.rpc('submit_score_secure', {
                     p_username: username,
                     p_score: Math.floor(score),
@@ -402,7 +413,7 @@
                 return;
             }
             
-            saveUsername(username);
+            saveUsername(username); // Save to LocalStorage
             if (audioCtx.state === 'suspended') audioCtx.resume(); 
             playClick();
 
@@ -462,49 +473,10 @@
             document.getElementById('username-input').value = username;
         }
 
-        /* --- ROAST LOGIC (ENGLISH + POP CULTURE) --- */
-        function getRoast(acc, wpm) {
-            // 0. AFK / ZERO EFFORT
-            if (wpm === 0) return "AFK? Did you fall asleep? 💤";
-            if (acc === 0) return "Stormtrooper aim detected. 🔫 (0 hits)";
-
-            // 1. CHEATER / BOT
-            if (wpm > 250) return "Nice script, bro. 🤖 (Ban Hammer incoming)";
-
-            // 2. GOD TIER
-            if (wpm >= 100 && acc >= 98) return "He is the One. 🕶️ (Matrix)";
-            if (wpm >= 100 && acc >= 90) return "UNLIMITED POWER! ⚡ (Palpatine)";
-
-            // 3. LEGENDARY
-            if (wpm >= 80 && wpm < 100 && acc >= 95) return "Legolas aim! 🏹";
-            if (wpm >= 80 && wpm < 100 && acc >= 85) return "The Force is strong with this one. 🌌";
-
-            // 4. FAST BUT CLUMSY
-            if (wpm >= 80 && acc < 60) return "My eyes! 😵 Too fast, too furious, too wrong.";
-            if (wpm >= 60 && acc < 70) return "Stormtrooper Aim detected. 🔫";
-            if (wpm >= 60 && acc < 85) return "You lack control, young Padawan. 🧘";
-
-            // 5. SLOW BUT PERFECT
-            if (wpm < 30 && acc === 100) return "Dial-up Internet vibes... 🐌";
-            if (wpm < 40 && acc >= 95) return "An Ent taking 5 hours to say 'Hello'. 🌳";
-            if (wpm < 50 && acc >= 90) return "Slow... but safe. Like a Volvo. 🚗";
-
-            // 6. AVERAGE / NPC
-            if (wpm >= 40 && wpm < 70 && acc >= 90) return "Not great, not terrible. ☢️";
-            if (wpm >= 40 && wpm < 60 && acc < 90) return "NPC Energy. 😐 (Need more coffee)";
-
-            // 7. DISASTER
-            if (wpm < 20) return "Are you typing with a toaster? 🍞";
-            if (wpm < 30 && acc < 80) return "My grandma types faster... with her nose. 👃";
-            if (wpm < 40 && acc < 60) return "You shall not pass! 🧙‍♂️ (Because you failed)";
-
-            // DEFAULT
-            return "Emotional Damage. 💔 (Try again)";
-        }
-
         /* --- INPUT & SOUND --- */
         function playClick(isEnter = false) {
             const t = audioCtx.currentTime;
+            
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.frequency.setValueAtTime(isEnter ? 600 : 800, t);
@@ -528,6 +500,7 @@
         function triggerShake() {
             document.body.classList.add('shake-screen');
             document.getElementById('input-box-area').classList.add('error-glow');
+            
             const t = audioCtx.currentTime;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -538,6 +511,7 @@
             gain.gain.linearRampToValueAtTime(0, t + 0.1);
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(); osc.stop(t + 0.1);
+
             setTimeout(() => {
                 document.body.classList.remove('shake-screen');
                 document.getElementById('input-box-area').classList.remove('error-glow');
@@ -547,38 +521,136 @@
         function handle(char, el) {
             if(!state.active) return;
             if(navigator.vibrate) navigator.vibrate(5);
-            if(el) { el.classList.add('active-key'); setTimeout(()=>el.classList.remove('active-key'), 100); }
+            
+            if(el) { 
+                el.classList.add('active-key'); 
+                setTimeout(()=>el.classList.remove('active-key'), 100); 
+            }
 
             if(char === 'BACKSPACE') {
                 playClick();
                 state.input = state.input.slice(0, -1);
             } else {
                 state.input += char;
+                
                 const currentIndex = state.input.length - 1;
                 let expectedChar = "";
                 let inputChar = char;
+                
                 if(config.diff !== 'hard') {
                     inputChar = char.toLowerCase();
                     expectedChar = state.target[currentIndex] ? state.target[currentIndex].toLowerCase() : "";
                 } else {
                     expectedChar = state.target[currentIndex] || "";
                 }
+
                 if (expectedChar && inputChar !== expectedChar) {
                     triggerShake();
                 } else {
                     playClick();
                 }
             }
+            
             document.getElementById('user-input').textContent = state.input;
         }
 
         function calcAcc(a,b) {
             if (config.diff !== 'hard') { a = a.toLowerCase(); b = b.toLowerCase(); }
-            let m=0; let len = Math.max(a.length, b.length); if (len === 0) return 0;
+            let m=0; 
+            let len = Math.max(a.length, b.length); 
+            if (len === 0) return 0;
             for(let i=0;i<len;i++) if(a[i]===b[i]) m++;
             return Math.floor((m/len)*100);
         }
 
+         function getRoast(acc, wpm) {
+    // Rastgele seçim yapmak için yardımcı fonksiyon
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+    // 0. AFK / ZERO EFFORT
+    if (wpm === 0) return "AFK? Did you fall asleep on the keyboard? 💤";
+    if (acc === 0) return "You missed everything. Are you a Stormtrooper? 🔫";
+
+    // 1. CHEATER / BOT (IMPOSSIBLE SPEED > 250)
+    if (wpm > 250) {
+        return pick([
+            "Nice script, bro. 🤖 (Ban Hammer incoming)",
+            "CYBORG DETECTED 🤖",
+            "Are you Mr. Robot? 👨‍💻",
+            "He is the One. 🕶️"
+        ]);
+    }
+
+    // 2. GOD TIER (Speed: 100+, Accuracy: 90+)
+    if (wpm >= 100 && acc >= 90) {
+        const options = ["UNLIMITED POWER! ⚡ (Palpatine likes this)"];
+        // Eğer doğruluk %98 üzerindeyse Matrix mesajını da ihtimallere ekle
+        if (acc >= 98) options.push("He is the One. 🕶️ (Matrix Code Rain)");
+        return pick(options);
+    }
+
+    // 3. LEGENDARY (Speed: 80-100, High Accuracy)
+    if (wpm >= 80 && wpm < 100 && acc >= 85) {
+        const options = [
+            "The Force is strong with this one. 🌌",
+            "So close! 🤏"
+        ];
+        if (acc >= 95) options.push("Legolas aim! 🏹 (Elven precision)");
+        return pick(options);
+    }
+
+    // 4. FAST BUT CLUMSY (High Speed, Low Accuracy)
+    if (wpm >= 60 && acc < 85) {
+        const options = [];
+        // Duruma göre uygun mesajları havuza at
+        if (wpm >= 80 && acc < 60) options.push("My eyes! 😵 Too fast, too furious, too wrong.");
+        if (wpm >= 60 && acc < 70) options.push("Stormtrooper Aim detected. Pew pew! 🔫 (0 hits)");
+        if (wpm >= 70) options.push("You have speed, but you lack control, young Padawan. 🧘");
+        if (acc < 85) options.push("One typo ruined your career. 📉");
+        
+        // Eğer havuz boş kalırsa varsayılan bir tane dön (Genel kapsayıcı)
+        if (options.length === 0) return "Slow down and focus! 🛑";
+        return pick(options);
+    }
+
+    // 5. SLOW BUT PERFECT (Low Speed, High Accuracy)
+    if (wpm < 50 && acc >= 90) {
+        const options = [
+            "Slow... but safe. Like a Volvo. 🚗",
+            "Grandma speed, but perfect. 👵"
+        ];
+        if (wpm < 30 && acc === 100) options.push("Dial-up Internet vibes... 🐌 (Connecting...)");
+        if (wpm < 40 && acc >= 95) options.push("An Ent taking 5 hours to say 'Hello'. 🌳 (LOTR)");
+        return pick(options);
+    }
+
+    // 6. AVERAGE / NPC (MEH)
+    if (wpm >= 40 && wpm < 70 && acc >= 85) { // acc limitini 85 yaptım ki yukarıyla çakışmasın
+        const options = ["Not great, not terrible. (3.6 Roentgen) ☢️"];
+        if (wpm < 60) options.push("NPC Energy. 😐 (Need more coffee)");
+        return pick(options);
+    }
+
+    // 7. DISASTER (GRANDMA MODE - Low Speed, Low Accuracy)
+    if (wpm < 40 && acc < 60) {
+        // Bu şartı sağlayan TÜM mesajları bir havuza koyduk
+        return pick([
+            "Are you typing with a toaster? 🍞",
+            "My grandma types faster... with her nose. 👃",
+            "You shall not pass! 🧙‍♂️ (Because you failed)",
+            "Are you typing with your elbows? 💪",
+            "Try using fingers. 🖐️",
+            "Please delete the app. 💀",
+            "My eyes hurt. 🫣"
+        ]);
+    }
+
+    // DEFAULT FALLBACK (Kapsanmayan durumlar için)
+    return "Emotional Damage. 💔 (Try again)";
+}
+            // DEFAULT FALLBACK
+            return "Emotional Damage. 💔 (Try again)";
+        }
         function setDiff(val, btn) {
             config.diff = val; 
             config.backspace = val !== 'hard';
@@ -601,31 +673,80 @@
             c.innerHTML = '';
             let r = config.lang === 'tr' ? ["qwertyuıopğü", "asdfghjklşi", "zxcvbnmöç"] : ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
             document.documentElement.style.setProperty('--key-width', config.lang === 'tr' ? '7.8%' : '9.2%');
+            
             const makeRow = (chars) => {
-                let div = document.createElement('div'); div.className='row';
+                let div = document.createElement('div'); 
+                div.className='row';
                 chars.split('').forEach(ch => {
-                    let k = document.createElement('div'); k.className='key'; k.innerHTML=`<span>${ch.toUpperCase()}</span>`;
-                    const h = (e)=>{e.preventDefault(); handle(ch, k)}; k.ontouchstart=h; k.onmousedown=h; div.appendChild(k);
-                }); return div;
+                    let k = document.createElement('div'); 
+                    k.className='key'; 
+                    k.innerHTML=`<span>${ch.toUpperCase()}</span>`;
+                    const h = (e)=>{e.preventDefault(); handle(ch, k)}; 
+                    k.ontouchstart=h; 
+                    k.onmousedown=h; 
+                    div.appendChild(k);
+                }); 
+                return div;
             };
+            
             c.appendChild(makeRow(r[0]));
-            let r2 = makeRow(r[1]); r2.classList.add('staggered'); c.appendChild(r2);
-            let r3 = document.createElement('div'); r3.className='row';
-            let sh = document.createElement('div'); sh.className='key special'; sh.innerHTML='<span>⇧</span>'; r3.appendChild(sh);
+            let r2 = makeRow(r[1]); 
+            r2.classList.add('staggered'); 
+            c.appendChild(r2);
+            
+            let r3 = document.createElement('div'); 
+            r3.className='row';
+            let sh = document.createElement('div'); 
+            sh.className='key special'; 
+            sh.innerHTML='<span>⇧</span>'; 
+            r3.appendChild(sh);
+            
             r[2].split('').forEach(ch => {
-                let k = document.createElement('div'); k.className='key'; k.innerHTML=`<span>${ch.toUpperCase()}</span>`;
-                const h = (e)=>{e.preventDefault(); handle(ch, k)}; k.ontouchstart=h; k.onmousedown=h; r3.appendChild(k);
+                let k = document.createElement('div'); 
+                k.className='key'; 
+                k.innerHTML=`<span>${ch.toUpperCase()}</span>`;
+                const h = (e)=>{e.preventDefault(); handle(ch, k)}; 
+                k.ontouchstart=h; 
+                k.onmousedown=h; 
+                r3.appendChild(k);
             });
-            let bk = document.createElement('div'); bk.className='key special'; bk.innerHTML=config.backspace?'<span>⌫</span>':'<span>🔒</span>';
-            const bh = (e)=>{e.preventDefault(); if(config.backspace) handle('BACKSPACE', bk)}; bk.ontouchstart=bh; bk.onmousedown=bh; r3.appendChild(bk);
+            
+            let bk = document.createElement('div'); 
+            bk.className='key special'; 
+            bk.innerHTML=config.backspace?'<span>⌫</span>':'<span>🔒</span>';
+            const bh = (e)=>{e.preventDefault(); if(config.backspace) handle('BACKSPACE', bk)}; 
+            bk.ontouchstart=bh; 
+            bk.onmousedown=bh; 
+            r3.appendChild(bk);
             c.appendChild(r3);
-            let r4 = document.createElement('div'); r4.className='row';
-            let k123 = document.createElement('div'); k123.className='key special'; k123.innerHTML='<span>123</span>'; r4.appendChild(k123);
-            let kemj = document.createElement('div'); kemj.className='key special'; kemj.innerHTML='<span>😀</span>'; r4.appendChild(kemj);
-            let spc = document.createElement('div'); spc.className='key space'; spc.innerHTML='<span>space</span>';
-            const sh2 = (e)=>{e.preventDefault(); handle(' ', spc)}; spc.ontouchstart=sh2; spc.onmousedown=sh2; r4.appendChild(spc);
-            let ent = document.createElement('div'); ent.className='key enter'; ent.innerHTML='<span>GO</span>';
-            const eh = (e)=>{e.preventDefault(); finish(); playClick(true);}; ent.ontouchstart=eh; ent.onmousedown=eh; r4.appendChild(ent);
+            
+            let r4 = document.createElement('div'); 
+            r4.className='row';
+            let k123 = document.createElement('div'); 
+            k123.className='key special'; 
+            k123.innerHTML='<span>123</span>'; 
+            r4.appendChild(k123);
+            
+            let kemj = document.createElement('div'); 
+            kemj.className='key special'; 
+            kemj.innerHTML='<span>😀</span>'; 
+            r4.appendChild(kemj);
+            
+            let spc = document.createElement('div'); 
+            spc.className='key space'; 
+            spc.innerHTML='<span>space</span>';
+            const sh2 = (e)=>{e.preventDefault(); handle(' ', spc)}; 
+            spc.ontouchstart=sh2; 
+            spc.onmousedown=sh2; 
+            r4.appendChild(spc);
+            
+            let ent = document.createElement('div'); 
+            ent.className='key enter'; 
+            ent.innerHTML='<span>GO</span>';
+            const eh = (e)=>{e.preventDefault(); finish(); playClick(true);}; 
+            ent.ontouchstart=eh; 
+            ent.onmousedown=eh; 
+            r4.appendChild(ent);
             c.appendChild(r4);
         }
 
@@ -634,18 +755,41 @@
             const originalText = btn.textContent; 
             btn.textContent = "GENERATING...";
             const captureElement = document.getElementById('result-capture-area');
+            
             try {
-                const canvas = await html2canvas(captureElement, { backgroundColor: '#050505', scale: 2 });
+                const canvas = await html2canvas(captureElement, { 
+                    backgroundColor: '#050505', 
+                    scale: 2 
+                });
+                
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], "ghost_score.png", { type: "image/png" });
+                    
                     if (navigator.share && navigator.canShare({ files: [file] })) {
-                        try { await navigator.share({ title: 'Ghost Keyboard', text: `I scored ${document.getElementById('res-score').textContent} points! 👻`, files: [file] }); btn.textContent = "SHARED!"; } catch (err) { btn.textContent = "SHARE RESULT"; }
+                        try { 
+                            await navigator.share({ 
+                                title: 'Ghost Keyboard', 
+                                text: `I scored ${document.getElementById('res-score').textContent} points! 👻`, 
+                                files: [file] 
+                            }); 
+                            btn.textContent = "SHARED!"; 
+                        } catch (err) { 
+                            btn.textContent = "SHARE RESULT"; 
+                        }
                     } else {
-                        const link = document.createElement('a'); link.download = 'ghost_score.png'; link.href = canvas.toDataURL(); link.click(); btn.textContent = "SAVED!";
+                        const link = document.createElement('a'); 
+                        link.download = 'ghost_score.png'; 
+                        link.href = canvas.toDataURL(); 
+                        link.click(); 
+                        btn.textContent = "SAVED!";
                     }
                     setTimeout(() => btn.textContent = originalText, 2000);
                 });
-            } catch (e) { console.error(e); btn.textContent = "ERROR"; setTimeout(() => btn.textContent = originalText, 2000); }
+            } catch (e) { 
+                console.error(e); 
+                btn.textContent = "ERROR"; 
+                setTimeout(() => btn.textContent = originalText, 2000);
+            }
         }
     </script>
     <div id="input-box-area" class="input-box" style="display:none"></div>
