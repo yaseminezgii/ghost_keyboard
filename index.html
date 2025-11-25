@@ -530,86 +530,28 @@
             }, 1000);
         }
 
-        /* --- SHARE FUNCTION (MOBILE FIX) --- */
+         /* --- SHARE --- */
         async function shareScreenshot() {
             const btn = document.getElementById('share-btn');
-            const originalText = "📸 SHARE RESULT";
+            const originalText = btn.textContent; btn.textContent = "📸...";
+            const captureElement = document.getElementById('result-capture-area');
             
-            // Kullanıcıya işlem yapıldığını göster
-            btn.textContent = "⏳ Oluşturuluyor...";
-            btn.disabled = true;
-
-            const resultArea = document.getElementById('result-capture-area');
-
             try {
-                // 1. Görüntüyü Al
-                const canvas = await html2canvas(resultArea, {
-                    backgroundColor: '#050505',
-                    scale: 2, // Retina ekranlar için netlik
-                    logging: false,
-                    useCORS: true,
-                    allowTaint: true
-                });
-
-                // 2. Blob'a çevir
+                const canvas = await html2canvas(captureElement, { backgroundColor: '#050505', scale: 2, useCORS: true, logging: false });
                 canvas.toBlob(async (blob) => {
-                    if (!blob) {
-                        alert("Görüntü oluşturulamadı :(");
-                        resetBtn();
-                        return;
-                    }
-
-                    // Dosya nesnesi oluştur
+                    if (!blob) throw new Error("Blob failed");
                     const file = new File([blob], "ghost_score.png", { type: "image/png" });
                     
-                    // Paylaşılacak veri
-                    const shareData = {
-                        title: 'Ghost Keyboard',
-                        text: `Skorum: ${document.getElementById('res-score').textContent} puan! 👻`,
-                        files: [file]
-                    };
-
-                    // 3. Mobil Paylaşım Menüsünü Aç
-                    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-                        try {
-                            await navigator.share(shareData);
-                            btn.textContent = "✅ Paylaşıldı!";
-                        } catch (err) {
-                            // Kullanıcı menüyü kapatırsa hata vermesin
-                            if (err.name !== 'AbortError') {
-                                console.error("Paylaşım hatası:", err);
-                                downloadImage(canvas);
-                            }
-                        }
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try { await navigator.share({ title: 'Ghost Keyboard', text: `I scored ${document.getElementById('res-score').textContent} points! 👻`, files: [file] }); btn.textContent = "✅"; } 
+                        catch (err) { downloadImage(canvas); btn.textContent = "💾"; }
                     } else {
-                        // PC veya desteklemeyen tarayıcılar için direkt indir
-                        downloadImage(canvas);
+                        downloadImage(canvas); btn.textContent = "💾";
                     }
-                    
-                    resetBtn();
+                    setTimeout(() => btn.textContent = originalText, 2000);
                 }, 'image/png');
-
-            } catch (e) {
-                console.error("Hata:", e);
-                alert("Bir hata oluştu.");
-                resetBtn();
-            }
-
-            function resetBtn() {
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.disabled = false;
-                }, 2000);
-            }
-
-            function downloadImage(cnv) {
-                const link = document.createElement('a');
-                link.download = `ghost_score_${Date.now()}.png`;
-                link.href = cnv.toDataURL();
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                btn.textContent = "⬇️ İndirildi";
+            } catch (e) { 
+                console.error(e); btn.textContent = "❌"; setTimeout(() => btn.textContent = originalText, 2000); 
             }
         }
     </script>
