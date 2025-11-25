@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ghost Keyboard v2.4 (Lite)</title>
     
-    <!-- Sosyal Medya Önizlemeleri -->
     <meta property="og:title" content="Ghost Keyboard Challenge">
     <meta property="og:description" content="Invisible keys. Can you type blindly?">
     
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
  <style>
@@ -18,8 +16,7 @@
             --bg-color: #050505; --text-color: #e0e0e0; --key-bg: #2d2d30; --key-active: #fff;
             --accent-color: #00ff9d; --glow-color: rgba(0, 255, 157, 0.4);
             --bg-gradient: radial-gradient(circle at 50% 50%, #05150a 0%, #000 100%);
-            /* DEĞİŞİKLİK 1: Tuş genişliği %9'dan %8.5'e çekildi */
-            --key-width: 8%;
+            --key-width: 8.5%;
         }
         body.theme-easy { --accent-color: #00f2ff; --glow-color: rgba(0, 242, 255, 0.4); --bg-gradient: radial-gradient(circle at 50% 50%, #0a1525 0%, #000 100%); }
         body.theme-normal { --accent-color: #00ff9d; --glow-color: rgba(0, 255, 157, 0.4); --bg-gradient: radial-gradient(circle at 50% 50%, #05150a 0%, #000 100%); }
@@ -35,6 +32,8 @@
             flex-direction: column; 
             align-items: center; 
             min-height: 100vh;
+            /* Mobilde adres çubuğu sorununu çözer */
+            min-height: 100dvh; 
             margin: 0; 
             overflow-x: hidden;
             overflow-y: auto;
@@ -43,18 +42,26 @@
         }
 
         .container { 
-            width: 100%; max-width: 850px; min-height: 100vh;
+            width: 100%; max-width: 850px; 
+            /* Minimum yükseklik ekran boyu kadar */
+            min-height: 100vh; min-height: 100dvh;
             display: flex; flex-direction: column; 
-            justify-content: flex-start;
-            align-items:center;
-            padding: 10px; gap: 15px; /* Mobilde padding biraz azaltıldı */
+            /* DEĞİŞİKLİK: İçeriği dikeyde tam ortalar */
+            justify-content: center;
+            align-items: center;
+            padding: 10px; gap: 15px;
             position: relative; z-index: 2; 
         }
 
+        .scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 50%); background-size: 100% 4px; pointer-events: none; z-index: 0; }
+
         /* --- START SCREEN --- */
-        .start-layout { display: flex; flex-direction: column; width: 100%; gap: 30px; align-items: center; padding-bottom: 50px; }
+        /* Start ekranı uzun olabilir, o yüzden flex-start kullanıp margin ile itiyoruz */
+        #start-screen { width: 100%; display: none; margin: auto 0; }
+        
+        .start-layout { display: flex; flex-direction: column; width: 100%; gap: 30px; align-items: center; }
         @media (min-width: 768px) { 
-            .start-layout { flex-direction: row; align-items: flex-start; justify-content: space-between; padding-bottom: 0; } 
+            .start-layout { flex-direction: row; align-items: flex-start; justify-content: space-between; } 
             .left-panel, .right-panel { flex: 1; width: 100%; } 
             .right-panel { max-width: 350px; } 
         }
@@ -84,20 +91,17 @@
         .main-btn:active { transform: scale(0.98); }
 
         .secondary-btn {
-            background: transparent; 
-            border: 2px solid var(--accent-color);
-            color: var(--accent-color); 
-            width: 100%; padding: 16px; font-size: 1.1rem; font-weight: 900;
+            background: transparent; border: 2px solid var(--accent-color);
+            color: var(--accent-color); width: 100%; padding: 16px; font-size: 1.1rem; font-weight: 900;
             border-radius: 10px; margin-top: 15px; cursor: pointer;
             text-transform: uppercase; letter-spacing: 2px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
-            font-family: 'Courier New', monospace;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5); font-family: 'Courier New', monospace;
             transition: all 0.3s ease;
         }
         .secondary-btn:active { transform: scale(0.98); background: rgba(255,255,255,0.1); }
 
         /* --- LEADERBOARD --- */
-        .leaderboard-wrapper { width: 100%; background: rgba(15, 15, 15, 0.9); border: 1px solid #333; border-radius: 12px; padding: 20px; height: 100%; min-height: 300px; display: flex; flex-direction: column; }
+        .leaderboard-wrapper { width: 100%; background: rgba(15, 15, 15, 0.9); border: 1px solid #333; border-radius: 12px; padding: 20px; min-height: 250px; display: flex; flex-direction: column; }
         .lb-header { width: 100%; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .lb-title { color: var(--accent-color); font-size: 1rem; font-weight: bold; }
         .countdown-box { font-size: 0.8rem; color: #666; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 4px; border: 1px solid #222; display: flex; gap: 8px; }
@@ -109,32 +113,51 @@
         .lb-score { color: var(--accent-color); font-weight: bold; }
 
         /* --- GAME UI --- */
+        #game-screen { 
+            display: none; 
+            width: 100%; 
+            /* Flex-grow ile container içinde yer kaplamasını sağla, ama ortala */
+            flex: 1; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center;
+        }
+
         .timer-container { text-align: center; margin-bottom: 10px; }
         #timer { font-size: 3.5rem; font-weight: 900; color: var(--accent-color); text-shadow: 0 0 20px var(--glow-color); font-variant-numeric: tabular-nums; }
-        .target-box { background: rgba(255,255,255,0.05); border: 1px dashed #444; border-radius: 12px; padding: 15px; min-height: 80px; display: flex; align-items: center; justify-content: center; text-align: center; margin-bottom: 10px; width: 100%; max-width: 450px;}
-        .target-text { font-size: 1.3rem; color: #fff; font-weight: 600; line-height: 1.4; }
-        .input-box { font-size: 1.5rem; color: var(--accent-color); border-bottom: 2px solid #333; min-height: 40px; margin: 15px 0; text-align: center; white-space: pre; width: 100%; max-width: 450px; }
         
-        /* DEĞİŞİKLİK 2: Klavye container %100 yapıldı, max-width korundu */
+        .target-box { 
+            background: rgba(255,255,255,0.05); border: 1px dashed #444; 
+            border-radius: 12px; padding: 20px; 
+            min-height: 80px; width: 100%; max-width: 450px;
+            display: flex; align-items: center; justify-content: center; 
+            text-align: center; margin-bottom: 10px; 
+        }
+        .target-text { font-size: 1.4rem; color: #fff; font-weight: 600; line-height: 1.4; }
+        
+        .input-box { 
+            font-size: 1.5rem; color: var(--accent-color); 
+            border-bottom: 2px solid #333; min-height: 40px; 
+            margin: 15px 0 25px 0; text-align: center; 
+            white-space: pre; width: 100%; max-width: 450px; 
+        }
+        
         .keyboard { display: flex; flex-direction: column; width: 100%; max-width: 420px; padding: 5px 0; }
         
         .row { display: flex; justify-content: center; margin-bottom: 4px; width: 100%; }
         
-        /* DEĞİŞİKLİK 3: Tuşların yan boşlukları 2px'den 1px'e indirildi (Sıkıştırma) */
-        .key { background: var(--key-bg); color: #fff; height: 40px; border-radius: 5px; display: flex; align-items: center; justify-content: center; margin: 0 1px; flex: 0 0 auto; width: var(--key-width); cursor: pointer; }
+        .key { background: var(--key-bg); color: #fff; height: 42px; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin: 0 1px; flex: 0 0 auto; width: var(--key-width); cursor: pointer; }
         
         .key span { opacity: 0; } .key.special span, .key.enter span { opacity: 1; }
         .key:active, .key.active-key { background: #555; transform: scale(1.1); }
         
-        /* DEĞİŞİKLİK 4: Enter tuşu %22'den %18'e çekildi, mobilde taşmasın */
         .key.enter { width: 18% !important; background: var(--accent-color); color: #000; font-weight: bold; }
-        
         .key.space { flex-grow: 1; width: auto !important; font-size: 0.8rem; }
-        
-        /* DEĞİŞİKLİK 5: Orta sıradaki girinti %4'ten %1.5'e çekildi */
         .row.staggered { padding: 0 1.5%; }
 
-        /* --- RESULT SCREEN FIX --- */
+        /* --- RESULT SCREEN --- */
+        #result-screen { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: center; align-items: center;}
+
         #result-capture-area {
             width: 100%; max-width: 400px; padding: 25px; 
             background: #050505; text-align: center; 
@@ -150,10 +173,6 @@
         .shake-screen { animation: shake 0.3s; }
         @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
         .error-glow { text-shadow: 0 0 15px #ff0000 !important; color: #ff5555 !important; }
-        .scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 50%); background-size: 100% 4px; pointer-events: none; z-index: 0; }
-        
-        #start-screen { display: none; width: 100%; }
-        #game-screen, #result-screen { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: center; align-items: center;}
     </style>
 </head>
 <body class="theme-easy">
@@ -195,7 +214,7 @@
                             <div class="lb-title">🏆 TOP HACKERS</div>
                             <div class="countdown-box"><span>RESET:</span><span id="daily-timer">00:00:00</span></div>
                         </div>
-                        <div id="lb-content"><div style="text-align:center;color:#666">Loading...</div></div>
+                        <div id="lb-content"><div style="text-align:center;color:#666; margin-top:20px;">Loading...</div></div>
                     </div>
                 </div>
             </div>
@@ -231,7 +250,6 @@
             
             <div style="width:100%; max-width:400px; margin-top:10px;">
                 <button class="main-btn" onclick="resetGame()">TRY AGAIN</button>
-                <!-- SHARE BUTONU: Direkt Text/Link Paylaşımı -->
                 <button class="secondary-btn" id="share-btn" onclick="shareResult()">SHARE RESULT</button>
             </div>
         </div>
