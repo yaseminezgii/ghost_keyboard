@@ -281,8 +281,15 @@ window.onload = () => {
                 document.querySelector('.tutorial-box').innerHTML = 
                     `<div style="color:var(--accent-color); font-weight:bold;">⚔️ CHALLENGE ACCEPTED</div>
                      <div style="color:#fff; margin-top:5px; font-style:italic;">"${challengePhrase}"</div>`;
+
+                // --- DÜZELTME BURASI ---
+                // Kelimeyi hafızaya aldıktan sonra URL'yi temizle.
+                // Böylece F5 atılsa bile normal moda döner.
+                window.history.replaceState({}, document.title, window.location.pathname);
             }
 
+            document.getElementById('start-screen').style.display = 'block';
+        };
             document.getElementById('start-screen').style.display = 'block';
         };
 
