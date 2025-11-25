@@ -3,14 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ghost Keyboard v2.3 (Ultimate)</title>
+    <title>Ghost Keyboard v2.4 (Lite)</title>
     
     <!-- Sosyal Medya Önizlemeleri -->
     <meta property="og:title" content="Ghost Keyboard Challenge">
     <meta property="og:description" content="Invisible keys. Can you type blindly?">
-    
-    <!-- Screenshot Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -76,7 +73,6 @@
         .mode-btn.active { background: var(--accent-color); color: #000; border-color: var(--accent-color); box-shadow: 0 0 10px var(--glow-color); transform: scale(1.05); }
         .btn-row { display: flex; width: 100%; margin-bottom: 10px; }
         
-        /* GÜÇLENDİRİLMİŞ BUTON STİLLERİ */
         .main-btn { 
             background: var(--accent-color); color: #000; border: none; width: 100%; 
             padding: 16px; font-size: 1.2rem; font-weight: 900; border-radius: 10px; 
@@ -223,8 +219,8 @@
             
             <div style="width:100%; max-width:400px; margin-top:10px;">
                 <button class="main-btn" onclick="resetGame()">TRY AGAIN</button>
-                <!-- YENİ SHARE BUTONU -->
-                <button class="secondary-btn" id="share-btn" onclick="handleShare()">SHARE RESULT</button>
+                <!-- SHARE BUTONU: Direkt Text/Link Paylaşımı -->
+                <button class="secondary-btn" id="share-btn" onclick="shareResult()">SHARE RESULT</button>
             </div>
         </div>
     </div>
@@ -335,59 +331,29 @@
             document.getElementById('user-input').textContent=state.input;
         }
 
-        /* --- HYBRID SHARE FUNCTION (The Best of Both Worlds) --- */
-        async function handleShare() {
-            const btn = document.getElementById('share-btn');
-            const originalText = "SHARE RESULT";
+        /* --- NATIVE SHARE FUNCTION (TEXT BASED) --- */
+        async function shareResult() {
+            const acc = document.getElementById('res-acc').textContent;
+            const wpm = document.getElementById('res-wpm').textContent;
             const score = document.getElementById('res-score').textContent;
+            const diff = config.diff.toUpperCase();
             
-            btn.textContent = "⏳..."; btn.disabled = true;
+            const shareData = {
+                title: 'Ghost Keyboard',
+                text: `👻 Ghost Keyboard (${diff})\nScore: ${score}\nACC: ${acc} | WPM: ${wpm}\nCan you beat me?`,
+                url: window.location.href
+            };
 
-            // 1. Önce Resmi oluşturmayı dene (Çünkü daha havalı)
-            try {
-                const canvas = await html2canvas(document.getElementById('result-capture-area'), {
-                    backgroundColor: '#050505', scale: 2, useCORS: true, logging: false
+            if (navigator.share) {
+                try { await navigator.share(shareData); } catch (err) {}
+            } else {
+                const textToCopy = `${shareData.text}\n${shareData.url}`;
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    const btn = document.getElementById('share-btn');
+                    const originalText = btn.innerText;
+                    btn.innerText = "COPIED!";
+                    setTimeout(() => { btn.innerText = originalText; }, 2000);
                 });
-                
-                canvas.toBlob(async (blob) => {
-                    if(blob) {
-                        const file = new File([blob], "ghost_score.png", { type: "image/png" });
-                        if(navigator.share && navigator.canShare({ files: [file] })) {
-                            // Destekliyorsa Resmi Paylaş
-                            await navigator.share({
-                                title: 'Ghost Keyboard',
-                                text: `I scored ${score} points on Ghost Keyboard! 👻`,
-                                files: [file]
-                            });
-                            btn.textContent = "✅";
-                        } else {
-                            // Desteklemiyorsa (PC vb.) İndir
-                            const link = document.createElement('a');
-                            link.download = `ghost_score_${Date.now()}.png`;
-                            link.href = canvas.toDataURL();
-                            link.click();
-                            btn.textContent = "⬇️";
-                        }
-                    } else { throw new Error("Blob fail"); }
-                    setTimeout(()=> { btn.textContent=originalText; btn.disabled=false; }, 2000);
-                }, 'image/png');
-
-            } catch(e) {
-                // 2. Resim başarısız olursa, YAZI (TEXT) Paylaşımına geç (Fallback)
-                console.log("Image share failed, trying text...");
-                const textData = {
-                    title: 'Ghost Keyboard',
-                    text: `👻 Ghost Keyboard Challenge\nScore: ${score}\nCan you beat me?`,
-                    url: window.location.href
-                };
-                
-                if(navigator.share) {
-                    try { await navigator.share(textData); btn.textContent = "✅"; } catch(err){}
-                } else {
-                    navigator.clipboard.writeText(`${textData.text} ${textData.url}`);
-                    btn.textContent = "COPIED!";
-                }
-                setTimeout(()=> { btn.textContent=originalText; btn.disabled=false; }, 2000);
             }
         }
 
