@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ghost Keyboard v2.0</title>
     
-    <!-- Screenshot Library (Güvenli Link) -->
+    <!-- Screenshot Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        /* --- STYLES (LAYOUT FIXED) --- */
+        /* --- STYLES --- */
         :root {
             --bg-color: #050505; --text-color: #e0e0e0; --key-bg: #2d2d30; --key-active: #fff;
             --accent-color: #00ff9d; --glow-color: rgba(0, 255, 157, 0.4);
@@ -32,10 +32,10 @@
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            min-height: 100vh; /* Fix: 100dvh yerine min-height */
+            min-height: 100vh;
             margin: 0; 
-            overflow-x: hidden; /* Yan taşmayı engelle */
-            overflow-y: auto; /* Dikey kaydırmaya izin ver (Mobilde içerik sığmazsa) */
+            overflow-x: hidden;
+            overflow-y: auto;
             touch-action: manipulation; 
             transition: background 0.5s ease;
         }
@@ -67,7 +67,6 @@
             z-index: 2; 
         }
         
-        /* Start Layout - Responsive Fix */
         .start-layout { display: flex; flex-direction: column; width: 100%; gap: 30px; align-items: center; padding-bottom: 50px; }
         @media (min-width: 768px) { 
             .start-layout { flex-direction: row; align-items: flex-start; justify-content: space-between; padding-bottom: 0; } 
@@ -128,7 +127,7 @@
         .secondary-btn { background: transparent; border: 2px solid var(--accent-color); color: var(--accent-color); width: 100%; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 10px; max-width: 400px; }
 
         #start-screen { display: none; width: 100%; }
-        #game-screen, #result-screen { display: none; width: 100%; flex-direction: column; justify-content: center; align-items: center;}
+        #game-screen, #result-screen { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: center; align-items: center;}
         
         /* Result Capture Area Fix */
         #result-capture-area {
@@ -139,8 +138,8 @@
             text-align: center; 
             border: 1px solid #333; 
             border-radius: 15px;
-            position: relative; /* Screenshot için gerekli */
-            overflow: hidden;   /* Taşmaları gizle */
+            position: relative;
+            overflow: hidden;
         }
     </style>
 </head>
@@ -248,21 +247,29 @@
         let username = "";
         let audioCtx = null;
 
-        // --- WORD POOLS ---
-        const phrases = {
-            en: { 
-                easy: ["linux", "sudo", "code", "joker", "bond", "nasa", "tesla", "mars", "apple", "swift", "react", "node", "java", "ruby", "perl", "bash", "root", "user", "data", "byte", "file", "disk", "hack", "wifi", "grid", "neon", "flux", "core", "bios", "cmos"],
-                normal: ["hello world", "winter is coming", "show me the money", "just do it", "control is an illusion", "there is no spoon", "access denied", "system failure", "buffer overflow", "blue screen of death", "fatal error", "stack trace", "brute force", "neural network", "machine learning", "quantum computing", "artificial intelligence"], 
-                hard: ["sudo rm -rf /", "console.log('Error');", "404: Page not found.", "Houston, we have a problem.", "DROP TABLE users;", "alert('XSS Attack');", "while(true){fork();}", "git commit -m 'fix bug'", "docker-compose up -d", "kubectl get pods"] 
-            },
-            tr: { 
-                easy: ["yazilim", "kod", "kaos", "simit", "kedi", "ezel", "ramiz", "uzay", "vatan", "millet", "veri", "fare", "ekran", "kasa", "modem", "kablo", "dosya", "klasor", "sifre", "hakim", "savci", "polis", "radar", "pilot", "robot", "siber", "bulut", "sunucu"], 
-                normal: ["kod calisiyor elleme", "o gemi bir gun gelecek", "mesele olmek degil", "burasi karisacak", "sisteme giris yapildi", "baglanti koptu", "guvenlik duvari", "veri tabani hatasi", "mavi ekran verdi", "format atmak lazim", "klavye delikanlisi", "yasasin irkimiz", "bir gece ansizin"], 
-                hard: ["Noktali virgul nerede;", "SELECT * FROM dertler;", "Abi bana site yapsana?", "404 Sayfa Bulunamadi.", "sudo apt-get update", "console.log('Selam');", "if(money < 0) panic();", "git push origin master", "npm install dertler"] 
+        function initAudio() {
+            if (!audioCtx) {
+                try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } 
+                catch(e) { console.log("Audio not supported"); }
             }
-        };
+            if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        }
 
-        // --- INIT ---
+        /* --- WORD POOLS (FULL & FUNNY VERSION) --- */
+ const phrases = {
+        en: { 
+            easy: ["linux", "sudo", "code", "joker", "bond", "nasa", "tesla", "mars", "apple", "swift", "react", "node", "java", "ruby", "perl", "bash", "root", "user", "data", "byte", "file", "disk", "hack", "wifi", "grid", "neon", "flux", "core", "bios", "cmos"],
+            normal: ["hello world", "winter is coming", "show me the money", "just do it", "control is an illusion", "there is no spoon", "access denied", "system failure", "buffer overflow", "blue screen of death", "fatal error", "stack trace", "brute force", "neural network", "machine learning", "quantum computing", "artificial intelligence","Her şey aşk için", "bizde aileye yamuk olmaz", "Ben aslında yoğumm"], 
+            hard: ["sudo rm -rf /", "console.log('Error');", "404: Page not found.", "Houston, we have a problem.", "DROP TABLE users;", "alert('XSS Attack');", "while(true){fork();}", "git commit -m 'fix bug'", "docker-compose up -d", "kubectl get pods","Ay bu küçük, narin, hassas ve orantılı kulaklarım neler duyuyor", "Ne kadar da inanarak boş konuşuyor"] 
+        },
+        tr: { 
+            easy: ["yazilim", "kod", "kaos", "simit", "kedi", "ezel", "ramiz", "uzay", "vatan", "millet", "veri", "fare", "ekran", "kasa", "modem", "kablo", "dosya", "klasor", "sifre", "hakim", "savci", "polis", "radar", "pilot", "robot", "siber", "bulut", "sunucu", "linux", "sudo", "code", "joker", "bond", "nasa", "tesla", "mars", "apple", "swift", "react", "node", "java", "ruby", "perl", "bash", "root", "user", "data", "byte", "file", "disk", "hack", "wifi", "grid", "neon", "flux", "core", "bios", "cmos"], 
+            normal: ["kod calisiyor elleme", "o gemi bir gun gelecek", "mesele olmek degil", "burasi karisacak", "sisteme giris yapildi", "baglanti koptu", "guvenlik duvari", "veri tabani hatasi", "mavi ekran verdi", "format atmak lazim", "klavye delikanlisi", "yasasin irkimiz", "bir gece ansizin", "hello world", "winter is coming", "show me the money", "just do it", "control is an illusion", "there is no spoon", "access denied", "system failure", "buffer overflow", "blue screen of death", "fatal error", "stack trace", "brute force", "neural network", "machine learning", "quantum computing", "artificial intelligence", "Her şey aşk için", "biz de aileye yamuk olmaz", "Ben aslında yoğumm"], 
+            hard: ["Noktali virgul nerede;", "SELECT * FROM dertler;", "Abi bana site yapsana?", "404 Sayfa Bulunamadi.", "sudo apt-get update", "console.log('Selam');", "if(money < 0) panic();", "git push origin master", "npm install dertler", "Bugün de başkası adına utandık", "kubectl get pods", "sudo rm -rf /", "console.log('Error');", "404: Page not found.", "Houston, we have a problem.", "DROP TABLE users;", "alert('XSS Attack');", "while(true){fork();}", "git commit -m 'fix bug'", "docker-compose up -d", "Ay bu küçük, narin, hassas ve orantılı kulaklarım neler duyuyor", "Ne kadar da inanarak boş konuşuyor"] 
+        }
+    };
+
+        /* --- INITIALIZATION --- */
         window.onload = () => {
             try {
                 const savedName = localStorage.getItem('ghostUsername');
@@ -282,13 +289,6 @@
                 document.getElementById('start-screen').style.display = 'block';
             }
         };
-
-        function initAudio() {
-            if (!audioCtx) {
-                try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
-            }
-            if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-        }
 
         // --- GAMEPLAY ---
         function startGame() {
@@ -429,16 +429,54 @@
             }, 300);
         }
 
+        /* --- ROAST LOGIC (FULL & FUNNY) --- */
         function getRoast(acc, wpm) {
             const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-            if (wpm === 0) return "AFK? 💤";
-            if (acc === 0) return "Stormtrooper aim. 🔫";
-            if (wpm > 250) return pick(["Nice script bro 🤖", "CYBORG DETECTED"]);
-            if (wpm >= 100 && acc >= 90) return pick(["UNLIMITED POWER! ⚡", "He is the One 🕶️"]);
-            if (wpm >= 80 && acc >= 85) return pick(["Legolas aim! 🏹", "Force is strong 🌌"]);
-            if (wpm >= 60 && acc < 85) return pick(["Too fast! 😵", "Padawan control 🧘"]);
-            if (wpm < 50 && acc >= 90) return pick(["Slow but safe 🚗", "Grandma speed 👵"]);
-            return "Emotional Damage 💔";
+
+            if (wpm === 0) return "AFK? Did you fall asleep? 💤";
+            if (acc === 0) return "You missed everything. Are you a Stormtrooper? 🔫";
+
+            if (wpm > 250) return pick(["Nice script, bro. 🤖", "CYBORG DETECTED 🤖", "He is the One. 🕶️", "Are you Mr. Robot? 👨‍💻"]);
+
+            if (wpm >= 100 && acc >= 90) {
+                const opts = ["UNLIMITED POWER! ⚡"];
+                if (acc >= 98) opts.push("He is the One. 🕶️ (Matrix Code Rain)");
+                return pick(opts);
+            }
+
+            if (wpm >= 80 && wpm < 100 && acc >= 85) {
+                const opts = ["The Force is strong. 🌌", "So close! 🤏"];
+                if (acc >= 95) opts.push("Legolas aim! 🏹 (Elven precision)");
+                return pick(opts);
+            }
+
+            if (wpm >= 60 && acc < 85) {
+                const opts = [];
+                if (wpm >= 80 && acc < 60) opts.push("My eyes! 😵 Too fast, too furious, too wrong!");
+                if (wpm >= 60 && acc < 70) opts.push("Stormtrooper Aim detected. Pew pew! 🔫 (0 hits)");
+                if (wpm >= 70) opts.push("Control yourself, Padawan. 🧘", "One typo ruined your career. 📉");
+                if (opts.length === 0) return "Slow down!";
+                return pick(opts);
+            }
+
+            if (wpm < 50 && acc >= 90) {
+                const opts = ["Slow... but safe. 🚗", "Grandma speed. 👵"];
+                if (wpm < 30 && acc === 100) opts.push("Dial-up Internet vibes... 🐌");
+                if (wpm < 40 && acc >= 95) opts.push("Ent-ish speed. 🌳");
+                return pick(opts);
+            }
+
+            if (wpm >= 40 && wpm < 70 && acc >= 85) {
+                const opts = ["Not great, not terrible. ☢️"];
+                if (wpm < 60) opts.push("NPC Energy. 😐 (Need more coffee)");
+                return pick(opts);
+            }
+
+            if (wpm < 40 && acc < 60) {
+                return pick(["Toaster typing? 🍞", "Using elbows? 💪", "My eyes hurt. 🫣", "Try using fingers. 🖐️", "You shall not pass! 🧙‍♂️ (Because you failed)", "Please delete the app. 💀"]);
+            }
+
+            return "Emotional Damage. 💔 (Try again)";
         }
 
         function sanitizeUsername(v) { return v ? v.trim().replace(/[<>'"&]/g, '').substring(0,12) : ''; }
