@@ -16,7 +16,7 @@
             --bg-color: #050505; --text-color: #e0e0e0; --key-bg: #2d2d30; --key-active: #fff;
             --accent-color: #00ff9d; --glow-color: rgba(0, 255, 157, 0.4);
             --bg-gradient: radial-gradient(circle at 50% 50%, #05150a 0%, #000 100%);
-            --key-width: 8.5%;
+            --key-width: 8%;
         }
         body.theme-easy { --accent-color: #00f2ff; --glow-color: rgba(0, 242, 255, 0.4); --bg-gradient: radial-gradient(circle at 50% 50%, #0a1525 0%, #000 100%); }
         body.theme-normal { --accent-color: #00ff9d; --glow-color: rgba(0, 255, 157, 0.4); --bg-gradient: radial-gradient(circle at 50% 50%, #05150a 0%, #000 100%); }
@@ -136,10 +136,10 @@
         
         .keyboard { display: flex; flex-direction: column; width: 100%; max-width: 420px; padding: 5px 0; }
         .row { display: flex; justify-content: center; margin-bottom: 4px; width: 100%; }
-        .key { background: var(--key-bg); color: #fff; height: 42px; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin: 0 1px; flex: 0 0 auto; width: var(--key-width); cursor: pointer; }
+        .key { background: var(--key-bg); color: #fff; height: 40px; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin: 0 1px; flex: 0 0 auto; width: var(--key-width); cursor: pointer; }
         .key span { opacity: 0; } .key.special span, .key.enter span { opacity: 1; }
         .key:active, .key.active-key { background: #555; transform: scale(1.1); }
-        .key.enter { width: 18% !important; background: var(--accent-color); color: #000; font-weight: bold; }
+        .key.enter { width: 17% !important; background: var(--accent-color); color: #000; font-weight: bold; }
         .key.space { flex-grow: 1; width: auto !important; font-size: 0.8rem; }
         .row.staggered { padding: 0 1.5%; }
 
