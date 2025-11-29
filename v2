@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ghost Keyboard v4.1 (Identity Core)</title>
+    <title>Ghost Keyboard v4.5 (Daily Limit)</title>
     
     <meta property="og:title" content="Ghost Keyboard Challenge">
     <meta property="og:description" content="Invisible keys. Can you type blindly?">
@@ -90,6 +90,7 @@
             background: #111; border: 1px solid #333; color: #666;
             padding: 0 10px; border-radius: 2px; display: flex; align-items: center; justify-content: center;
             font-size: 0.8rem; font-weight: bold; min-width: 60px;
+            transition: border-color 0.3s;
         }
         .badge-progress-tag span { color: var(--accent-color); margin-left: 2px; }
         .sc-tag { border-color: #333; color: #888; }
@@ -352,6 +353,19 @@
 
         @keyframes shake-btn { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)} }
 
+        /* NEW EARN BUTTON & MINING STYLES */
+        .shop-footer { margin-top: 10px; text-align: center; padding-top: 10px; border-top: 1px dashed #333; margin-top:auto;}
+        
+        .earn-sc-btn { background: transparent; border: 1px dashed #555; color: #888; padding: 10px 15px; font-family: inherit; font-size: 0.75rem; cursor: pointer; transition: 0.3s; width: 100%; border-radius: 4px; display: flex; align-items: center; justify-content: center; gap: 5px;}
+        .earn-sc-btn:hover { border-color: var(--gold-color); color: var(--gold-color); background: rgba(255, 215, 0, 0.05); }
+        .earn-sc-btn:disabled { opacity: 0.5; cursor: not-allowed; animation: pulse 1s infinite; }
+        
+        .mining-status-box { width:100%; padding:10px; border:1px solid #333; color:#888; font-size:0.75rem; text-align:center; animation: pulse 1s infinite; background: rgba(255,255,255,0.02); border-radius:4px; }
+        .mining-success-box { width:100%; padding:10px; border:1px solid var(--gold-color); color:var(--gold-color); font-size:0.75rem; text-align:center; font-weight:bold; background: rgba(255, 215, 0, 0.1); border-radius:4px; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
+
+        @keyframes pulse { 0%{opacity:0.5} 50%{opacity:0.8} 100%{opacity:0.5} }
+        .blink { animation: blink 1s infinite; }
+
         .cursor-blink { animation: blink-cursor 0.7s infinite; display: inline-block; width: 8px; height: 1em; background: var(--accent-color); vertical-align: bottom; margin-left: 2px; }
         @keyframes blink-cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
         .close-modal { position: absolute; top: 15px; right: 15px; background: transparent; border: none; color: #666; font-size: 1.5rem; cursor: pointer; z-index: 10; }
@@ -536,6 +550,8 @@
                 <div class="shop-grid" id="shop-grid-content">
                     <!-- Shop Items Injected via JS -->
                 </div>
+                <!-- FOOTER AREA FOR MINING BONUS OR MANUAL EARN -->
+                <div class="shop-footer"></div>
             </div>
 
         </div>
@@ -571,6 +587,8 @@
             ]
         };
 
+        const BONUS_AMOUNTS = { easy: 50, normal: 75, hard: 100 };
+
         // Current active buffs for next game
         let activeBuffs = { 
             scan: false, trace: false, 
@@ -579,6 +597,7 @@
         };
 
         let currentShopFilter = 'easy'; // For modal shop tab
+        let isAdWatching = false; // For ad simulation
 
         let username = "";
         let audioCtx = null;
@@ -688,22 +707,61 @@
         // --- NEW MODAL & SHOP LOGIC ---
 
         function switchTab(tab) {
-            // Remove active classes
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            // Add active classes
             document.getElementById(`tab-btn-${tab}`).classList.add('active');
             document.getElementById(`tab-${tab}`).classList.add('active');
         }
 
         function filterShop(diff) {
             currentShopFilter = diff;
-            // Update buttons
             document.querySelectorAll('.shop-filter-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`filter-${diff}`).classList.add('active');
-            // Render content
             renderShopContent();
+
+            // CHECK DISCOVERY BONUS
+            const bonusKey = `ghostBonusClaimed_${diff}`;
+            const isClaimed = localStorage.getItem(bonusKey) === 'true';
+            const footer = document.querySelector('.shop-footer');
+
+            if (!isClaimed) {
+                // AUTO TRIGGER MINING BONUS
+                startBonusMining(diff, footer);
+            } else {
+                // SHOW STANDARD EARN BUTTON
+                footer.innerHTML = `
+                    <button class="earn-sc-btn" id="earn-sc-btn" onclick="watchAdSim()">
+                        <span class="blink">⚡</span> NEED CREDITS? EARN 💎
+                    </button>`;
+            }
+        }
+
+        function startBonusMining(diff, container) {
+            localStorage.setItem(`ghostBonusClaimed_${diff}`, 'true'); // Set immediately
+            const amount = BONUS_AMOUNTS[diff];
+            
+            container.innerHTML = `<div class="mining-status-box">INITIALIZING DATA INJECTION...</div>`;
+
+            setTimeout(() => {
+                const statusBox = container.querySelector('.mining-status-box');
+                if(statusBox) statusBox.innerText = `MINING CRYPTO... [1s]`;
+            }, 500);
+
+            setTimeout(() => {
+                addCredits(amount);
+                playPowerUp();
+                container.innerHTML = `<div class="mining-success-box">+${amount} 💎 RECEIVED</div>`;
+                
+                // Revert to manual earn button after delay
+                setTimeout(() => {
+                    if(currentShopFilter === diff) {
+                        container.innerHTML = `
+                            <button class="earn-sc-btn" id="earn-sc-btn" onclick="watchAdSim()">
+                                <span class="blink">⚡</span> NEED CREDITS? EARN 💎
+                            </button>`;
+                    }
+                }, 2000);
+            }, 1500);
         }
 
         function renderShopContent() {
@@ -742,8 +800,6 @@
                 
                 activeBuffs[hackId] = true;
                 playClick(true);
-                
-                // Re-render to update UI state
                 renderShopContent();
                 updateActiveHackIndicator();
             } else {
@@ -751,12 +807,69 @@
                 setTimeout(()=>btn.classList.remove('shake'), 400);
             }
         }
+        
+        // --- AD SIMULATION LOGIC (MANUAL WITH DAILY LIMIT) ---
+        function watchAdSim() {
+            if(isAdWatching) return;
+
+            // NEW: DAILY CHECK LOGIC
+            const dateStr = new Date().toDateString();
+            const claimKey = `ghostManualAd_${dateStr}`;
+            const btn = document.getElementById('earn-sc-btn');
+            // Reconstruct original text to ensure we don't lose the icon
+            const originalText = '<span class="blink">⚡</span> NEED CREDITS? EARN 💎';
+
+            if(localStorage.getItem(claimKey) === 'true') {
+                btn.innerText = "DAILY LIMIT REACHED (TRY TOMORROW)";
+                btn.style.borderColor = "#ff003c"; // Red for error
+                btn.style.color = "#ff003c";
+                btn.classList.add('shake');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.borderColor = "";
+                    btn.style.color = "";
+                    btn.classList.remove('shake');
+                }, 2000);
+                return;
+            }
+
+            isAdWatching = true;
+            btn.innerText = "MINING CRYPTO... [3s]";
+            btn.disabled = true;
+
+            let countdown = 3;
+            let timer = setInterval(() => {
+                countdown--;
+                if(countdown > 0) {
+                    btn.innerText = `MINING CRYPTO... [${countdown}s]`;
+                } else {
+                    clearInterval(timer);
+                    addCredits(25); 
+                    playPowerUp(); 
+                    
+                    // SAVE CLAIM
+                    localStorage.setItem(claimKey, 'true');
+
+                    btn.innerText = "+25 💎 RECEIVED";
+                    btn.style.borderColor = "var(--accent-color)";
+                    btn.style.color = "var(--accent-color)";
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        btn.style.borderColor = "";
+                        btn.style.color = "";
+                        isAdWatching = false;
+                    }, 2000);
+                }
+            }, 1000);
+        }
 
         function updateActiveHackIndicator() {
             const container = document.getElementById('active-hack-display');
             let activeItem = null;
             
-            // Find the first active buff to display
             for(const diff in HACKS_CONFIG) {
                 for(const h of HACKS_CONFIG[diff]) {
                     if(activeBuffs[h.id]) { activeItem = h; break; }
@@ -908,13 +1021,24 @@
                     tracker.lastTime = now;
                     tracker.combo++;
                     if(diff < 120) { tracker.burst++; } else { tracker.burst = 0; }
-                    if(tracker.combo >= 20) { triggerReveal(3000); tracker.combo = 0; }
-                    if(tracker.burst >= 10) { triggerReveal(1500); tracker.burst = 0; }
-                    let halfLen = Math.floor(state.target.length / 2);
-                    if(!tracker.halfwayDone && state.input.length === halfLen) {
-                        const currentAcc = calcAcc(state.target.substring(0, halfLen), state.input);
-                        if(currentAcc >= 98) { triggerReveal(2000); tracker.halfwayDone = true; }
+                    
+                    // --- MODIFIED REWARD LOGIC (ECONOMY FOCUS) ---
+                    if(tracker.combo >= 20) { 
+                        // REPLACED REVEAL WITH SC REWARD
+                        addCredits(5); 
+                        playPowerUp(); 
+                        tracker.combo = 0; 
+                        const scTag = document.querySelector('.sc-tag');
+                        if(scTag) { scTag.style.borderColor = '#ffd700'; setTimeout(()=>scTag.style.borderColor='#333', 500); }
                     }
+                    
+                    if(tracker.burst >= 10) { 
+                        // REPLACED REVEAL WITH MICRO SC REWARD
+                        addCredits(2);
+                        tracker.burst = 0; 
+                    }
+
+                    // REMOVED HALFWAY REVEAL LOGIC
                 }
             }
             document.getElementById('user-input').textContent=state.input;
