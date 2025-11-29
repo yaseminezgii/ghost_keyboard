@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ghost Keyboard v4.1 (Economy Update)</title>
+    
+    <meta property="og:title" content="Ghost Keyboard Challenge">
+    <meta property="og:description" content="Invisible keys. Can you type blindly?">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+ <style>
+        /* --- TEMEL AYARLAR --- */
+        :root {
+            --bg-color: #050505; --text-color: #e0e0e0; --key-bg: #2d2d30; --key-active: #fff;
+            --accent-color: #00ff9d; --glow-color: rgba(0, 255, 157, 0.4);
+            --bg-gradient: radial-gradient(circle at 50% 50%, #05150a 0%, #000 100%);
+            --key-width: 8%;
+            --gold-color: #ffd700;
+        }
+        body.theme-easy { --accent-color: #00f2ff; --glow-color: rgba(0, 242, 255, 0.4); --bg-gradient: radial-gradient(circle at 50% 50%, #0a1525 0%, #000 100%); }
+        body.theme-normal { --accent-color: #00ff9d; --glow-color: rgba(0, 255, 157, 0.4); --bg-gradient: radial-gradient(circle at 50% 50%, #05150a 0%, #000 100%); }
+        body.theme-hard { --accent-color: #ff003c; --glow-color: rgba(255, 0, 60, 0.4); --bg-gradient: radial-gradient(circle at 50% 50%, #250505 0%, #000 100%); }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        
+        body {
+            background: var(--bg-gradient); 
+            color: var(--text-color); 
+            font-family: 'Courier New', Courier, monospace;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh;
+            min-height: 100dvh; 
+            margin: 0; 
+            overflow-x: hidden;
+            overflow-y: auto;
+            touch-action: manipulation; 
+            transition: background 0.5s ease;
+        }
+
+        .container { 
+            width: 100%; max-width: 850px; 
+            min-height: 100vh; min-height: 100dvh;
+            display: flex; flex-direction: column; 
+            justify-content: center;
+            align-items: center;
+            padding: 10px; gap: 15px;
+            position: relative; z-index: 2; 
+        }
+
+        .scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 50%); background-size: 100% 4px; pointer-events: none; z-index: 0; }
+
+        /* --- START SCREEN --- */
+        #start-screen { width: 100%; display: none; margin: auto 0; }
+        
+        .start-layout { display: flex; flex-direction: column; width: 100%; gap: 20px; align-items: center; } 
+        @media (min-width: 768px) { 
+            .start-layout { flex-direction: row; align-items: flex-start; justify-content: space-between; } 
+            .left-panel, .right-panel { flex: 1; width: 100%; } 
+            .right-panel { max-width: 350px; } 
+        }
+
+        .logo-area { text-align: center; margin-bottom: 15px; }
+        .ghost-icon { font-size: 3.5rem; display: block; animation: float 3s infinite; filter: drop-shadow(0 0 10px var(--glow-color)); }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        h1 { font-size: 2rem; margin: 0; color: #fff; line-height: 0.9; }
+        h1 span { color: var(--accent-color); text-shadow: 0 0 15px var(--glow-color); }
+
+        .tutorial-box { 
+            background: #111; border: 1px solid #333; border-radius: 6px; 
+            padding: 12px; width: 100%; text-align: left; margin-bottom: 10px; 
+        }
+        .tut-item { display: flex; align-items: center; margin-bottom: 5px; color: #bbb; font-size: 0.85rem; }
+        .tut-icon { margin-right: 10px; font-size: 1.1rem; }
+
+        /* User Input Area with Profile Button & Badge Progress */
+        .user-action-area { display: flex; gap: 5px; margin-bottom: 10px; width: 100%; align-items: stretch; }
+        .name-input { 
+            background: rgba(255,255,255,0.05); border: 1px solid #333; color: #fff; 
+            font-family: 'Courier New', monospace; font-size: 1.1rem; flex-grow: 1; 
+            text-align: center; padding: 12px; outline: none; 
+            border-radius: 2px; transition: 0.3s; 
+        }
+        .name-input:focus { border-color: var(--accent-color); box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        
+        .badge-progress-tag, .sc-tag {
+            background: #111; border: 1px solid #333; color: #666;
+            padding: 0 10px; border-radius: 2px; display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: bold; min-width: 60px;
+        }
+        .badge-progress-tag span { color: var(--accent-color); margin-left: 2px; }
+        .sc-tag { border-color: #333; color: #888; }
+        .sc-tag span { color: var(--gold-color); margin-left: 4px; text-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
+
+        .profile-btn { 
+            background: #111; border: 1px solid var(--accent-color); color: var(--accent-color); 
+            padding: 0 15px; border-radius: 2px; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; transition: 0.3s;
+        }
+        .profile-btn:hover { background: var(--accent-color); color: #000; box-shadow: 0 0 15px var(--glow-color); }
+        
+        .mode-btn { background: transparent; border: 1px solid #333; color: #666; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold; flex: 1; text-align: center; margin: 0 2px; transition: 0.2s; }
+        .mode-btn.active { background: var(--accent-color); color: #000; border-color: var(--accent-color); box-shadow: 0 0 10px var(--glow-color); transform: scale(1.05); }
+        .btn-row { display: flex; width: 100%; margin-bottom: 10px; }
+        
+        .main-btn { 
+            background: var(--accent-color); color: #000; border: none; width: 100%; 
+            padding: 16px; font-size: 1.2rem; font-weight: 900; border-radius: 10px; 
+            cursor: pointer; box-shadow: 0 0 20px var(--glow-color); 
+            transition: all 0.3s ease; letter-spacing: 1px;
+        }
+        .main-btn:active { transform: scale(0.98); }
+
+        .secondary-btn {
+            background: transparent; border: 2px solid var(--accent-color);
+            color: var(--accent-color); width: 100%; padding: 16px; font-size: 1.1rem; font-weight: 900;
+            border-radius: 10px; margin-top: 15px; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 2px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5); font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+        }
+        .secondary-btn:active { transform: scale(0.98); background: rgba(255,255,255,0.1); }
+
+        /* --- LEADERBOARD --- */
+        .leaderboard-wrapper { width: 100%; background: rgba(15, 15, 15, 0.9); border: 1px solid #333; border-radius: 12px; padding: 20px; min-height: 250px; display: flex; flex-direction: column; }
+        .lb-header { width: 100%; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .lb-title { color: var(--accent-color); font-size: 1rem; font-weight: bold; }
+        
+        .countdown-box { font-size: 0.8rem; color: #666; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 4px; border: 1px solid #222; display: flex; gap: 8px; align-items: center; }
+        
+        #daily-timer { 
+            color: #ff5500; font-weight: 900; font-size: 0.9rem; letter-spacing: 1px;
+            text-shadow: 0 0 5px rgba(255, 85, 0, 0.5);
+        }
+        
+        .lb-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 8px 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .lb-row.highlight { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        .lb-rank { width: 30px; color: #666; font-weight: bold; }
+        .lb-name { flex-grow: 1; color: #ddd; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;}
+        .lb-score { color: var(--accent-color); font-weight: bold; }
+
+        /* --- GAME UI --- */
+        #game-screen { 
+            display: none; width: 100%; 
+            flex: 1; flex-direction: column; 
+            justify-content: center; align-items: center;
+            position: relative;
+        }
+
+        .timer-container { text-align: center; margin-bottom: 10px; }
+        #timer { font-size: 3.5rem; font-weight: 900; color: var(--accent-color); text-shadow: 0 0 20px var(--glow-color); font-variant-numeric: tabular-nums; }
+        
+        .target-box { 
+            background: rgba(255,255,255,0.05); border: 1px dashed #444; 
+            border-radius: 12px; padding: 20px; 
+            min-height: 80px; width: 100%; max-width: 450px;
+            display: flex; align-items: center; justify-content: center; 
+            text-align: center; margin-bottom: 10px; 
+        }
+        .target-text { font-size: 1.4rem; color: #fff; font-weight: 600; line-height: 1.4; }
+        
+        .input-box { 
+            font-size: 1.5rem; color: var(--accent-color); 
+            border-bottom: 2px solid #333; min-height: 40px; 
+            margin: 15px 0 25px 0; text-align: center; 
+            white-space: pre; width: 100%; max-width: 450px; 
+        }
+        
+        .keyboard { display: flex; flex-direction: column; width: 100%; max-width: 420px; padding: 5px 0; }
+        .row { display: flex; justify-content: center; margin-bottom: 4px; width: 100%; }
+        .key { background: var(--key-bg); color: #fff; height: 40px; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin: 0 1px; flex: 0 0 auto; width: var(--key-width); cursor: pointer; transition: all 0.2s; }
+        .key span { opacity: 0; transition: opacity 0.2s; } 
+        .key.special span, .key.enter span { opacity: 1; }
+        .key:active, .key.active-key { background: #555; transform: scale(1.1); }
+        .key.enter { width: 17% !important; background: var(--accent-color); color: #000; font-weight: bold; }
+        .key.space { flex-grow: 1; width: auto !important; font-size: 0.8rem; }
+        .row.staggered { padding: 0 1.5%; }
+
+        /* GHOST REVEAL & BUFF STYLES */
+        .key.revealed { border: 1px solid var(--accent-color); box-shadow: 0 0 15px var(--glow-color); background: rgba(0, 255, 157, 0.1); }
+        .key.revealed span { opacity: 1; color: var(--accent-color); text-shadow: 0 0 10px var(--accent-color); }
+
+        /* 1. ERROR TRACE */
+        .key.trace { border: 1px solid #ff3333; box-shadow: 0 0 20px rgba(255, 51, 51, 0.6); background: rgba(255, 51, 51, 0.2); animation: traceShake 0.4s; }
+        .key.trace span { opacity: 1; color: #ff3333; }
+        @keyframes traceShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-2px)} 75%{transform:translateX(2px)} }
+
+        /* 2. PREDICTIVE */
+        .key.predict { border: 1px solid rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.05); }
+        .key.predict span { opacity: 0.6; color: #aaa; }
+
+        /* 3. FREQUENCY OVERLAY (Passive) */
+        .key.freq { background: rgba(0, 255, 157, 0.05); border: 1px dashed rgba(255,255,255,0.1); }
+        .key.freq span { opacity: 0.2; }
+
+        /* 4. TIME BUFFER OVERLAY */
+        #buffer-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 50; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        #buffer-overlay.active { display: flex; }
+        .buffer-text { font-size: 1.5rem; color: #ff003c; font-weight: bold; margin-bottom: 10px; animation: blink 1s infinite; }
+        .buffer-count { font-size: 4rem; color: #fff; font-weight: 900; }
+
+        /* --- RESULT SCREEN --- */
+        #result-screen { display: none; width: 100%; height: 100%; flex-direction: column; justify-content: center; align-items: center;}
+
+        #result-capture-area {
+            width: 100%; max-width: 400px; padding: 25px; 
+            background: #050505; text-align: center; 
+            border: 1px solid #333; border-radius: 15px;
+            position: relative; overflow: hidden; margin: 0 auto;
+        }
+        .roast-box { background: #111; border: 1px solid var(--accent-color); color: #fff; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center; font-style: italic; box-shadow: 0 0 15px var(--glow-color); }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: #151515; padding: 10px; border-radius: 8px; text-align: center; }
+        .stat-val { font-size: 1.5rem; font-weight: bold; color: #fff; display: block; }
+        .stat-lbl { font-size: 0.6rem; color: #666; margin-top: 5px; }
+        .shake-screen { animation: shake 0.3s; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+        .error-glow { text-shadow: 0 0 15px #ff0000 !important; color: #ff5555 !important; }
+
+        /* --- IMPROVED DAILY UI (TACTICAL UPDATE) --- */
+        .missions-wrapper {
+            width: 100%; margin-bottom: 20px;
+            background: #000000; 
+            border-top: 1px solid #1a1a1a; 
+            border-bottom: 1px solid #1a1a1a; 
+            border-left: 5px solid #333; 
+            border-right: 5px solid #333; 
+            box-shadow: 0 0 10px rgba(0, 255, 157, 0.2); 
+            border-radius: 4px;
+            padding: 15px; display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .ms-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .ms-title-text { font-size: 0.85rem; color: var(--accent-color); font-weight: 800; letter-spacing: 1px; animation: glitch 3s infinite; }
+        #daily-date-tag { color: #ff5500; font-size: 0.7rem; font-weight: bold; letter-spacing: 1px; }
+
+        .protocol-progress-bg { width: 100%; height: 3px; background: #222; margin-bottom: 8px; border-radius: 2px; }
+        .protocol-progress-fill { height: 100%; background: var(--accent-color); width: 0%; transition: width 0.4s ease; box-shadow: 0 0 5px var(--accent-color); }
+
+        .ms-row { 
+            display: flex; align-items: center; justify-content: space-between; 
+            background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 6px; 
+            border: 1px solid #333; transition: 0.3s;
+        }
+        
+        .ms-row.completed { border: 1px solid var(--accent-color); background: rgba(0, 255, 157, 0.05); box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        .ms-row.hidden-proto { border: 1px dashed #444; background: rgba(0,0,0,0.5); opacity: 0.7; }
+        .ms-row.hidden-proto .ms-desc { color: #555; font-family: monospace; letter-spacing: 2px; }
+
+        .ms-desc { font-size: 0.8rem; color: #aaa; }
+        .ms-desc b { color: #fff; font-weight: 700; margin-right: 5px; } 
+
+        .ms-status { font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        .ms-status.scanning { color: #666; animation: blink 1.5s infinite; }
+        .ms-status.access-granted { color: var(--accent-color); text-shadow: 0 0 8px var(--accent-color); }
+        
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        .protocol-reward-icon { text-align: center; font-size: 1.5rem; color: #333; margin-top: 5px; transition: all 0.5s; }
+        .protocol-reward-icon.unlocked { color: var(--accent-color); text-shadow: 0 0 15px var(--accent-color); animation: float 2s infinite ease-in-out; }
+
+        @keyframes glitch {
+            0% { transform: translate(0); opacity: 1; }
+            94% { transform: translate(0); opacity: 1; }
+            95% { transform: translate(-1px, 1px); opacity: 0.9; }
+            96% { transform: translate(1px, -1px); opacity: 1; }
+            97% { transform: translate(0); opacity: 1; }
+            98% { transform: translate(1px, 1px); opacity: 0.8; }
+            100% { transform: translate(0); opacity: 1; }
+        }
+
+        /* --- BADGE NOTIFICATION --- */
+        .badge-notify {
+            position: fixed; top: 20%; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.9); border: 2px solid var(--accent-color);
+            padding: 20px 40px; border-radius: 10px; z-index: 200;
+            text-align: center; box-shadow: 0 0 30px var(--glow-color), inset 0 0 20px rgba(0,255,157,0.1);
+            display: none; animation: slideUp 0.5s ease-out forwards;
+        }
+        .badge-notify.show { display: block; }
+        .bn-icon { font-size: 3rem; margin-bottom: 10px; animation: anim-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .bn-title { color: #fff; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
+        .bn-name { color: var(--accent-color); font-size: 1.2rem; font-weight: 900; text-shadow: 0 0 10px var(--accent-color); }
+
+        @keyframes slideUp { 0%{opacity:0; transform:translate(-50%, 20px);} 100%{opacity:1; transform:translate(-50%, 0);} }
+        @keyframes anim-pop { 0%{transform:scale(0);} 80%{transform:scale(1.2);} 100%{transform:scale(1);} }
+
+        /* --- PROFILE MODAL --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 100; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
+        .modal-overlay.open { display: flex; opacity: 1; }
+        .profile-card { width: 90%; max-width: 450px; background: #080808; border: 1px solid var(--accent-color); border-radius: 12px; padding: 20px; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,255,157,0.05); transform: scale(0.9); transition: transform 0.3s; }
+        .modal-overlay.open .profile-card { transform: scale(1); }
+        .pc-header { display: flex; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 15px; }
+        .pc-avatar { font-size: 3rem; margin-right: 15px; background: #111; width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid #333; }
+        .pc-info h3 { margin: 0; color: #fff; font-size: 1.5rem; text-transform: uppercase; }
+        .pc-info span { font-size: 0.8rem; color: var(--accent-color); letter-spacing: 2px; }
+        .pc-stats { display: flex; gap: 10px; margin-bottom: 20px; }
+        .pc-stat-box { flex: 1; background: #111; padding: 10px; border-radius: 6px; text-align: center; }
+        .pc-stat-num { font-size: 1.2rem; font-weight: bold; color: #fff; display: block; }
+        .pc-stat-label { font-size: 0.6rem; color: #666; text-transform: uppercase; }
+        .pc-badges-title { font-size: 0.8rem; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .pc-badge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 250px; overflow-y: auto; }
+        .modal-badge { aspect-ratio: 1; background: #111; border: 1px solid #222; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; opacity: 0.3; transition: 0.2s; cursor: pointer; position: relative; }
+        .modal-badge.unlocked { opacity: 1; border-color: var(--accent-color); background: radial-gradient(circle, rgba(0,255,157,0.1), transparent); box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .modal-badge:hover { transform: scale(1.05); background: #1a1a1a; }
+        .badge-detail-panel { margin-top: 15px; background: #111; padding: 10px; border-radius: 6px; border-left: 3px solid #333; min-height: 50px; display: flex; flex-direction: column; justify-content: center; }
+        .bd-name { font-weight: bold; color: #fff; font-size: 0.9rem; }
+        .bd-desc { font-size: 0.75rem; color: #888; margin-top: 2px; }
+        .cursor-blink { animation: blink-cursor 0.7s infinite; display: inline-block; width: 8px; height: 1em; background: var(--accent-color); vertical-align: bottom; margin-left: 2px; }
+        @keyframes blink-cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .close-modal { position: absolute; top: 15px; right: 15px; background: transparent; border: none; color: #666; font-size: 1.5rem; cursor: pointer; }
+        .close-modal:hover { color: #fff; }
+
+        /* BUFF SELECTION ROW - REDESIGNED */
+        .hacks-container { width: 100%; margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+        .hacks-title { font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+        .hacks-row { display: flex; gap: 5px; width: 100%; justify-content: space-between; }
+        .hack-btn { 
+            background: #111; border: 1px solid #333; color: #666; font-size: 0.7rem; 
+            padding: 8px 5px; flex: 1; cursor: pointer; text-transform: uppercase; 
+            border-radius: 2px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+            transition: 0.2s; position: relative; overflow: hidden;
+        }
+        .hack-btn:hover { border-color: #555; }
+        .hack-btn.active { border-color: var(--accent-color); color: var(--accent-color); background: rgba(0,255,157,0.1); box-shadow: 0 0 10px var(--glow-color); }
+        .hack-cost { font-size: 0.6rem; color: var(--gold-color); opacity: 0.8; }
+        .hack-btn.shake { animation: shake-btn 0.4s ease-in-out; border-color: red; color: red; }
+        @keyframes shake-btn { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)} }
+
+    </style>
+</head>
+<body class="theme-easy">
+
+    <div class="scanline"></div>
+
+    <!-- BADGE NOTIFICATION OVERLAY -->
+    <div id="badge-notify-area" class="badge-notify">
+        <div class="bn-icon" id="bn-icon">🏆</div>
+        <div class="bn-title">ACHIEVEMENT UNLOCKED</div>
+        <div class="bn-name" id="bn-name">BADGE NAME</div>
+    </div>
+
+    <div class="container">
+        <!-- START SCREEN -->
+        <div id="start-screen">
+            <div class="start-layout">
+                <div class="left-panel">
+                    <div class="logo-area">
+                        <span class="ghost-icon">👻</span>
+                        <h1>GHOST<br><span>KEYBOARD</span></h1>
+                    </div>
+                    <div class="tutorial-box">
+                        <div class="tut-item"><span class="tut-icon">👀</span><span>Read the phrase.</span></div>
+                        <div class="tut-item"><span class="tut-icon">⌨️</span><span>Type blindly (Invisible Keys).</span></div>
+                        <div class="tut-item"><span class="tut-icon">🧠</span><span>Trust your muscle memory.</span></div>
+                    </div>
+                    
+                    <!-- USERNAME & PROFILE BTN -->
+                    <div class="user-action-area">
+                        <div class="badge-progress-tag" title="Badges Collected">
+                            BDG:<span id="badge-progress-text">0/7</span>
+                        </div>
+                        <div class="sc-tag" title="System Credits">
+                            💎<span id="sc-val">0</span>
+                        </div>
+                        <input type="text" id="username-input" class="name-input" placeholder="USERNAME" maxlength="12" onchange="saveUsername(this.value)">
+                        <button class="profile-btn" onclick="openProfile()" title="ID Card">🆔</button>
+                    </div>
+
+                    <!-- NEW DYNAMIC DAILY MISSION UI -->
+                    <div class="missions-wrapper" id="daily-mission-container">
+                        <div class="ms-desc">Initializing Protocol...</div>
+                    </div>
+                    <!-- END NEW UI -->
+
+                    <!-- DYNAMIC HACKS SHOP -->
+                    <div class="hacks-container">
+                        <div class="hacks-title">HACK PROTOCOLS [SHOP]</div>
+                        <div class="hacks-row" id="hacks-shop-row">
+                            <!-- JS Generated -->
+                        </div>
+                    </div>
+
+                    <div style="width:100%; margin-top:15px;">
+                        <div class="btn-row" id="diff-row">
+                            <div class="mode-btn active" onclick="setDiff('easy', this)">NOOB</div>
+                            <div class="mode-btn" onclick="setDiff('normal', this)">PRO</div>
+                            <div class="mode-btn" onclick="setDiff('hard', this)">HACKER</div>
+                        </div>
+                        <div class="btn-row" id="lang-row">
+                            <div class="mode-btn" onclick="setLang('en', this)">ENG 🇺🇸</div>
+                            <div class="mode-btn active" onclick="setLang('tr', this)">TUR 🇹🇷</div>
+                        </div>
+                        <button class="main-btn" onclick="startGame()">START GAME</button>
+                    </div>
+                </div>
+                <!-- LEADERBOARD -->
+                <div class="right-panel">
+                    <div class="leaderboard-wrapper">
+                        <div class="lb-header">
+                            <div class="lb-title">🏆 TOP HACKERS</div>
+                            <div class="countdown-box"><span>RESET:</span><span id="daily-timer">00:00:00</span></div>
+                        </div>
+                        <div id="lb-content"><div style="text-align:center;color:#666;margin-top:20px">Loading...</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="game-screen">
+            <!-- TIME BUFFER OVERLAY -->
+            <div id="buffer-overlay">
+                <div class="buffer-text">SYSTEM PAUSED // RECALIBRATING</div>
+                <div class="buffer-count" id="buffer-countdown">2</div>
+            </div>
+
+            <div class="timer-container"><div id="timer">0.0</div></div>
+            <div class="target-box"><span class="target-text" id="target-text">Loading...</span></div>
+            <div class="input-box" id="input-box-area"><span id="user-input"></span><span style="animation:blink 1s infinite">|</span></div>
+            <div class="keyboard" id="kb-container"></div>
+        </div>
+
+        <!-- RESULT SCREEN -->
+        <div id="result-screen">
+            <div id="result-capture-area">
+                <h2 style="color:#fff; margin-bottom:10px; font-family: 'Courier New', monospace;">GAME OVER</h2>
+                <div class="roast-box" id="roast-msg">...</div>
+                <div style="margin-bottom:15px;">
+                    <span style="font-size:3rem; font-weight:900; color:var(--accent-color); display:block;" id="res-score">0</span>
+                    <span style="font-size:0.8rem; color:#666; letter-spacing:2px;">TOTAL SCORE</span>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card"><span class="stat-val" id="res-wpm">0</span><span class="stat-lbl">WPM</span></div>
+                    <div class="stat-card"><span class="stat-val" id="res-acc">0%</span><span class="stat-lbl">ACC</span></div>
+                    <div class="stat-card"><span class="stat-val" id="res-time">0s</span><span class="stat-lbl">TIME</span></div>
+                </div>
+                <div style="margin-top:10px; font-size:0.9rem; color:#888;">
+                    HACKER: <span id="res-player" style="color:#fff; font-weight:bold;"></span>
+                </div>
+                <div style="font-size:0.7rem; color:#444; margin-top:5px;">ghostkeyboard.net</div>
+            </div>
+            
+            <div style="width:100%; max-width:400px; margin-top:10px;">
+                <button class="main-btn" onclick="resetGame()">TRY AGAIN</button>
+                <button class="secondary-btn" id="share-btn" onclick="shareResult()">SHARE RESULT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROFILE MODAL (OVERLAY) -->
+    <div class="modal-overlay" id="profile-modal" onclick="if(event.target===this) closeProfile()">
+        <div class="profile-card">
+            <button class="close-modal" onclick="closeProfile()">×</button>
+            <div class="pc-header">
+                <div class="pc-avatar">💀</div>
+                <div class="pc-info">
+                    <h3 id="pc-username">GHOST</h3>
+                    <span>ID: <span id="pc-id">UNKNOWN</span></span>
+                </div>
+            </div>
+            <div class="pc-stats">
+                <div class="pc-stat-box">
+                    <span class="pc-stat-num" id="pc-best-score">0</span>
+                    <span class="pc-stat-label">Best Score</span>
+                </div>
+                <div class="pc-stat-box">
+                    <span class="pc-stat-num" id="pc-badges-count">0/7</span>
+                    <span class="pc-stat-label">Badges</span>
+                </div>
+            </div>
+            <div class="pc-badges-title">ACHIEVEMENTS DATABASE</div>
+            <div class="pc-badge-grid" id="modal-badge-grid"></div>
+            <div class="badge-detail-panel" id="badge-detail">
+                <div class="bd-name">SELECT A BADGE</div>
+                <div class="bd-desc" id="bd-desc-text">Click on an icon above to see details.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- SUPABASE & INIT ---
+        const SUPABASE_URL = 'https://dhqegitqiarogxivzcyv.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRocWVnaXRxaWFyb2d4aXZ6Y3l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5NzAwMzMsImV4cCI6MjA3OTU0NjAzM30.qnBHT5grVgmoMk1yCQA2_R8J-Q5MBXW3W05bXRS7Xoc';
+        let supabase; try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e){}
+
+        const config = { diff: 'easy', lang: 'tr', backspace: true };
+        
+        // --- GAME VARIABLES ---
+        let state = { active: false, target: "", input: "", start: 0, timer: null };
+        let tracker = { combo: 0, burst: 0, lastTime: 0, halfwayDone: false, revealTimer: null, bufferUsed: false, rewindUsed: false };
+        let keyMap = {}; 
+        let userCredits = 0;
+        
+        // --- BUFF CONFIG & STATE ---
+        const HACKS_CONFIG = {
+            easy: [
+                { id: 'scan', name: 'GHOST SCAN', cost: 50, desc: '3s Full Vision' },
+                { id: 'trace', name: 'ERR TRACE', cost: 100, desc: 'Highlight Error' }
+            ],
+            normal: [
+                { id: 'predict', name: 'PREDICT', cost: 150, desc: 'Next 3 Chars' },
+                { id: 'buffer', name: 'TIME BUF', cost: 250, desc: 'Pause on Error' }
+            ],
+            hard: [
+                { id: 'freq', name: 'FREQ MAP', cost: 350, desc: 'Highlight Frequent' },
+                { id: 'rewind', name: 'REWIND', cost: 500, desc: 'Undo 3 Chars' }
+            ]
+        };
+
+        // --- NEW ECONOMY REWARDS CONFIG ---
+        const PROTOCOL_REWARDS = {
+            easy: { mission: 10, delta: 50 },
+            normal: { mission: 20, delta: 75 },
+            hard: { mission: 30, delta: 100 }
+        };
+
+        // Current active buffs for next game
+        let activeBuffs = { 
+            scan: false, trace: false, 
+            predict: false, buffer: false, 
+            freq: false, rewind: false 
+        };
+
+        let username = "";
+        let audioCtx = null;
+        let challengeModePhrase = null;
+        
+        const phrases = {
+  en: {
+    easy: [
+      "ghost",
+      "matrix",
+      "terminal",
+      "keyboard",
+      "monitor",
+      "galaxy",
+      "nebula",
+      "cyber",
+      "pixel",
+      "cache",
+      "server",
+      "client",
+      "router",
+      "switch",
+      "buffer",
+      "kernel",
+      "python",
+      "java",
+      "react",
+      "docker",
+      "linux",
+      "sudo",
+      "root",
+      "hacker",
+      "debug",
+      "compile",
+      "upload",
+      "download",
+      "wireless",
+      "firewall"
+    ],
+    normal: [
+      "hello world from the void",
+      "may the force be with you",
+      "winter is coming for your code",
+      "trust me i am a developer",
+      "talk is cheap show me the code",
+      "keep calm and refactor everything",
+      "once a coder always a coder",
+      "sleep is for the weak developer",
+      "keyboard is my magic wand",
+      "coffee is my only dependency",
+      "stay in the matrix follow the glitch",
+      "never deploy angry never deploy sleepy",
+      "bug free code is a beautiful lie",
+      "life is short use dark mode",
+      "reboot your brain and try again",
+      "this feature works on my machine",
+      "escape the loop embrace the stack",
+      "hack the planet but gently",
+      "ghost keyboard knows your soul",
+      "type blindly trust your muscle memory",
+      "Houston, we have a problem",
+
+    ],
+    hard: [
+      "one does not simply walk into production",
+      "there is no spoon only the keyboard",
+      "i was born to type in the dark",
+      "the matrix has you press any key",
+      "once you see the bug you see everything",
+      "artificial intelligence still needs human panic",
+      "i do not fix bugs i tame creatures",
+      "infinite loop is a lifestyle not a bug",
+      "every keystroke is a confession of the soul",
+      "behind every commit there is a small tragedy",
+      "real hackers debug without looking at the screen",
+      "if you can read this you are already too deep",
+      "ghost keyboard whispers trust your fingers not your eyes",
+      "the code you wrote at midnight will judge you at dawn",
+      "every error message is a secret love letter from the system",
+      "those who fear typos should not seek true power",
+      "your hands remember what your mind forgot",
+      "some keys are visible only to the brave",
+      "the fastest typist is the one who never hesitates",
+      "the real boss fight is your own impatience"
+    ]
+  },
+  tr: {
+    easy: [
+      "kedi",
+      "kopek",
+      "simit",
+      "cay",
+      "kahve",
+      "yazilim",
+      "kod",
+      "klavye",
+      "monitor",
+      "fare",
+      "sunucu",
+      "ag",
+      "paket",
+      "sifre",
+      "bulut",
+      "veri",
+      "tablo",
+      "robot",
+      "uzay",
+      "dunya",
+      "gezegen",
+      "film",
+      "dizi",
+      "oyun",
+      "matrix",
+      "hacker",
+      "bilim",
+      "gece",
+      "karanlik",
+      "ghost",
+      "matrix",
+      "terminal",
+      "keyboard",
+      "monitor",
+      "galaxy",
+      "nebula",
+      "cyber",
+      "pixel",
+      "cache",
+      "server",
+      "client",
+      "router",
+      "switch",
+      "buffer",
+      "kernel",
+      "python",
+      "java",
+      "react",
+      "docker",
+      "linux",
+      "sudo",
+      "root",
+      "hacker",
+      "debug",
+      "compile",
+      "upload",
+      "download",
+      "wireless",
+      "firewall"
+    ],
+    normal: [
+      "kod calisiyor elleme sakin ol",
+      "bugun de loglara gomulduk",
+      "terminal benim ic dunyam",
+      "cay icmeden kod yazmak zor",
+      "sunucu ayakta ama biz degiliz",
+      "gece gunduz debug modundayim",
+      "veri tabani yine trip atti",
+      "bu sefer hic hata olmayacak diyorum",
+      "yazilimci her yerde ofis bulur",
+      "klavye delikanlisi mesaiye basladi",
+      "ag baglantisi gidince ruhum da gitti",
+      "commit atmadan uyumak yasak gibi",
+      "bugun de standup sadece ayakta kalmak oldu",
+      "yapay zeka bizi mi yoksa loglari mi izliyor",
+      "ekrana bakmaktan zaman kavramini unuttum",
+      "bu script bir gun mukemmel olacak",
+      "bilgisayar yavas ben hizliyim demek istiyorum",
+      "duzeltilecek seyler listesi hic bitmiyor",
+      "sanki her sorun bana bakiyor gibi",
+      "ghost klavye sabrimizi test etmeye geldi",
+      "Noktali virgul nerede",
+      "Ben aslında yogumm",
+      "Her şey aşk için",
+      "hello world from the void",
+      "may the force be with you",
+      "winter is coming for your code",
+      "trust me i am a developer",
+      "talk is cheap show me the code",
+      "keep calm and refactor everything",
+      "once a coder always a coder",
+      "sleep is for the weak developer",
+      "keyboard is my magic wand",
+      "coffee is my only dependency",
+      "stay in the matrix follow the glitch",
+      "never deploy angry never deploy sleepy",
+      "bug free code is a beautiful lie",
+      "life is short use dark mode",
+      "reboot your brain and try again",
+      "this feature works on my machine",
+      "escape the loop embrace the stack",
+      "hack the planet but gently",
+      "ghost keyboard knows your soul",
+      "type blindly trust your muscle memory",
+      "Houston, we have a problem",
+    ],
+    hard: [
+      "bugun de baskasi adina utandik ama devam ediyoruz",
+      "bu kodu kim yazdi bilmiyorum ama artik benim sorunum",
+      "her sey kontrol altinda gibi ama icimde tuhaf bir his var",
+      "sanki her sey cok kolaymis gibi davranan insanlar var",
+      "son anda gelen isler bütün planlari bozuyor yine",
+      "toplanti ustune toplanti var kimse kod yazamiyor",
+      "unit test yazmaya niyet var ama zaman yok gibi",
+      "bu sefer gercekten refactor yapacagim diye soz veriyorum",
+      "gece yarisi production hatasi ciktiginda ruh bedeni terk ediyor",
+      "sunucular ayakta ama ruhlar hafifce sistemden cikis yapiyor",
+      "herkes uzaktan calisiyor ama sorunlar tam yanimizda bekliyor",
+      "yapilacaklar listesi bitmiyor sadece sekil degistiriyor",
+      "klavyeye vurdukca sorunlar cogaliyor gibi hissediyorum",
+      "bug oldur bug yarat dongusune hos geldin kahraman",
+      "kimse anlamasa da log satirlari her seyi anlatabiliyor",
+      "en buyuk risk her zaman son dakika degisiklikleri oluyor",
+      "sanki dunya sadece acil islerden olusuyor gibi davraniliyor",
+      "ama biz yine de kod yazmayi birakmiyoruz",
+      "ghost klavye ile yazarken zaman algisi kayboluyor",
+      "parmaklar dogru yeri biliyor gozler sadece bakiyor",
+      "Ne kadar da inanarak boş konuşuyor",
+      "Ay bu küçük, narin, hassas ve orantılı kulaklarım neler duyuyor",
+      "one does not simply walk into production",
+      "there is no spoon only the keyboard",
+      "i was born to type in the dark",
+      "the matrix has you press any key",
+      "once you see the bug you see everything",
+      "artificial intelligence still needs human panic",
+      "i do not fix bugs i tame creatures",
+      "infinite loop is a lifestyle not a bug",
+      "every keystroke is a confession of the soul",
+      "behind every commit there is a small tragedy",
+      "real hackers debug without looking at the screen",
+      "if you can read this you are already too deep",
+      "ghost keyboard whispers trust your fingers not your eyes",
+      "the code you wrote at midnight will judge you at dawn",
+      "every error message is a secret love letter from the system",
+      "those who fear typos should not seek true power",
+      "your hands remember what your mind forgot",
+      "some keys are visible only to the brave",
+      "the fastest typist is the one who never hesitates",
+      "the real boss fight is your own impatience"
+
+    ]
+  }
+};
+
+        
+        window.onload = () => {
+            const savedName = localStorage.getItem('ghostUsername');
+            if(savedName) username = sanitizeUsername(savedName);
+            
+            // LOAD CREDITS
+            userCredits = parseInt(localStorage.getItem('ghostUserCredits') || '0');
+            updateCreditsUI();
+
+            if(supabase) { fetchLeaderboard(); setupRealtimeSubscription(); }
+            startCountdown();
+            setupDailyMissions();
+            updateBadgeProgress();
+            renderHacksShop(); // Render initial shop
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            if(urlParams.has('c')) {
+                challengeModePhrase = decodeURIComponent(urlParams.get('c'));
+                
+                const titleSpan = document.querySelector('.logo-area h1 span');
+                if(titleSpan) {
+                    titleSpan.textContent = "CHALLENGE";
+                    titleSpan.style.color = "#ff003c";
+                    titleSpan.classList.add('shake-screen');
+                }
+                document.getElementById('diff-row').style.display = 'none';
+                document.getElementById('lang-row').style.display = 'none';
+                
+                const tutBox = document.querySelector('.tutorial-box');
+                if(tutBox) {
+                    tutBox.innerHTML = `<div style="color:#ff003c;text-align:center;font-weight:bold;animation:blink 2s infinite">⚠️ CHALLENGE ACCEPTED ⚠️<br>Friend sent you a specific phrase.</div>`;
+                }
+            }
+            document.getElementById('start-screen').style.display = 'block';
+        };
+
+        function initAudio() {
+            if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; if(AC) audioCtx = new AC(); }
+            if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playClick(isEnter=false) {
+            if(!audioCtx) return;
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(isEnter?600:800, t); osc.frequency.exponentialRampToValueAtTime(100, t+0.05);
+            gain.gain.setValueAtTime(0.1, t); gain.gain.exponentialRampToValueAtTime(0.01, t+0.05);
+            osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(t+0.05);
+        }
+
+        /* --- NEW AUDIO: POWER UP SOUND --- */
+        function playPowerUp() {
+            if(!audioCtx) return;
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(400, t);
+            osc.frequency.exponentialRampToValueAtTime(1200, t + 0.3);
+            gain.gain.setValueAtTime(0.2, t);
+            gain.gain.linearRampToValueAtTime(0, t + 0.3);
+            osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.start(); osc.stop(t + 0.3);
+        }
+
+        /* --- NEW AUDIO: BADGE UNLOCK SOUND --- */
+        function playBadgeSound() {
+            if(!audioCtx) return;
+            const t = audioCtx.currentTime;
+            const gain = audioCtx.createGain();
+            gain.gain.value = 0.2;
+            gain.connect(audioCtx.destination);
+            
+            // Major Arpeggio
+            [600, 750, 900, 1200].forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, t + i*0.1);
+                osc.connect(gain);
+                osc.start(t + i*0.1);
+                osc.stop(t + i*0.1 + 0.3);
+            });
+        }
+
+        // --- ECONOMY SYSTEM ---
+        function updateCreditsUI() {
+            document.getElementById('sc-val').innerText = userCredits;
+        }
+
+        function addCredits(amount) {
+            userCredits += amount;
+            localStorage.setItem('ghostUserCredits', userCredits);
+            updateCreditsUI();
+        }
+
+        function buyHack(hackId, cost, btn) {
+            if(activeBuffs[hackId]) return; 
+            
+            if(userCredits >= cost) {
+                userCredits -= cost;
+                localStorage.setItem('ghostUserCredits', userCredits);
+                updateCreditsUI();
+                
+                activeBuffs[hackId] = true;
+                btn.classList.add('active');
+                playClick(true);
+            } else {
+                btn.classList.add('shake');
+                setTimeout(()=>btn.classList.remove('shake'), 400);
+            }
+        }
+
+        function renderHacksShop() {
+            const container = document.getElementById('hacks-shop-row');
+            container.innerHTML = '';
+            
+            const hacks = HACKS_CONFIG[config.diff];
+            if(!hacks) return;
+
+            hacks.forEach(h => {
+                const btn = document.createElement('div');
+                btn.className = `hack-btn ${activeBuffs[h.id] ? 'active' : ''}`;
+                btn.innerHTML = `<span>${h.name}</span><span class="hack-cost">💎${h.cost}</span>`;
+                btn.onclick = () => buyHack(h.id, h.cost, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function startGame() {
+            initAudio(); playClick();
+            const inp = document.getElementById('username-input'); username = sanitizeUsername(inp.value);
+            if(!username || username.length<2){ alert("Enter username!"); return;}
+            saveUsername(username);
+            
+            // Check for Matrix Vision Reward (From Delta Protocol)
+            if(localStorage.getItem('ghostRewardPending') === 'true') {
+                setTimeout(() => {
+                    triggerReveal(3000); 
+                    playPowerUp();
+                }, 500); 
+                localStorage.removeItem('ghostRewardPending');
+            }
+
+            if (challengeModePhrase) {
+                state.target = challengeModePhrase;
+                challengeModePhrase = null; 
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else {
+                const pool = phrases[config.lang][config.diff];
+                state.target = pool[Math.floor(Math.random()*pool.length)];
+            }
+
+            // RESET GAME STATE
+            state.input = ""; state.active = true; state.start = Date.now();
+            tracker = { combo: 0, burst: 0, lastTime: Date.now(), halfwayDone: false, revealTimer: null, bufferUsed: false, rewindUsed: false };
+
+            document.getElementById('start-screen').style.display='none';
+            document.getElementById('result-screen').style.display='none';
+            document.getElementById('game-screen').style.display='flex';
+            
+            initKeyboard();
+            document.getElementById('target-text').textContent = state.target;
+            document.getElementById('user-input').textContent = "";
+            
+            if(state.timer) clearInterval(state.timer);
+            state.timer = setInterval(()=>{
+                if(!document.getElementById('buffer-overlay').classList.contains('active')) {
+                    document.getElementById('timer').textContent=((Date.now()-state.start)/1000).toFixed(1);
+                }
+            },50);
+
+            // --- ACTIVATE BOUGHT BUFFS ---
+            
+            // 1. Ghost Scan (Easy)
+            if(activeBuffs.scan) {
+                triggerReveal(3000);
+            }
+
+            // 2. Predictive (Normal)
+            if(activeBuffs.predict) updatePredictiveVisuals();
+
+            // 3. Frequency Overlay (Hard)
+            if(activeBuffs.freq) highlightFrequentKeys();
+        }
+
+        function finish() {
+            if(!state.active) return; state.active = false; clearInterval(state.timer);
+            if(tracker.revealTimer) { clearTimeout(tracker.revealTimer); removeReveal(); }
+
+            const t = (Date.now()-state.start)/1000;
+            const acc = calcAcc(state.target, state.input);
+            const wpm = Math.round((state.input.length/5)/(t/60))||0;
+            const score = Math.floor(wpm * (acc/100));
+
+            let totalGames = parseInt(localStorage.getItem('ghostTotalGames') || '0') + 1;
+            localStorage.setItem('ghostTotalGames', totalGames);
+
+            // EARN CREDITS (Base: 1 SC per 10 Score)
+            const earnedCredits = Math.floor(score / 10);
+            if(earnedCredits > 0) addCredits(earnedCredits);
+
+            saveScoreToCloud(score, wpm, acc, t);
+            checkDailyProgress(score, wpm, acc);
+            checkBadges(score, wpm, acc);
+            saveBestScore(score);
+            updateBadgeProgress();
+
+            // RESET BUFFS AFTER GAME
+            activeBuffs = { 
+                scan: false, trace: false, 
+                predict: false, buffer: false, 
+                freq: false, rewind: false 
+            };
+            renderHacksShop(); // Re-render to show reset state
+
+            document.getElementById('game-screen').style.display='none';
+            document.getElementById('result-screen').style.display='flex';
+            document.getElementById('res-score').textContent=score;
+            document.getElementById('res-wpm').textContent=wpm;
+            document.getElementById('res-acc').textContent=acc+"%";
+            document.getElementById('res-time').textContent=t.toFixed(1)+"s";
+            document.getElementById('roast-msg').textContent=getRoast(acc,wpm);
+            document.getElementById('res-player').textContent=username;
+        }
+
+        function handle(char, el) {
+            if(!state.active) return;
+            if(navigator.vibrate) navigator.vibrate(5);
+            if(el) { el.classList.add('active-key'); setTimeout(()=>el.classList.remove('active-key'),100); }
+            
+            if(char==='BACKSPACE') { 
+                playClick(); 
+                state.input=state.input.slice(0,-1);
+                tracker.combo = 0; tracker.burst = 0;
+            }
+            else {
+                state.input+=char;
+                let idx = state.input.length-1;
+                let exp = config.diff!=='hard'?(state.target[idx]||"").toLowerCase():(state.target[idx]||"");
+                let inp = config.diff!=='hard'?char.toLowerCase():char;
+                
+                if(exp && inp!==exp) {
+                    // ERROR LOGIC
+                    
+                    // BUFF: STEALTH REWIND (Hard)
+                    if(activeBuffs.rewind && !tracker.rewindUsed) {
+                        tracker.rewindUsed = true;
+                        // Keep last 3 correct chars or less
+                        let safeLen = Math.max(0, state.input.length - 4); 
+                        state.input = state.input.substring(0, safeLen);
+                        playPowerUp(); // Sound effect
+                        // Visual feedback handled by text update
+                        tracker.combo = 0; tracker.burst = 0; // Still breaks combo
+                    } 
+                    else {
+                        // BUFF: ERROR TRACE (Easy)
+                        if(activeBuffs.trace && exp) {
+                            const correctKeyEl = keyMap[exp];
+                            if(correctKeyEl) {
+                                correctKeyEl.classList.add('trace');
+                                setTimeout(()=>correctKeyEl.classList.remove('trace'), 500);
+                            }
+                        }
+
+                        // BUFF: TIME BUFFER (Normal)
+                        if(activeBuffs.buffer && !tracker.bufferUsed) {
+                            triggerTimeBuffer();
+                        }
+
+                        document.body.classList.add('shake-screen');
+                        document.getElementById('input-box-area').classList.add('error-glow');
+                        setTimeout(()=>{document.body.classList.remove('shake-screen');document.getElementById('input-box-area').classList.remove('error-glow')},300);
+                        tracker.combo = 0;
+                        tracker.burst = 0;
+                    }
+                } else {
+                    // CORRECT INPUT
+                    playClick();
+                    
+                    let now = Date.now();
+                    let diff = now - tracker.lastTime;
+                    tracker.lastTime = now;
+                    
+                    tracker.combo++;
+                    if(diff < 120) { tracker.burst++; } else { tracker.burst = 0; }
+
+                    if(tracker.combo >= 20) { triggerReveal(3000); tracker.combo = 0; }
+                    if(tracker.burst >= 10) { triggerReveal(1500); tracker.burst = 0; }
+
+                    let halfLen = Math.floor(state.target.length / 2);
+                    if(!tracker.halfwayDone && state.input.length === halfLen) {
+                        const currentAcc = calcAcc(state.target.substring(0, halfLen), state.input);
+                        if(currentAcc >= 98) { triggerReveal(2000); tracker.halfwayDone = true; }
+                    }
+                }
+            }
+            document.getElementById('user-input').textContent=state.input;
+            
+            if(activeBuffs.predict) updatePredictiveVisuals();
+        }
+
+        // --- BUFF & POWER MECHANICS ---
+        
+        function highlightFrequentKeys() {
+            // Count frequencies
+            let counts = {};
+            for(let char of state.target) {
+                if(char === ' ') continue;
+                char = char.toLowerCase();
+                counts[char] = (counts[char] || 0) + 1;
+            }
+            // Sort
+            let sorted = Object.keys(counts).sort((a,b) => counts[b] - counts[a]).slice(0, 5);
+            // Highlight
+            sorted.forEach(char => {
+                if(keyMap[char]) keyMap[char].classList.add('freq');
+            });
+        }
+
+        function triggerTimeBuffer() {
+            tracker.bufferUsed = true;
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(k => k.classList.add('revealed'));
+            
+            const overlay = document.getElementById('buffer-overlay');
+            const countEl = document.getElementById('buffer-countdown');
+            overlay.classList.add('active');
+            
+            let count = 2;
+            countEl.innerText = count;
+            let pauseStart = Date.now();
+
+            let int = setInterval(() => {
+                count--;
+                countEl.innerText = count;
+                if(count <= 0) {
+                    clearInterval(int);
+                    overlay.classList.remove('active');
+                    keys.forEach(k => k.classList.remove('revealed'));
+                    state.start += (Date.now() - pauseStart);
+                }
+            }, 1000);
+        }
+
+        function updatePredictiveVisuals() {
+            document.querySelectorAll('.key.predict').forEach(k => k.classList.remove('predict'));
+            let currentLen = state.input.length;
+            for(let i=0; i<3; i++) {
+                let char = state.target[currentLen + i];
+                if(char) {
+                    char = config.diff !== 'hard' ? char.toLowerCase() : char;
+                    if(char === ' ') char = ' ';
+                    let el = keyMap[char];
+                    if(el) el.classList.add('predict');
+                }
+            }
+        }
+
+        function triggerReveal(duration) {
+            playPowerUp();
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(k => k.classList.add('revealed'));
+            if(tracker.revealTimer) clearTimeout(tracker.revealTimer);
+            tracker.revealTimer = setTimeout(() => { removeReveal(); }, duration);
+        }
+
+        function removeReveal() {
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(k => k.classList.remove('revealed'));
+            tracker.revealTimer = null;
+        }
+
+        async function shareResult() {
+            const acc = document.getElementById('res-acc').textContent;
+            const wpm = document.getElementById('res-wpm').textContent;
+            const score = document.getElementById('res-score').textContent;
+            const encodedTarget = encodeURIComponent(state.target);
+            const baseUrl = window.location.href.split('?')[0];
+            const shareUrl = `${baseUrl}?c=${encodedTarget}`;
+            const shareData = { title: 'Ghost Keyboard Challenge', text: `👻 Ghost Keyboard\nCan you type: "${state.target}"?\nMy Score: ${score} | WPM: ${wpm}\n\nChallenge Link:`, url: shareUrl };
+            if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} } 
+            else { 
+                const textToCopy = `${shareData.text}\n${shareData.url}`;
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    const btn = document.getElementById('share-btn');
+                    const originalText = btn.innerText; btn.innerText = "COPIED!";
+                    setTimeout(() => { btn.innerText = originalText; }, 2000);
+                });
+            }
+        }
+
+        function getRoast(acc, wpm) {
+            const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            if (wpm === 0) return pick(["AFK? Did you fall asleep? 💤", "Keyboard is here. You are not. 💤"]);
+            if (acc === 0) return pick(["You missed everything. Stormtrooper? 🔫", "Zero accuracy. Forehead typing? 🤕"]);
+            if (wpm > 250) return pick(["Nice script, bro. 🤖", "CYBORG DETECTED 🤖"]);
+            if (wpm >= 100 && acc >= 90) return pick(["UNLIMITED POWER! ⚡", "This is teleporting. ✨"]);
+            if (wpm >= 80 && acc >= 85) return pick(["The Force is strong. 🌌", "Legolas aim! 🏹"]);
+            if (wpm >= 60 && acc < 85) return pick(["Slow down! 🏃‍♂️", "Speed is there, control is gone. 🏖️"]);
+            if (wpm < 50 && acc >= 90) return pick(["Slow... but safe. 🚗", "Grandma speed, diamond accuracy. 👵✨"]);
+            if (wpm >= 40 && acc >= 60) return pick(["Not great, not terrible. ☢️", "NPC Energy. 😐"]);
+            if (wpm < 40 || acc < 60) return pick(["Toaster typing? 🍞", "My eyes hurt. 🫣"]);
+            return "Emotional Damage. 💔";
+        }
+
+        function sanitizeUsername(v) { return v?v.trim().replace(/[<>'"&]/g,'').substring(0,12):''; }
+        function saveUsername(v) { username=sanitizeUsername(v); localStorage.setItem('ghostUsername', username); }
+        function calcAcc(a,b) { if(config.diff!=='hard'){a=a.toLowerCase();b=b.toLowerCase();} let m=0,l=Math.max(a.length,b.length); if(l===0)return 0; for(let i=0;i<l;i++)if(a[i]===b[i])m++; return Math.floor((m/l)*100); }
+        
+        function setDiff(v,b) { 
+            config.diff=v; 
+            config.backspace=v!=='hard'; 
+            document.querySelectorAll('#diff-row .mode-btn').forEach(k=>k.classList.remove('active')); 
+            b.classList.add('active'); 
+            document.body.className='theme-'+v; 
+            playClick(); 
+            renderDailyMissions(); 
+            renderHacksShop(); // Refresh shop
+        }
+        function setLang(v,b) { config.lang=v; document.querySelectorAll('#lang-row .mode-btn').forEach(k=>k.classList.remove('active')); b.classList.add('active'); playClick(); }
+        
+        function resetGame() { 
+            if(supabase) fetchLeaderboard(); 
+            document.getElementById('result-screen').style.display='none'; 
+            document.getElementById('start-screen').style.display='block'; 
+            document.getElementById('username-input').value=username; 
+            setupDailyMissions();
+            updateBadgeProgress();
+            renderHacksShop();
+
+            if (!challengeModePhrase) {
+                document.getElementById('diff-row').style.display = 'flex'; 
+                document.getElementById('lang-row').style.display = 'flex'; 
+                
+                const titleSpan = document.querySelector('.logo-area h1 span');
+                titleSpan.textContent = "KEYBOARD";
+                titleSpan.style.color = "";
+                titleSpan.classList.remove('shake-screen');
+
+                document.querySelector('.tutorial-box').innerHTML = `
+                    <div class="tut-item"><span class="tut-icon">👀</span><span>Read the phrase.</span></div>
+                    <div class="tut-item"><span class="tut-icon">⌨️</span><span>Type blindly (Invisible Keys).</span></div>
+                    <div class="tut-item"><span class="tut-icon">🧠</span><span>Trust your muscle memory.</span></div>`;
+            }
+        }
+
+        async function fetchLeaderboard() {
+            if(!supabase) return; const c=document.getElementById('lb-content'); const t=new Date(); t.setHours(0,0,0,0);
+            const {data}=await supabase.from('scores').select('*').gte('created_at',t.toISOString()).order('score',{ascending:false}).limit(10);
+            c.innerHTML=''; if(!data||!data.length) c.innerHTML='<div style="text-align:center;color:#666;margin-top:20px">No scores yet today!</div>';
+            else { let r=1; data.forEach(d=>{ const row=document.createElement('div'); row.className='lb-row'+(d.username===username?' highlight':''); row.innerHTML=`<span class="lb-rank">#${r++}</span><span class="lb-name">${d.username}</span><span class="lb-score">${d.score}</span>`; c.appendChild(row); }); }
+        }
+        function setupRealtimeSubscription() { if(supabase) supabase.channel('public:scores').on('postgres_changes',{event:'INSERT',schema:'public',table:'scores'},fetchLeaderboard).subscribe(); }
+        
+        async function saveScoreToCloud(s,w,a,t) { 
+            if(supabase && w<=350 && a<=100) {
+                await supabase.from('scores').insert({
+                    username: username,
+                    score: s,
+                    wpm: w,
+                    accuracy: a,
+                    time_taken: t
+                });
+            }
+            fetchLeaderboard(); 
+        }
+        
+        function startCountdown() { setInterval(()=>{ const n=new Date(), t=new Date(n); t.setHours(24,0,0,0); const d=t-n; const h=Math.floor((d/3600000)%24),m=Math.floor((d/60000)%60),s=Math.floor((d/1000)%60); document.getElementById('daily-timer').innerText=`${h}:${m}:${s}`; },1000); }
+
+        function initKeyboard() {
+            const c=document.getElementById('kb-container'); c.innerHTML='';
+            keyMap = {}; // Reset Map
+            
+            let r=config.lang==='tr'?["qwertyuıopğü","asdfghjklşi","zxcvbnmöç"]:["qwertyuiop","asdfghjkl","zxcvbnm"];
+            
+            const mk=(ch)=> { 
+                let k=document.createElement('div');k.className='key';
+                k.innerHTML=`<span>${ch.toUpperCase()}</span>`; 
+                keyMap[ch] = k; // Map char to element
+                const h=(e)=>{e.preventDefault();handle(ch,k)};
+                k.ontouchstart=h;k.onmousedown=h;return k; 
+            };
+
+            let r1=document.createElement('div');r1.className='row';r[0].split('').forEach(x=>r1.appendChild(mk(x)));c.appendChild(r1);
+            let r2=document.createElement('div');r2.className='row staggered';r[1].split('').forEach(x=>r2.appendChild(mk(x)));c.appendChild(r2);
+            let r3=document.createElement('div');r3.className='row';
+            let sh=document.createElement('div');sh.className='key special';sh.innerHTML='<span>⇧</span>';r3.appendChild(sh);
+            r[2].split('').forEach(x=>r3.appendChild(mk(x)));
+            let bk=document.createElement('div');bk.className='key special';bk.innerHTML=config.backspace?'<span>⌫</span>':'<span>🔒</span>';
+            const bh=(e)=>{e.preventDefault();if(config.backspace)handle('BACKSPACE',bk)};bk.ontouchstart=bh;bk.onmousedown=bh;r3.appendChild(bk);c.appendChild(r3);
+            let r4=document.createElement('div');r4.className='row';
+            let k123=document.createElement('div');k123.className='key special';k123.innerHTML='<span>123</span>';r4.appendChild(k123);
+            let spc=document.createElement('div');spc.className='key space';spc.innerHTML='<span>space</span>';
+            keyMap[' '] = spc; // Map Space
+            const sh2=(e)=>{e.preventDefault();handle(' ',spc)};spc.ontouchstart=sh2;spc.onmousedown=sh2;r4.appendChild(spc);
+            let ent=document.createElement('div');ent.className='key enter';ent.innerHTML='<span>GO</span>';
+            const eh=(e)=>{e.preventDefault();finish();playClick(true);};ent.ontouchstart=eh;ent.onmousedown=eh;r4.appendChild(ent);c.appendChild(r4);
+        }
+
+        // --- NEW CYBER ACHIEVEMENTS (BADGES) ---
+        const BADGES = [
+            { id: 'initiate', name: 'PROTOCOL INITIATE', icon: '🔌', desc: 'Pass System Check (Play 5 Games)', reward: 150 },
+            { id: 'access', name: 'ACCESS GRANTED', icon: '🔓', desc: 'Finish with >90% Accuracy', reward: 150 },
+            { id: 'speed', name: 'SPEED DEMON', icon: '⚡', desc: 'Reach 100+ WPM (High Velocity)', reward: 250 },
+            { id: 'admin', name: 'ADMIN RIGHTS', icon: '🛡️', desc: 'Finish with >95% Accuracy', reward: 250 },
+            { id: 'exploit', name: 'CRITICAL EXPLOIT', icon: '☣️', desc: 'Hard Mode + >80 WPM + >90% Acc', reward: 500 },
+            { id: 'stealth', name: 'STEALTH RUN', icon: '🥷', desc: '100% Accuracy (Perfect Run)', reward: 500 },
+            { id: 'trinity', name: 'TRINITY PROTOCOL', icon: '🔺', desc: 'Complete all 3 Daily Protocols', reward: 500 }
+        ];
+
+        let activeMissions = {};
+        let typeWriterTimeout;
+
+        function saveBestScore(score) {
+            let current = parseInt(localStorage.getItem('ghostBestScore') || '0');
+            if(score > current) localStorage.setItem('ghostBestScore', score);
+        }
+
+        function setupDailyMissions() {
+            const dateStr = new Date().toDateString();
+            
+            let hash = 0;
+            for (let i = 0; i < dateStr.length; i++) hash = dateStr.charCodeAt(i) + ((hash << 5) - hash);
+            hash = Math.abs(hash);
+
+            // MISSIONS CONFIG
+            activeMissions.easy = [
+                { id: 'n_alpha', name: 'ALPHA', desc: 'WPM > 30 & Errors < 5', check: (s,w,a,err) => w > 30 && err < 5 },
+                { id: 'n_beta', name: 'BETA', desc: 'Score > 30', check: (s,w,a) => s > 30 },
+                { id: 'n_gamma', name: 'GAMMA', desc: 'Accuracy > 85%', check: (s,w,a) => a > 85 }
+            ];
+            activeMissions.normal = [
+                { id: 'p_alpha', name: 'ALPHA', desc: 'WPM > 60 & Errors < 3', check: (s,w,a,err) => w > 60 && err < 3 },
+                { id: 'p_beta', name: 'BETA', desc: 'Score > 75', check: (s,w,a) => s > 75 },
+                { id: 'p_gamma', name: 'GAMMA', desc: 'Accuracy > 90%', check: (s,w,a) => a > 90 }
+            ];
+            activeMissions.hard = [
+                { id: 'h_alpha', name: 'ALPHA', desc: 'WPM > 80 & Errors < 1', check: (s,w,a,err) => w > 80 && err < 1 },
+                { id: 'h_beta', name: 'BETA', desc: 'Score > 120', check: (s,w,a) => s > 120 },
+                { id: 'h_gamma', name: 'GAMMA', desc: 'Accuracy > 95%', check: (s,w,a) => a > 95 }
+            ];
+
+            renderDailyMissions();
+        }
+
+        function renderDailyMissions() {
+            const dateStr = new Date().toDateString();
+            const currentDiff = config.diff; 
+            const missions = activeMissions[currentDiff];
+            
+            const completed = JSON.parse(localStorage.getItem(`ghostDailyCompleted_${currentDiff}_${dateStr}`) || '[]');
+            
+            const progressPct = (completed.length / 3) * 100;
+            const container = document.getElementById('daily-mission-container');
+            
+            let html = `
+                <div class="ms-header">
+                    <span class="ms-title-text">DAILY PROTOCOL [${currentDiff.toUpperCase()}]</span>
+                    <span id="daily-date-tag">${dateStr.slice(0, -5)}</span>
+                </div>
+                <div class="protocol-progress-bg"><div class="protocol-progress-fill" style="width: ${progressPct}%"></div></div>
+            `;
+            
+            missions.forEach((m, idx) => {
+                const isDone = completed.includes(idx);
+                html += `
+                    <div class="ms-row ${isDone ? 'completed' : ''}" style="margin-bottom:5px">
+                        <span class="ms-desc"><b>${m.name}:</b> ${m.desc}</span>
+                        <span class="ms-status ${isDone ? 'access-granted' : 'scanning'}">${isDone ? 'ACCESS GRANTED' : 'SCANNING...'}</span>
+                    </div>
+                `;
+            });
+
+            // Reward Icon
+            let anyDiffDone = false;
+            ['easy', 'normal', 'hard'].forEach(d => {
+                const c = JSON.parse(localStorage.getItem(`ghostDailyCompleted_${d}_${dateStr}`) || '[]');
+                if(c.length === 3) anyDiffDone = true;
+            });
+
+            html += `
+                <div class="protocol-reward-icon ${anyDiffDone ? 'unlocked' : ''}">
+                    ${anyDiffDone ? '🎖️ MATRIX VISION READY' : '🔒 DELTA LOCKED'}
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        const PROTOCOL_REWARDS = {
+            easy: { mission: 10, delta: 50 },
+            normal: { mission: 20, delta: 75 },
+            hard: { mission: 30, delta: 100 }
+        };
+
+        function checkDailyProgress(s, w, a) {
+            const dateStr = new Date().toDateString();
+            const currentDiff = config.diff;
+            let errors = Math.round((state.input.length * (100 - a)) / 100);
+
+            let completed = JSON.parse(localStorage.getItem(`ghostDailyCompleted_${currentDiff}_${dateStr}`) || '[]');
+            let changed = false;
+            const missions = activeMissions[currentDiff];
+
+            missions.forEach((m, idx) => {
+                if (!completed.includes(idx) && m.check(s, w, a, errors)) {
+                    completed.push(idx);
+                    changed = true;
+                    // Add Mission Reward
+                    addCredits(PROTOCOL_REWARDS[currentDiff].mission);
+                }
+            });
+
+            if (changed) {
+                localStorage.setItem(`ghostDailyCompleted_${currentDiff}_${dateStr}`, JSON.stringify(completed));
+                if (completed.length === 3) {
+                    // Add Delta Bonus
+                    addCredits(PROTOCOL_REWARDS[currentDiff].delta);
+                    checkBadges(s, w, a, true);
+                    localStorage.setItem('ghostRewardPending', 'true');
+                }
+                renderDailyMissions(); 
+            }
+        }
+
+        function checkBadges(s, w, a, dailyComplete=false) {
+            let userBadges = JSON.parse(localStorage.getItem('ghostUserBadges') || '[]');
+            let totalGames = parseInt(localStorage.getItem('ghostTotalGames') || '0');
+            let unlockedBadge = null;
+
+            const conditions = {
+                'initiate': totalGames >= 5,
+                'access': a >= 90,
+                'speed': w >= 100,
+                'admin': a >= 95,
+                'exploit': config.diff === 'hard' && w >= 80 && a >= 90,
+                'stealth': a === 100,
+                'trinity': dailyComplete
+            };
+
+            BADGES.forEach(b => {
+                if(!userBadges.includes(b.id) && conditions[b.id]) {
+                    userBadges.push(b.id);
+                    unlockedBadge = b; 
+                }
+            });
+
+            if(unlockedBadge) {
+                localStorage.setItem('ghostUserBadges', JSON.stringify(userBadges));
+                addCredits(unlockedBadge.reward); // Badge Bonus
+                showBadgeNotification(unlockedBadge); 
+                playBadgeSound(); 
+            }
+        }
+
+        // --- NEW NOTIFICATION FUNCTION ---
+        function showBadgeNotification(badge) {
+            const notifyEl = document.getElementById('badge-notify-area');
+            document.getElementById('bn-icon').innerText = badge.icon;
+            document.getElementById('bn-name').innerText = badge.name;
+            
+            notifyEl.classList.add('show');
+            setTimeout(() => {
+                notifyEl.classList.remove('show');
+            }, 4000);
+        }
+
+        function updateBadgeProgress() {
+            const userBadges = JSON.parse(localStorage.getItem('ghostUserBadges') || '[]');
+            const count = userBadges.length;
+            const total = BADGES.length;
+            document.getElementById('badge-progress-text').innerText = `${count}/${total}`;
+            document.getElementById('pc-badges-count').innerText = `${count}/${total}`;
+        }
+
+        function openProfile() {
+            document.getElementById('pc-username').innerText = username || "GHOST";
+            document.getElementById('pc-id').innerText = Math.random().toString(36).substr(2, 6).toUpperCase();
+            document.getElementById('pc-best-score').innerText = localStorage.getItem('ghostBestScore') || '0';
+            updateBadgeProgress();
+            const userBadges = JSON.parse(localStorage.getItem('ghostUserBadges') || '[]');
+            const grid = document.getElementById('modal-badge-grid');
+            grid.innerHTML = '';
+            BADGES.forEach(b => {
+                const isUnlocked = userBadges.includes(b.id);
+                const el = document.createElement('div');
+                el.className = `modal-badge ${isUnlocked ? 'unlocked' : ''}`;
+                el.innerHTML = b.icon;
+                el.onclick = () => showBadgeDetail(b, isUnlocked);
+                el.onmouseenter = () => showBadgeDetail(b, isUnlocked);
+                grid.appendChild(el);
+            });
+            document.getElementById('badge-detail').innerHTML = `<div class="bd-name">SELECT A BADGE</div><div class="bd-desc" id="bd-desc-text">Click on an icon above to see details.</div>`;
+            document.getElementById('badge-detail').style.borderLeftColor = '#333';
+            document.getElementById('profile-modal').classList.add('open');
+        }
+
+        function showBadgeDetail(badge, unlocked) {
+            const panel = document.getElementById('badge-detail');
+            let html = `<div class="bd-name">${badge.name} ${unlocked ? '✅' : '🔒'}</div>`;
+            html += `<div class="bd-desc" id="bd-desc-text"></div>`;
+            html += `<div style="font-size:0.7rem; color:${unlocked ? '#00ff9d' : '#666'}; margin-top:5px;">STATUS: ${unlocked ? 'ACQUIRED' : 'LOCKED'}</div>`;
+            panel.innerHTML = html;
+            panel.style.borderLeftColor = unlocked ? 'var(--accent-color)' : '#333';
+            const descEl = document.getElementById('bd-desc-text');
+            typeWriterEffect(descEl, badge.desc);
+        }
+
+        function typeWriterEffect(element, text, speed = 30) {
+            if(typeWriterTimeout) clearTimeout(typeWriterTimeout);
+            element.innerHTML = '<span class="cursor-blink"></span>';
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML = text.substring(0, i+1) + '<span class="cursor-blink"></span>';
+                    i++;
+                    typeWriterTimeout = setTimeout(type, speed);
+                } else {
+                    element.innerHTML = text + '<span class="cursor-blink"></span>';
+                }
+            }
+            type();
+        }
+
+        function closeProfile() {
+            document.getElementById('profile-modal').classList.remove('open');
+            if(typeWriterTimeout) clearTimeout(typeWriterTimeout);
+        }
+
+    </script>
+</body>
+</html>
