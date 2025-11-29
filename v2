@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ghost Keyboard v4.0 (System Economy)</title>
+    <title>Ghost Keyboard v4.1 (Identity Core)</title>
     
     <meta property="og:title" content="Ghost Keyboard Challenge">
     <meta property="og:description" content="Invisible keys. Can you type blindly?">
@@ -294,47 +294,79 @@
         @keyframes slideUp { 0%{opacity:0; transform:translate(-50%, 20px);} 100%{opacity:1; transform:translate(-50%, 0);} }
         @keyframes anim-pop { 0%{transform:scale(0);} 80%{transform:scale(1.2);} 100%{transform:scale(1);} }
 
-        /* --- PROFILE MODAL --- */
+        /* --- PROFILE MODAL (REVISED) --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 100; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
         .modal-overlay.open { display: flex; opacity: 1; }
-        .profile-card { width: 90%; max-width: 450px; background: #080808; border: 1px solid var(--accent-color); border-radius: 12px; padding: 20px; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,255,157,0.05); transform: scale(0.9); transition: transform 0.3s; }
+        .profile-card { width: 90%; max-width: 500px; background: #080808; border: 1px solid var(--accent-color); border-radius: 12px; padding: 20px; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,255,157,0.05); transform: scale(0.9); transition: transform 0.3s; display:flex; flex-direction:column; min-height: 450px;}
         .modal-overlay.open .profile-card { transform: scale(1); }
-        .pc-header { display: flex; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 15px; }
-        .pc-avatar { font-size: 3rem; margin-right: 15px; background: #111; width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid #333; }
-        .pc-info h3 { margin: 0; color: #fff; font-size: 1.5rem; text-transform: uppercase; }
-        .pc-info span { font-size: 0.8rem; color: var(--accent-color); letter-spacing: 2px; }
+        
+        .pc-header { display: flex; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 15px; }
+        .pc-avatar { font-size: 2.5rem; margin-right: 15px; background: #111; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid #333; }
+        .pc-info h3 { margin: 0; color: #fff; font-size: 1.2rem; text-transform: uppercase; }
+        .pc-info span { font-size: 0.7rem; color: var(--accent-color); letter-spacing: 2px; }
+        
+        /* NEW TABS SYSTEM */
+        .pc-tabs { display: flex; border-bottom: 1px solid #333; margin-bottom: 15px; }
+        .tab-btn { flex: 1; background: transparent; border: none; color: #666; padding: 10px; cursor: pointer; border-bottom: 2px solid transparent; transition: 0.3s; font-weight: bold; font-family: inherit; letter-spacing: 1px; }
+        .tab-btn:hover { color: #bbb; }
+        .tab-btn.active { color: var(--accent-color); border-bottom-color: var(--accent-color); text-shadow: 0 0 10px var(--glow-color); background: rgba(0,255,157,0.02); }
+
+        .tab-content { display: none; flex-grow: 1; animation: fadeIn 0.3s; }
+        .tab-content.active { display: flex; flex-direction: column; }
+        @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+
+        /* DATABASE TAB STYLES */
         .pc-stats { display: flex; gap: 10px; margin-bottom: 20px; }
         .pc-stat-box { flex: 1; background: #111; padding: 10px; border-radius: 6px; text-align: center; }
         .pc-stat-num { font-size: 1.2rem; font-weight: bold; color: #fff; display: block; }
         .pc-stat-label { font-size: 0.6rem; color: #666; text-transform: uppercase; }
-        .pc-badges-title { font-size: 0.8rem; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
-        .pc-badge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 250px; overflow-y: auto; }
+        .pc-badge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 200px; overflow-y: auto; margin-bottom: 10px; }
         .modal-badge { aspect-ratio: 1; background: #111; border: 1px solid #222; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; opacity: 0.3; transition: 0.2s; cursor: pointer; position: relative; }
         .modal-badge.unlocked { opacity: 1; border-color: var(--accent-color); background: radial-gradient(circle, rgba(0,255,157,0.1), transparent); box-shadow: 0 0 10px rgba(0,0,0,0.5); }
-        .modal-badge:hover { transform: scale(1.05); background: #1a1a1a; }
-        .badge-detail-panel { margin-top: 15px; background: #111; padding: 10px; border-radius: 6px; border-left: 3px solid #333; min-height: 50px; display: flex; flex-direction: column; justify-content: center; }
+        .badge-detail-panel { margin-top: auto; background: #111; padding: 10px; border-radius: 6px; border-left: 3px solid #333; min-height: 50px; display: flex; flex-direction: column; justify-content: center; }
         .bd-name { font-weight: bold; color: #fff; font-size: 0.9rem; }
         .bd-desc { font-size: 0.75rem; color: #888; margin-top: 2px; }
+
+        /* PROTOCOL HACKS TAB STYLES */
+        .shop-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .shop-filters { display: flex; gap: 5px; }
+        .shop-filter-btn { background: #111; border: 1px solid #333; color: #666; padding: 5px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; transition: 0.2s; font-family: inherit; }
+        .shop-filter-btn:hover { border-color: #555; }
+        .shop-filter-btn.active { background: var(--accent-color); color: #000; border-color: var(--accent-color); box-shadow: 0 0 10px var(--glow-color); }
+        .shop-balance { font-size: 0.9rem; color: var(--gold-color); font-weight: bold; border: 1px solid #333; padding: 5px 10px; border-radius: 4px; background: rgba(0,0,0,0.5); }
+        
+        .shop-grid { display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; }
+        .shop-card { background: #111; border: 1px solid #333; padding: 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .shop-card:hover { border-color: #555; }
+        .shop-card.active { border-color: var(--accent-color); background: rgba(0,255,157,0.05); box-shadow: inset 0 0 10px rgba(0,255,157,0.1); }
+        
+        .sc-info { display: flex; flex-direction: column; align-items: flex-start; }
+        .sc-name { font-weight: 800; color: #fff; font-size: 0.9rem; margin-bottom: 2px; }
+        .sc-desc { font-size: 0.7rem; color: #888; }
+        .sc-price-tag { color: var(--gold-color); font-size: 0.75rem; margin-top: 4px; opacity: 0.8; }
+        
+        .sc-action-btn { background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; transition: 0.2s; font-family: inherit; letter-spacing: 1px; }
+        .sc-action-btn:hover { background: var(--accent-color); color: #000; box-shadow: 0 0 10px var(--glow-color); }
+        .sc-action-btn.owned { background: #222; border-color: #444; color: #666; cursor: default; box-shadow: none; }
+        .sc-action-btn.shake { animation: shake-btn 0.4s ease-in-out; border-color: red; color: red; }
+
+        @keyframes shake-btn { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)} }
+
         .cursor-blink { animation: blink-cursor 0.7s infinite; display: inline-block; width: 8px; height: 1em; background: var(--accent-color); vertical-align: bottom; margin-left: 2px; }
         @keyframes blink-cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-        .close-modal { position: absolute; top: 15px; right: 15px; background: transparent; border: none; color: #666; font-size: 1.5rem; cursor: pointer; }
+        .close-modal { position: absolute; top: 15px; right: 15px; background: transparent; border: none; color: #666; font-size: 1.5rem; cursor: pointer; z-index: 10; }
         .close-modal:hover { color: #fff; }
 
-        /* BUFF SELECTION ROW - REDESIGNED */
-        .hacks-container { width: 100%; margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
-        .hacks-title { font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; }
-        .hacks-row { display: flex; gap: 5px; width: 100%; justify-content: space-between; }
-        .hack-btn { 
-            background: #111; border: 1px solid #333; color: #666; font-size: 0.7rem; 
-            padding: 8px 5px; flex: 1; cursor: pointer; text-transform: uppercase; 
-            border-radius: 2px; display: flex; flex-direction: column; align-items: center; gap: 2px;
-            transition: 0.2s; position: relative; overflow: hidden;
+        /* MAIN SCREEN ACTIVE BUFF INDICATOR */
+        .active-proto-display { 
+            width: 100%; text-align: center; margin-top: 10px; margin-bottom: 5px; 
+            min-height: 20px; font-size: 0.75rem; 
+            color: var(--accent-color); text-shadow: 0 0 5px var(--glow-color); 
+            display: flex; align-items: center; justify-content: center; gap: 6px; 
+            text-transform: uppercase; letter-spacing: 1px;
+            opacity: 0; transition: opacity 0.3s;
         }
-        .hack-btn:hover { border-color: #555; }
-        .hack-btn.active { border-color: var(--accent-color); color: var(--accent-color); background: rgba(0,255,157,0.1); box-shadow: 0 0 10px var(--glow-color); }
-        .hack-cost { font-size: 0.6rem; color: var(--gold-color); opacity: 0.8; }
-        .hack-btn.shake { animation: shake-btn 0.4s ease-in-out; border-color: red; color: red; }
-        @keyframes shake-btn { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-3px)} 75%{transform:translateX(3px)} }
+        .active-proto-display.visible { opacity: 1; }
 
     </style>
 </head>
@@ -382,15 +414,12 @@
                     </div>
                     <!-- END NEW UI -->
 
-                    <!-- DYNAMIC HACKS SHOP -->
-                    <div class="hacks-container">
-                        <div class="hacks-title">HACK PROTOCOLS [SHOP]</div>
-                        <div class="hacks-row" id="hacks-shop-row">
-                            <!-- JS Generated -->
-                        </div>
+                    <!-- ACTIVE HACK INDICATOR (Main Page) -->
+                    <div id="active-hack-display" class="active-proto-display">
+                        <!-- JS Injected: 🔮 PREDICTIVE TEXT ACTIVE -->
                     </div>
 
-                    <div style="width:100%; margin-top:15px;">
+                    <div style="width:100%;">
                         <div class="btn-row" id="diff-row">
                             <div class="mode-btn active" onclick="setDiff('easy', this)">NOOB</div>
                             <div class="mode-btn" onclick="setDiff('normal', this)">PRO</div>
@@ -457,7 +486,7 @@
         </div>
     </div>
 
-    <!-- PROFILE MODAL (OVERLAY) -->
+    <!-- REVISED PROFILE MODAL (OVERLAY) -->
     <div class="modal-overlay" id="profile-modal" onclick="if(event.target===this) closeProfile()">
         <div class="profile-card">
             <button class="close-modal" onclick="closeProfile()">×</button>
@@ -468,22 +497,47 @@
                     <span>ID: <span id="pc-id">UNKNOWN</span></span>
                 </div>
             </div>
-            <div class="pc-stats">
-                <div class="pc-stat-box">
-                    <span class="pc-stat-num" id="pc-best-score">0</span>
-                    <span class="pc-stat-label">Best Score</span>
+
+            <!-- TABS -->
+            <div class="pc-tabs">
+                <button class="tab-btn active" id="tab-btn-db" onclick="switchTab('db')">DATABASE</button>
+                <button class="tab-btn" id="tab-btn-proto" onclick="switchTab('proto')">PROTOCOL HACKS</button>
+            </div>
+
+            <!-- TAB 1: DATABASE (STATS & BADGES) -->
+            <div id="tab-db" class="tab-content active">
+                <div class="pc-stats">
+                    <div class="pc-stat-box">
+                        <span class="pc-stat-num" id="pc-best-score">0</span>
+                        <span class="pc-stat-label">Best Score</span>
+                    </div>
+                    <div class="pc-stat-box">
+                        <span class="pc-stat-num" id="pc-badges-count">0/7</span>
+                        <span class="pc-stat-label">Badges</span>
+                    </div>
                 </div>
-                <div class="pc-stat-box">
-                    <span class="pc-stat-num" id="pc-badges-count">0/7</span>
-                    <span class="pc-stat-label">Badges</span>
+                <div class="pc-badge-grid" id="modal-badge-grid"></div>
+                <div class="badge-detail-panel" id="badge-detail">
+                    <div class="bd-name">SELECT A BADGE</div>
+                    <div class="bd-desc" id="bd-desc-text">Click on an icon above to see details.</div>
                 </div>
             </div>
-            <div class="pc-badges-title">ACHIEVEMENTS DATABASE</div>
-            <div class="pc-badge-grid" id="modal-badge-grid"></div>
-            <div class="badge-detail-panel" id="badge-detail">
-                <div class="bd-name">SELECT A BADGE</div>
-                <div class="bd-desc" id="bd-desc-text">Click on an icon above to see details.</div>
+
+            <!-- TAB 2: PROTOCOL HACKS (SHOP) -->
+            <div id="tab-proto" class="tab-content">
+                <div class="shop-header">
+                    <div class="shop-balance">💎 <span id="shop-sc-val">0</span></div>
+                    <div class="shop-filters">
+                        <button class="shop-filter-btn" id="filter-easy" onclick="filterShop('easy')">NOOB</button>
+                        <button class="shop-filter-btn" id="filter-normal" onclick="filterShop('normal')">PRO</button>
+                        <button class="shop-filter-btn" id="filter-hard" onclick="filterShop('hard')">HACKER</button>
+                    </div>
+                </div>
+                <div class="shop-grid" id="shop-grid-content">
+                    <!-- Shop Items Injected via JS -->
+                </div>
             </div>
+
         </div>
     </div>
 
@@ -502,19 +556,18 @@
         let userCredits = 0;
         
         // --- BUFF CONFIG & STATE ---
-        // Buffs separated by difficulty tier
         const HACKS_CONFIG = {
             easy: [
-                { id: 'scan', name: 'GHOST SCAN', cost: 50, desc: '3s Full Vision' },
-                { id: 'trace', name: 'ERR TRACE', cost: 100, desc: 'Highlight Error' }
+                { id: 'scan', name: 'GHOST SCAN', cost: 50, icon: '👁️', desc: 'İlk 3 sn tam görüş sağlar.' },
+                { id: 'trace', name: 'ERR TRACE', cost: 100, icon: '🎯', desc: 'Hata yapılan tuşu kırmızı yakar.' }
             ],
             normal: [
-                { id: 'predict', name: 'PREDICT', cost: 150, desc: 'Next 3 Chars' },
-                { id: 'buffer', name: 'TIME BUF', cost: 250, desc: 'Pause on Error' }
+                { id: 'predict', name: 'PREDICTIVE TEXT', cost: 150, icon: '🔮', desc: 'Sonraki 3 harfi silik gösterir.' },
+                { id: 'buffer', name: 'TIME BUFFER', cost: 250, icon: '⏸️', desc: 'Hata anında 2sn duraklatır.' }
             ],
             hard: [
-                { id: 'freq', name: 'FREQ MAP', cost: 350, desc: 'Highlight Frequent' },
-                { id: 'rewind', name: 'REWIND', cost: 500, desc: 'Undo 3 Chars' }
+                { id: 'freq', name: 'FREQ MAP', cost: 350, icon: '📊', desc: 'En çok geçen 5 harfi vurgular.' },
+                { id: 'rewind', name: 'REWIND', cost: 500, icon: '⏪', desc: 'Hatalı son 3 harfi geri alır.' }
             ]
         };
 
@@ -525,247 +578,24 @@
             freq: false, rewind: false 
         };
 
+        let currentShopFilter = 'easy'; // For modal shop tab
+
         let username = "";
         let audioCtx = null;
         let challengeModePhrase = null;
         
         const phrases = {
   en: {
-    easy: [
-      "ghost",
-      "matrix",
-      "terminal",
-      "keyboard",
-      "monitor",
-      "galaxy",
-      "nebula",
-      "cyber",
-      "pixel",
-      "cache",
-      "server",
-      "client",
-      "router",
-      "switch",
-      "buffer",
-      "kernel",
-      "python",
-      "java",
-      "react",
-      "docker",
-      "linux",
-      "sudo",
-      "root",
-      "hacker",
-      "debug",
-      "compile",
-      "upload",
-      "download",
-      "wireless",
-      "firewall"
-    ],
-    normal: [
-      "hello world from the void",
-      "may the force be with you",
-      "winter is coming for your code",
-      "trust me i am a developer",
-      "talk is cheap show me the code",
-      "keep calm and refactor everything",
-      "once a coder always a coder",
-      "sleep is for the weak developer",
-      "keyboard is my magic wand",
-      "coffee is my only dependency",
-      "stay in the matrix follow the glitch",
-      "never deploy angry never deploy sleepy",
-      "bug free code is a beautiful lie",
-      "life is short use dark mode",
-      "reboot your brain and try again",
-      "this feature works on my machine",
-      "escape the loop embrace the stack",
-      "hack the planet but gently",
-      "ghost keyboard knows your soul",
-      "type blindly trust your muscle memory",
-      "Houston, we have a problem",
-
-    ],
-    hard: [
-      "one does not simply walk into production",
-      "there is no spoon only the keyboard",
-      "i was born to type in the dark",
-      "the matrix has you press any key",
-      "once you see the bug you see everything",
-      "artificial intelligence still needs human panic",
-      "i do not fix bugs i tame creatures",
-      "infinite loop is a lifestyle not a bug",
-      "every keystroke is a confession of the soul",
-      "behind every commit there is a small tragedy",
-      "real hackers debug without looking at the screen",
-      "if you can read this you are already too deep",
-      "ghost keyboard whispers trust your fingers not your eyes",
-      "the code you wrote at midnight will judge you at dawn",
-      "every error message is a secret love letter from the system",
-      "those who fear typos should not seek true power",
-      "your hands remember what your mind forgot",
-      "some keys are visible only to the brave",
-      "the fastest typist is the one who never hesitates",
-      "the real boss fight is your own impatience"
-    ]
+    easy: ["ghost","matrix","terminal","keyboard","monitor","galaxy","nebula","cyber","pixel","cache","server","client","router","switch","buffer","kernel","python","java","react","docker","linux","sudo","root","hacker","debug","compile","upload","download","wireless","firewall"],
+    normal: ["hello world from the void","may the force be with you","winter is coming for your code","trust me i am a developer","talk is cheap show me the code","keep calm and refactor everything","once a coder always a coder","sleep is for the weak developer","keyboard is my magic wand","coffee is my only dependency","stay in the matrix follow the glitch","never deploy angry never deploy sleepy","bug free code is a beautiful lie","life is short use dark mode","reboot your brain and try again","this feature works on my machine","escape the loop embrace the stack","hack the planet but gently","ghost keyboard knows your soul","type blindly trust your muscle memory","Houston, we have a problem"],
+    hard: ["one does not simply walk into production","there is no spoon only the keyboard","i was born to type in the dark","the matrix has you press any key","once you see the bug you see everything","artificial intelligence still needs human panic","i do not fix bugs i tame creatures","infinite loop is a lifestyle not a bug","every keystroke is a confession of the soul","behind every commit there is a small tragedy","real hackers debug without looking at the screen","if you can read this you are already too deep","ghost keyboard whispers trust your fingers not your eyes","the code you wrote at midnight will judge you at dawn","every error message is a secret love letter from the system","those who fear typos should not seek true power","your hands remember what your mind forgot","some keys are visible only to the brave","the fastest typist is the one who never hesitates","the real boss fight is your own impatience"]
   },
   tr: {
-    easy: [
-      "kedi",
-      "kopek",
-      "simit",
-      "cay",
-      "kahve",
-      "yazilim",
-      "kod",
-      "klavye",
-      "monitor",
-      "fare",
-      "sunucu",
-      "ag",
-      "paket",
-      "sifre",
-      "bulut",
-      "veri",
-      "tablo",
-      "robot",
-      "uzay",
-      "dunya",
-      "gezegen",
-      "film",
-      "dizi",
-      "oyun",
-      "matrix",
-      "hacker",
-      "bilim",
-      "gece",
-      "karanlik",
-      "ghost",
-      "matrix",
-      "terminal",
-      "keyboard",
-      "monitor",
-      "galaxy",
-      "nebula",
-      "cyber",
-      "pixel",
-      "cache",
-      "server",
-      "client",
-      "router",
-      "switch",
-      "buffer",
-      "kernel",
-      "python",
-      "java",
-      "react",
-      "docker",
-      "linux",
-      "sudo",
-      "root",
-      "hacker",
-      "debug",
-      "compile",
-      "upload",
-      "download",
-      "wireless",
-      "firewall"
-    ],
-    normal: [
-      "kod calisiyor elleme sakin ol",
-      "bugun de loglara gomulduk",
-      "terminal benim ic dunyam",
-      "cay icmeden kod yazmak zor",
-      "sunucu ayakta ama biz degiliz",
-      "gece gunduz debug modundayim",
-      "veri tabani yine trip atti",
-      "bu sefer hic hata olmayacak diyorum",
-      "yazilimci her yerde ofis bulur",
-      "klavye delikanlisi mesaiye basladi",
-      "ag baglantisi gidince ruhum da gitti",
-      "commit atmadan uyumak yasak gibi",
-      "bugun de standup sadece ayakta kalmak oldu",
-      "yapay zeka bizi mi yoksa loglari mi izliyor",
-      "ekrana bakmaktan zaman kavramini unuttum",
-      "bu script bir gun mukemmel olacak",
-      "bilgisayar yavas ben hizliyim demek istiyorum",
-      "duzeltilecek seyler listesi hic bitmiyor",
-      "sanki her sorun bana bakiyor gibi",
-      "ghost klavye sabrimizi test etmeye geldi",
-      "Noktali virgul nerede",
-      "Ben aslında yogumm",
-      "Her şey aşk için",
-      "hello world from the void",
-      "may the force be with you",
-      "winter is coming for your code",
-      "trust me i am a developer",
-      "talk is cheap show me the code",
-      "keep calm and refactor everything",
-      "once a coder always a coder",
-      "sleep is for the weak developer",
-      "keyboard is my magic wand",
-      "coffee is my only dependency",
-      "stay in the matrix follow the glitch",
-      "never deploy angry never deploy sleepy",
-      "bug free code is a beautiful lie",
-      "life is short use dark mode",
-      "reboot your brain and try again",
-      "this feature works on my machine",
-      "escape the loop embrace the stack",
-      "hack the planet but gently",
-      "ghost keyboard knows your soul",
-      "type blindly trust your muscle memory",
-      "Houston, we have a problem",
-    ],
-    hard: [
-      "bugun de baskasi adina utandik ama devam ediyoruz",
-      "bu kodu kim yazdi bilmiyorum ama artik benim sorunum",
-      "her sey kontrol altinda gibi ama icimde tuhaf bir his var",
-      "sanki her sey cok kolaymis gibi davranan insanlar var",
-      "son anda gelen isler bütün planlari bozuyor yine",
-      "toplanti ustune toplanti var kimse kod yazamiyor",
-      "unit test yazmaya niyet var ama zaman yok gibi",
-      "bu sefer gercekten refactor yapacagim diye soz veriyorum",
-      "gece yarisi production hatasi ciktiginda ruh bedeni terk ediyor",
-      "sunucular ayakta ama ruhlar hafifce sistemden cikis yapiyor",
-      "herkes uzaktan calisiyor ama sorunlar tam yanimizda bekliyor",
-      "yapilacaklar listesi bitmiyor sadece sekil degistiriyor",
-      "klavyeye vurdukca sorunlar cogaliyor gibi hissediyorum",
-      "bug oldur bug yarat dongusune hos geldin kahraman",
-      "kimse anlamasa da log satirlari her seyi anlatabiliyor",
-      "en buyuk risk her zaman son dakika degisiklikleri oluyor",
-      "sanki dunya sadece acil islerden olusuyor gibi davraniliyor",
-      "ama biz yine de kod yazmayi birakmiyoruz",
-      "ghost klavye ile yazarken zaman algisi kayboluyor",
-      "parmaklar dogru yeri biliyor gozler sadece bakiyor",
-      "Ne kadar da inanarak boş konuşuyor",
-      "Ay bu küçük, narin, hassas ve orantılı kulaklarım neler duyuyor",
-      "one does not simply walk into production",
-      "there is no spoon only the keyboard",
-      "i was born to type in the dark",
-      "the matrix has you press any key",
-      "once you see the bug you see everything",
-      "artificial intelligence still needs human panic",
-      "i do not fix bugs i tame creatures",
-      "infinite loop is a lifestyle not a bug",
-      "every keystroke is a confession of the soul",
-      "behind every commit there is a small tragedy",
-      "real hackers debug without looking at the screen",
-      "if you can read this you are already too deep",
-      "ghost keyboard whispers trust your fingers not your eyes",
-      "the code you wrote at midnight will judge you at dawn",
-      "every error message is a secret love letter from the system",
-      "those who fear typos should not seek true power",
-      "your hands remember what your mind forgot",
-      "some keys are visible only to the brave",
-      "the fastest typist is the one who never hesitates",
-      "the real boss fight is your own impatience"
-
-    ]
+    easy: ["kedi","kopek","simit","cay","kahve","yazilim","kod","klavye","monitor","fare","sunucu","ag","paket","sifre","bulut","veri","tablo","robot","uzay","dunya","gezegen","film","dizi","oyun","matrix","hacker","bilim","gece","karanlik","ghost","matrix","terminal","keyboard","monitor","galaxy","nebula","cyber","pixel","cache","server","client","router","switch","buffer","kernel","python","java","react","docker","linux","sudo","root","hacker","debug","compile","upload","download","wireless","firewall"],
+    normal: ["kod calisiyor elleme sakin ol","bugun de loglara gomulduk","terminal benim ic dunyam","cay icmeden kod yazmak zor","sunucu ayakta ama biz degiliz","gece gunduz debug modundayim","veri tabani yine trip atti","bu sefer hic hata olmayacak diyorum","yazilimci her yerde ofis bulur","klavye delikanlisi mesaiye basladi","ag baglantisi gidince ruhum da gitti","commit atmadan uyumak yasak gibi","bugun de standup sadece ayakta kalmak oldu","yapay zeka bizi mi yoksa loglari mi izliyor","ekrana bakmaktan zaman kavramini unuttum","bu script bir gun mukemmel olacak","bilgisayar yavas ben hizliyim demek istiyorum","duzeltilecek seyler listesi hic bitmiyor","sanki her sorun bana bakiyor gibi","ghost klavye sabrimizi test etmeye geldi","Noktali virgul nerede","Ben aslında yogumm","Her şey aşk için"],
+    hard: ["bugun de baskasi adina utandik ama devam ediyoruz","bu kodu kim yazdi bilmiyorum ama artik benim sorunum","her sey kontrol altinda gibi ama icimde tuhaf bir his var","sanki her sey cok kolaymis gibi davranan insanlar var","son anda gelen isler bütün planlari bozuyor yine","toplanti ustune toplanti var kimse kod yazamiyor","unit test yazmaya niyet var ama zaman yok gibi","bu sefer gercekten refactor yapacagim diye soz veriyorum","gece yarisi production hatasi ciktiginda ruh bedeni terk ediyor","sunucular ayakta ama ruhlar hafifce sistemden cikis yapiyor","herkes uzaktan calisiyor ama sorunlar tam yanimizda bekliyor","yapilacaklar listesi bitmiyor sadece sekil degistiriyor","klavyeye vurdukca sorunlar cogaliyor gibi hissediyorum","bug oldur bug yarat dongusune hos geldin kahraman","kimse anlamasa da log satirlari her seyi anlatabiliyor","en buyuk risk her zaman son dakika degisiklikleri oluyor","sanki dunya sadece acil islerden olusuyor gibi davraniliyor","ama biz yine de kod yazmayi birakmiyoruz","ghost klavye ile yazarken zaman algisi kayboluyor","parmaklar dogru yeri biliyor gozler sadece bakiyor","Ne kadar da inanarak boş konuşuyor","Ay bu küçük, narin, hassas ve orantılı kulaklarım neler duyuyor"]
   }
 };
-
         
         window.onload = () => {
             const savedName = localStorage.getItem('ghostUsername');
@@ -779,7 +609,6 @@
             startCountdown();
             setupDailyMissions();
             updateBadgeProgress();
-            renderHacksShop(); // Render initial shop
             
             const urlParams = new URLSearchParams(window.location.search);
             if(urlParams.has('c')) {
@@ -816,7 +645,6 @@
             osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(t+0.05);
         }
 
-        /* --- NEW AUDIO: POWER UP SOUND --- */
         function playPowerUp() {
             if(!audioCtx) return;
             const t = audioCtx.currentTime;
@@ -829,7 +657,6 @@
             osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.start(); osc.stop(t + 0.3);
         }
 
-        /* --- NEW AUDIO: BADGE UNLOCK SOUND --- */
         function playBadgeSound() {
             if(!audioCtx) return;
             const t = audioCtx.currentTime;
@@ -849,6 +676,7 @@
         // --- ECONOMY SYSTEM ---
         function updateCreditsUI() {
             document.getElementById('sc-val').innerText = userCredits;
+            document.getElementById('shop-sc-val').innerText = userCredits;
         }
 
         function addCredits(amount) {
@@ -857,8 +685,55 @@
             updateCreditsUI();
         }
 
+        // --- NEW MODAL & SHOP LOGIC ---
+
+        function switchTab(tab) {
+            // Remove active classes
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            // Add active classes
+            document.getElementById(`tab-btn-${tab}`).classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+        }
+
+        function filterShop(diff) {
+            currentShopFilter = diff;
+            // Update buttons
+            document.querySelectorAll('.shop-filter-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`filter-${diff}`).classList.add('active');
+            // Render content
+            renderShopContent();
+        }
+
+        function renderShopContent() {
+            const container = document.getElementById('shop-grid-content');
+            container.innerHTML = '';
+            
+            const hacks = HACKS_CONFIG[currentShopFilter];
+            if(!hacks) return;
+
+            hacks.forEach(h => {
+                const isActive = activeBuffs[h.id];
+                const btnClass = isActive ? 'sc-action-btn owned' : 'sc-action-btn';
+                const btnText = isActive ? 'ACTIVE' : 'BUY';
+                
+                const card = document.createElement('div');
+                card.className = `shop-card ${isActive ? 'active' : ''}`;
+                card.innerHTML = `
+                    <div class="sc-info">
+                        <span class="sc-name">${h.icon} ${h.name}</span>
+                        <span class="sc-desc">${h.desc}</span>
+                        <span class="sc-price-tag">💎${h.cost}</span>
+                    </div>
+                    <button class="${btnClass}" onclick="buyHack('${h.id}', ${h.cost}, this)">${btnText}</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
         function buyHack(hackId, cost, btn) {
-            if(activeBuffs[hackId]) return; // Already active (shouldn't happen with UI logic but safety)
+            if(activeBuffs[hackId]) return; // Already owned
             
             if(userCredits >= cost) {
                 userCredits -= cost;
@@ -866,28 +741,35 @@
                 updateCreditsUI();
                 
                 activeBuffs[hackId] = true;
-                btn.classList.add('active');
                 playClick(true);
+                
+                // Re-render to update UI state
+                renderShopContent();
+                updateActiveHackIndicator();
             } else {
                 btn.classList.add('shake');
                 setTimeout(()=>btn.classList.remove('shake'), 400);
             }
         }
 
-        function renderHacksShop() {
-            const container = document.getElementById('hacks-shop-row');
-            container.innerHTML = '';
+        function updateActiveHackIndicator() {
+            const container = document.getElementById('active-hack-display');
+            let activeItem = null;
             
-            const hacks = HACKS_CONFIG[config.diff];
-            if(!hacks) return;
+            // Find the first active buff to display
+            for(const diff in HACKS_CONFIG) {
+                for(const h of HACKS_CONFIG[diff]) {
+                    if(activeBuffs[h.id]) { activeItem = h; break; }
+                }
+                if(activeItem) break;
+            }
 
-            hacks.forEach(h => {
-                const btn = document.createElement('div');
-                btn.className = `hack-btn ${activeBuffs[h.id] ? 'active' : ''}`;
-                btn.innerHTML = `<span>${h.name}</span><span class="hack-cost">💎${h.cost}</span>`;
-                btn.onclick = () => buyHack(h.id, h.cost, btn);
-                container.appendChild(btn);
-            });
+            if(activeItem) {
+                container.innerHTML = `${activeItem.icon} ${activeItem.name} ACTIVE`;
+                container.classList.add('visible');
+            } else {
+                container.classList.remove('visible');
+            }
         }
 
         function startGame() {
@@ -896,7 +778,7 @@
             if(!username || username.length<2){ alert("Enter username!"); return;}
             saveUsername(username);
             
-            // Check for Matrix Vision Reward (From Delta Protocol)
+            // Check for Matrix Vision Reward
             if(localStorage.getItem('ghostRewardPending') === 'true') {
                 setTimeout(() => {
                     triggerReveal(3000); 
@@ -914,7 +796,6 @@
                 state.target = pool[Math.floor(Math.random()*pool.length)];
             }
 
-            // RESET GAME STATE
             state.input = ""; state.active = true; state.start = Date.now();
             tracker = { combo: 0, burst: 0, lastTime: Date.now(), halfwayDone: false, revealTimer: null, bufferUsed: false, rewindUsed: false };
 
@@ -934,16 +815,8 @@
             },50);
 
             // --- ACTIVATE BOUGHT BUFFS ---
-            
-            // 1. Ghost Scan (Easy)
-            if(activeBuffs.scan) {
-                triggerReveal(3000);
-            }
-
-            // 2. Predictive (Normal)
+            if(activeBuffs.scan) triggerReveal(3000);
             if(activeBuffs.predict) updatePredictiveVisuals();
-
-            // 3. Frequency Overlay (Hard)
             if(activeBuffs.freq) highlightFrequentKeys();
         }
 
@@ -959,7 +832,6 @@
             let totalGames = parseInt(localStorage.getItem('ghostTotalGames') || '0') + 1;
             localStorage.setItem('ghostTotalGames', totalGames);
 
-            // EARN CREDITS (10% of Score)
             const earnedCredits = Math.floor(score * 0.1);
             if(earnedCredits > 0) addCredits(earnedCredits);
 
@@ -975,7 +847,7 @@
                 predict: false, buffer: false, 
                 freq: false, rewind: false 
             };
-            renderHacksShop(); // Re-render to show reset state
+            updateActiveHackIndicator(); // Clear the indicator
 
             document.getElementById('game-screen').style.display='none';
             document.getElementById('result-screen').style.display='flex';
@@ -1005,19 +877,14 @@
                 
                 if(exp && inp!==exp) {
                     // ERROR LOGIC
-                    
-                    // BUFF: STEALTH REWIND (Hard)
                     if(activeBuffs.rewind && !tracker.rewindUsed) {
                         tracker.rewindUsed = true;
-                        // Keep last 3 correct chars or less
                         let safeLen = Math.max(0, state.input.length - 4); 
                         state.input = state.input.substring(0, safeLen);
-                        playPowerUp(); // Sound effect
-                        // Visual feedback handled by text update
-                        tracker.combo = 0; tracker.burst = 0; // Still breaks combo
+                        playPowerUp(); 
+                        tracker.combo = 0; tracker.burst = 0; 
                     } 
                     else {
-                        // BUFF: ERROR TRACE (Easy)
                         if(activeBuffs.trace && exp) {
                             const correctKeyEl = keyMap[exp];
                             if(correctKeyEl) {
@@ -1025,12 +892,9 @@
                                 setTimeout(()=>correctKeyEl.classList.remove('trace'), 500);
                             }
                         }
-
-                        // BUFF: TIME BUFFER (Normal)
                         if(activeBuffs.buffer && !tracker.bufferUsed) {
                             triggerTimeBuffer();
                         }
-
                         document.body.classList.add('shake-screen');
                         document.getElementById('input-box-area').classList.add('error-glow');
                         setTimeout(()=>{document.body.classList.remove('shake-screen');document.getElementById('input-box-area').classList.remove('error-glow')},300);
@@ -1038,19 +902,14 @@
                         tracker.burst = 0;
                     }
                 } else {
-                    // CORRECT INPUT
                     playClick();
-                    
                     let now = Date.now();
                     let diff = now - tracker.lastTime;
                     tracker.lastTime = now;
-                    
                     tracker.combo++;
                     if(diff < 120) { tracker.burst++; } else { tracker.burst = 0; }
-
                     if(tracker.combo >= 20) { triggerReveal(3000); tracker.combo = 0; }
                     if(tracker.burst >= 10) { triggerReveal(1500); tracker.burst = 0; }
-
                     let halfLen = Math.floor(state.target.length / 2);
                     if(!tracker.halfwayDone && state.input.length === halfLen) {
                         const currentAcc = calcAcc(state.target.substring(0, halfLen), state.input);
@@ -1059,23 +918,18 @@
                 }
             }
             document.getElementById('user-input').textContent=state.input;
-            
             if(activeBuffs.predict) updatePredictiveVisuals();
         }
 
-        // --- BUFF & POWER MECHANICS ---
-        
+        // --- BUFF MECHANICS ---
         function highlightFrequentKeys() {
-            // Count frequencies
             let counts = {};
             for(let char of state.target) {
                 if(char === ' ') continue;
                 char = char.toLowerCase();
                 counts[char] = (counts[char] || 0) + 1;
             }
-            // Sort
             let sorted = Object.keys(counts).sort((a,b) => counts[b] - counts[a]).slice(0, 5);
-            // Highlight
             sorted.forEach(char => {
                 if(keyMap[char]) keyMap[char].classList.add('freq');
             });
@@ -1085,21 +939,15 @@
             tracker.bufferUsed = true;
             const keys = document.querySelectorAll('.key');
             keys.forEach(k => k.classList.add('revealed'));
-            
             const overlay = document.getElementById('buffer-overlay');
             const countEl = document.getElementById('buffer-countdown');
             overlay.classList.add('active');
-            
-            let count = 2;
-            countEl.innerText = count;
+            let count = 2; countEl.innerText = count;
             let pauseStart = Date.now();
-
             let int = setInterval(() => {
-                count--;
-                countEl.innerText = count;
+                count--; countEl.innerText = count;
                 if(count <= 0) {
-                    clearInterval(int);
-                    overlay.classList.remove('active');
+                    clearInterval(int); overlay.classList.remove('active');
                     keys.forEach(k => k.classList.remove('revealed'));
                     state.start += (Date.now() - pauseStart);
                 }
@@ -1179,7 +1027,6 @@
             document.body.className='theme-'+v; 
             playClick(); 
             renderDailyMissions(); 
-            renderHacksShop(); // Refresh shop
         }
         function setLang(v,b) { config.lang=v; document.querySelectorAll('#lang-row .mode-btn').forEach(k=>k.classList.remove('active')); b.classList.add('active'); playClick(); }
         
@@ -1190,8 +1037,7 @@
             document.getElementById('username-input').value=username; 
             setupDailyMissions();
             updateBadgeProgress();
-            renderHacksShop();
-
+            
             if (!challengeModePhrase) {
                 document.getElementById('diff-row').style.display = 'flex'; 
                 document.getElementById('lang-row').style.display = 'flex'; 
@@ -1233,18 +1079,15 @@
 
         function initKeyboard() {
             const c=document.getElementById('kb-container'); c.innerHTML='';
-            keyMap = {}; // Reset Map
-            
+            keyMap = {}; 
             let r=config.lang==='tr'?["qwertyuıopğü","asdfghjklşi","zxcvbnmöç"]:["qwertyuiop","asdfghjkl","zxcvbnm"];
-            
             const mk=(ch)=> { 
                 let k=document.createElement('div');k.className='key';
                 k.innerHTML=`<span>${ch.toUpperCase()}</span>`; 
-                keyMap[ch] = k; // Map char to element
+                keyMap[ch] = k; 
                 const h=(e)=>{e.preventDefault();handle(ch,k)};
                 k.ontouchstart=h;k.onmousedown=h;return k; 
             };
-
             let r1=document.createElement('div');r1.className='row';r[0].split('').forEach(x=>r1.appendChild(mk(x)));c.appendChild(r1);
             let r2=document.createElement('div');r2.className='row staggered';r[1].split('').forEach(x=>r2.appendChild(mk(x)));c.appendChild(r2);
             let r3=document.createElement('div');r3.className='row';
@@ -1255,13 +1098,13 @@
             let r4=document.createElement('div');r4.className='row';
             let k123=document.createElement('div');k123.className='key special';k123.innerHTML='<span>123</span>';r4.appendChild(k123);
             let spc=document.createElement('div');spc.className='key space';spc.innerHTML='<span>space</span>';
-            keyMap[' '] = spc; // Map Space
+            keyMap[' '] = spc; 
             const sh2=(e)=>{e.preventDefault();handle(' ',spc)};spc.ontouchstart=sh2;spc.onmousedown=sh2;r4.appendChild(spc);
             let ent=document.createElement('div');ent.className='key enter';ent.innerHTML='<span>GO</span>';
             const eh=(e)=>{e.preventDefault();finish();playClick(true);};ent.ontouchstart=eh;ent.onmousedown=eh;r4.appendChild(ent);c.appendChild(r4);
         }
 
-        // --- NEW CYBER ACHIEVEMENTS (BADGES) ---
+        // --- ACHIEVEMENTS (BADGES) ---
         const BADGES = [
             { id: 'initiate', name: 'PROTOCOL INITIATE', icon: '🔌', desc: 'Pass System Check (Play 5 Games)' },
             { id: 'access', name: 'ACCESS GRANTED', icon: '🔓', desc: 'Finish with >90% Accuracy' },
@@ -1282,12 +1125,7 @@
 
         function setupDailyMissions() {
             const dateStr = new Date().toDateString();
-            
-            let hash = 0;
-            for (let i = 0; i < dateStr.length; i++) hash = dateStr.charCodeAt(i) + ((hash << 5) - hash);
-            hash = Math.abs(hash);
-
-            // MISSIONS CONFIG
+            // ... (Mission setup logic unchanged) ...
             activeMissions.easy = [
                 { id: 'n_alpha', name: 'ALPHA', desc: 'WPM > 30 & Errors < 5', check: (s,w,a,err) => w > 30 && err < 5 },
                 { id: 'n_beta', name: 'BETA', desc: 'Score > 30', check: (s,w,a) => s > 30 },
@@ -1303,7 +1141,6 @@
                 { id: 'h_beta', name: 'BETA', desc: 'Score > 120', check: (s,w,a) => s > 120 },
                 { id: 'h_gamma', name: 'GAMMA', desc: 'Accuracy > 95%', check: (s,w,a) => a > 95 }
             ];
-
             renderDailyMissions();
         }
 
@@ -1311,9 +1148,7 @@
             const dateStr = new Date().toDateString();
             const currentDiff = config.diff; 
             const missions = activeMissions[currentDiff];
-            
             const completed = JSON.parse(localStorage.getItem(`ghostDailyCompleted_${currentDiff}_${dateStr}`) || '[]');
-            
             const progressPct = (completed.length / 3) * 100;
             const container = document.getElementById('daily-mission-container');
             
@@ -1335,7 +1170,6 @@
                 `;
             });
 
-            // Reward Icon
             let anyDiffDone = false;
             ['easy', 'normal', 'hard'].forEach(d => {
                 const c = JSON.parse(localStorage.getItem(`ghostDailyCompleted_${d}_${dateStr}`) || '[]');
@@ -1347,7 +1181,6 @@
                     ${anyDiffDone ? '🎖️ MATRIX VISION READY (+50 SC)' : '🔒 DELTA LOCKED'}
                 </div>
             `;
-
             container.innerHTML = html;
         }
 
@@ -1355,22 +1188,19 @@
             const dateStr = new Date().toDateString();
             const currentDiff = config.diff;
             let errors = Math.round((state.input.length * (100 - a)) / 100);
-
             let completed = JSON.parse(localStorage.getItem(`ghostDailyCompleted_${currentDiff}_${dateStr}`) || '[]');
             let changed = false;
             const missions = activeMissions[currentDiff];
-
             missions.forEach((m, idx) => {
                 if (!completed.includes(idx) && m.check(s, w, a, errors)) {
                     completed.push(idx);
                     changed = true;
                 }
             });
-
             if (changed) {
                 localStorage.setItem(`ghostDailyCompleted_${currentDiff}_${dateStr}`, JSON.stringify(completed));
                 if (completed.length === 3) {
-                    addCredits(50); // Daily Bonus
+                    addCredits(50); 
                     checkBadges(s, w, a, true);
                     localStorage.setItem('ghostRewardPending', 'true');
                 }
@@ -1382,7 +1212,6 @@
             let userBadges = JSON.parse(localStorage.getItem('ghostUserBadges') || '[]');
             let totalGames = parseInt(localStorage.getItem('ghostTotalGames') || '0');
             let unlockedBadge = null;
-
             const conditions = {
                 'initiate': totalGames >= 5,
                 'access': a >= 90,
@@ -1392,32 +1221,26 @@
                 'stealth': a === 100,
                 'trinity': dailyComplete
             };
-
             BADGES.forEach(b => {
                 if(!userBadges.includes(b.id) && conditions[b.id]) {
                     userBadges.push(b.id);
                     unlockedBadge = b; 
                 }
             });
-
             if(unlockedBadge) {
                 localStorage.setItem('ghostUserBadges', JSON.stringify(userBadges));
-                addCredits(200); // Badge Bonus
+                addCredits(200); 
                 showBadgeNotification(unlockedBadge); 
                 playBadgeSound(); 
             }
         }
 
-        // --- NEW NOTIFICATION FUNCTION ---
         function showBadgeNotification(badge) {
             const notifyEl = document.getElementById('badge-notify-area');
             document.getElementById('bn-icon').innerText = badge.icon;
             document.getElementById('bn-name').innerText = badge.name;
-            
             notifyEl.classList.add('show');
-            setTimeout(() => {
-                notifyEl.classList.remove('show');
-            }, 4000);
+            setTimeout(() => { notifyEl.classList.remove('show'); }, 4000);
         }
 
         function updateBadgeProgress() {
@@ -1433,6 +1256,8 @@
             document.getElementById('pc-id').innerText = Math.random().toString(36).substr(2, 6).toUpperCase();
             document.getElementById('pc-best-score').innerText = localStorage.getItem('ghostBestScore') || '0';
             updateBadgeProgress();
+            
+            // Badge Grid Render
             const userBadges = JSON.parse(localStorage.getItem('ghostUserBadges') || '[]');
             const grid = document.getElementById('modal-badge-grid');
             grid.innerHTML = '';
@@ -1442,11 +1267,16 @@
                 el.className = `modal-badge ${isUnlocked ? 'unlocked' : ''}`;
                 el.innerHTML = b.icon;
                 el.onclick = () => showBadgeDetail(b, isUnlocked);
-                el.onmouseenter = () => showBadgeDetail(b, isUnlocked);
                 grid.appendChild(el);
             });
-            document.getElementById('badge-detail').innerHTML = `<div class="bd-name">SELECT A BADGE</div><div class="bd-desc" id="bd-desc-text">Click on an icon above to see details.</div>`;
-            document.getElementById('badge-detail').style.borderLeftColor = '#333';
+
+            // Default State: Database Tab Open
+            switchTab('db');
+            
+            // Prepare Shop
+            filterShop(config.diff); // Open shop with current difficulty filter
+            updateCreditsUI();
+
             document.getElementById('profile-modal').classList.add('open');
         }
 
@@ -1454,11 +1284,9 @@
             const panel = document.getElementById('badge-detail');
             let html = `<div class="bd-name">${badge.name} ${unlocked ? '✅' : '🔒'}</div>`;
             html += `<div class="bd-desc" id="bd-desc-text"></div>`;
-            html += `<div style="font-size:0.7rem; color:${unlocked ? '#00ff9d' : '#666'}; margin-top:5px;">STATUS: ${unlocked ? 'ACQUIRED' : 'LOCKED'}</div>`;
             panel.innerHTML = html;
             panel.style.borderLeftColor = unlocked ? 'var(--accent-color)' : '#333';
-            const descEl = document.getElementById('bd-desc-text');
-            typeWriterEffect(descEl, badge.desc);
+            typeWriterEffect(document.getElementById('bd-desc-text'), badge.desc);
         }
 
         function typeWriterEffect(element, text, speed = 30) {
@@ -1480,6 +1308,7 @@
         function closeProfile() {
             document.getElementById('profile-modal').classList.remove('open');
             if(typeWriterTimeout) clearTimeout(typeWriterTimeout);
+            updateActiveHackIndicator();
         }
 
     </script>
