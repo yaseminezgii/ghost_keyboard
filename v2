@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ghost Keyboard v4.1 (Economy Update)</title>
+    <title>Ghost Keyboard v4.0 (System Economy)</title>
     
     <meta property="og:title" content="Ghost Keyboard Challenge">
     <meta property="og:description" content="Invisible keys. Can you type blindly?">
@@ -190,8 +190,8 @@
         @keyframes traceShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-2px)} 75%{transform:translateX(2px)} }
 
         /* 2. PREDICTIVE */
-        .key.predict { border: 1px solid rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.05); }
-        .key.predict span { opacity: 0.6; color: #aaa; }
+        .key.predict { border: 1px solid rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.1); box-shadow: 0 0 5px rgba(255,255,255,0.3); }
+        .key.predict span { opacity: 0.8; color: #fff; }
 
         /* 3. FREQUENCY OVERLAY (Passive) */
         .key.freq { background: rgba(0, 255, 157, 0.05); border: 1px dashed rgba(255,255,255,0.1); }
@@ -502,6 +502,7 @@
         let userCredits = 0;
         
         // --- BUFF CONFIG & STATE ---
+        // Buffs separated by difficulty tier
         const HACKS_CONFIG = {
             easy: [
                 { id: 'scan', name: 'GHOST SCAN', cost: 50, desc: '3s Full Vision' },
@@ -515,13 +516,6 @@
                 { id: 'freq', name: 'FREQ MAP', cost: 350, desc: 'Highlight Frequent' },
                 { id: 'rewind', name: 'REWIND', cost: 500, desc: 'Undo 3 Chars' }
             ]
-        };
-
-        // --- NEW ECONOMY REWARDS CONFIG ---
-        const PROTOCOL_REWARDS = {
-            easy: { mission: 10, delta: 50 },
-            normal: { mission: 20, delta: 75 },
-            hard: { mission: 30, delta: 100 }
         };
 
         // Current active buffs for next game
@@ -842,8 +836,6 @@
             const gain = audioCtx.createGain();
             gain.gain.value = 0.2;
             gain.connect(audioCtx.destination);
-            
-            // Major Arpeggio
             [600, 750, 900, 1200].forEach((freq, i) => {
                 const osc = audioCtx.createOscillator();
                 osc.type = 'triangle';
@@ -866,7 +858,7 @@
         }
 
         function buyHack(hackId, cost, btn) {
-            if(activeBuffs[hackId]) return; 
+            if(activeBuffs[hackId]) return; // Already active (shouldn't happen with UI logic but safety)
             
             if(userCredits >= cost) {
                 userCredits -= cost;
@@ -967,8 +959,8 @@
             let totalGames = parseInt(localStorage.getItem('ghostTotalGames') || '0') + 1;
             localStorage.setItem('ghostTotalGames', totalGames);
 
-            // EARN CREDITS (Base: 1 SC per 10 Score)
-            const earnedCredits = Math.floor(score / 10);
+            // EARN CREDITS (10% of Score)
+            const earnedCredits = Math.floor(score * 0.1);
             if(earnedCredits > 0) addCredits(earnedCredits);
 
             saveScoreToCloud(score, wpm, acc, t);
@@ -1271,13 +1263,13 @@
 
         // --- NEW CYBER ACHIEVEMENTS (BADGES) ---
         const BADGES = [
-            { id: 'initiate', name: 'PROTOCOL INITIATE', icon: '🔌', desc: 'Pass System Check (Play 5 Games)', reward: 150 },
-            { id: 'access', name: 'ACCESS GRANTED', icon: '🔓', desc: 'Finish with >90% Accuracy', reward: 150 },
-            { id: 'speed', name: 'SPEED DEMON', icon: '⚡', desc: 'Reach 100+ WPM (High Velocity)', reward: 250 },
-            { id: 'admin', name: 'ADMIN RIGHTS', icon: '🛡️', desc: 'Finish with >95% Accuracy', reward: 250 },
-            { id: 'exploit', name: 'CRITICAL EXPLOIT', icon: '☣️', desc: 'Hard Mode + >80 WPM + >90% Acc', reward: 500 },
-            { id: 'stealth', name: 'STEALTH RUN', icon: '🥷', desc: '100% Accuracy (Perfect Run)', reward: 500 },
-            { id: 'trinity', name: 'TRINITY PROTOCOL', icon: '🔺', desc: 'Complete all 3 Daily Protocols', reward: 500 }
+            { id: 'initiate', name: 'PROTOCOL INITIATE', icon: '🔌', desc: 'Pass System Check (Play 5 Games)' },
+            { id: 'access', name: 'ACCESS GRANTED', icon: '🔓', desc: 'Finish with >90% Accuracy' },
+            { id: 'speed', name: 'SPEED DEMON', icon: '⚡', desc: 'Reach 100+ WPM (High Velocity)' },
+            { id: 'admin', name: 'ADMIN RIGHTS', icon: '🛡️', desc: 'Finish with >95% Accuracy' },
+            { id: 'exploit', name: 'CRITICAL EXPLOIT', icon: '☣️', desc: 'Hard Mode + >80 WPM + >90% Acc' },
+            { id: 'stealth', name: 'STEALTH RUN', icon: '🥷', desc: '100% Accuracy (Perfect Run)' },
+            { id: 'trinity', name: 'TRINITY PROTOCOL', icon: '🔺', desc: 'Complete all 3 Daily Protocols' }
         ];
 
         let activeMissions = {};
@@ -1352,18 +1344,12 @@
 
             html += `
                 <div class="protocol-reward-icon ${anyDiffDone ? 'unlocked' : ''}">
-                    ${anyDiffDone ? '🎖️ MATRIX VISION READY' : '🔒 DELTA LOCKED'}
+                    ${anyDiffDone ? '🎖️ MATRIX VISION READY (+50 SC)' : '🔒 DELTA LOCKED'}
                 </div>
             `;
 
             container.innerHTML = html;
         }
-
-        const PROTOCOL_REWARDS = {
-            easy: { mission: 10, delta: 50 },
-            normal: { mission: 20, delta: 75 },
-            hard: { mission: 30, delta: 100 }
-        };
 
         function checkDailyProgress(s, w, a) {
             const dateStr = new Date().toDateString();
@@ -1378,16 +1364,13 @@
                 if (!completed.includes(idx) && m.check(s, w, a, errors)) {
                     completed.push(idx);
                     changed = true;
-                    // Add Mission Reward
-                    addCredits(PROTOCOL_REWARDS[currentDiff].mission);
                 }
             });
 
             if (changed) {
                 localStorage.setItem(`ghostDailyCompleted_${currentDiff}_${dateStr}`, JSON.stringify(completed));
                 if (completed.length === 3) {
-                    // Add Delta Bonus
-                    addCredits(PROTOCOL_REWARDS[currentDiff].delta);
+                    addCredits(50); // Daily Bonus
                     checkBadges(s, w, a, true);
                     localStorage.setItem('ghostRewardPending', 'true');
                 }
@@ -1419,7 +1402,7 @@
 
             if(unlockedBadge) {
                 localStorage.setItem('ghostUserBadges', JSON.stringify(userBadges));
-                addCredits(unlockedBadge.reward); // Badge Bonus
+                addCredits(200); // Badge Bonus
                 showBadgeNotification(unlockedBadge); 
                 playBadgeSound(); 
             }
