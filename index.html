@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ghost Keyboard v4.6 (Balanced Predictive)</title>
+    <title>Ghost Keyboard v4.6 (Mobile Fix)</title>
     
     <meta property="og:title" content="Ghost Keyboard Challenge">
     <meta property="og:description" content="Invisible keys. Can you type blindly?">
@@ -388,6 +388,53 @@
             opacity: 0; transition: opacity 0.3s;
         }
         .active-proto-display.visible { opacity: 1; }
+
+        /* --- MOBILE FIXES (EKLENDİ) --- */
+        @media (max-width: 600px) {
+            .container { padding: 5px; } /* Daha az kenar boşluğu */
+            
+            /* Üst paneli sıkışıklıktan kurtarmak için Grid yapısı */
+            .user-action-area {
+                display: grid;
+                grid-template-columns: 1fr 1fr auto; /* Rozet, Kredi, ID Butonu */
+                grid-template-rows: auto auto; /* İki satır */
+                gap: 8px;
+            }
+            
+            /* Üst Satır */
+            .badge-progress-tag { grid-column: 1; }
+            .sc-tag { grid-column: 2; }
+            
+            /* ID Butonu - Sağ üstte sabit */
+            .profile-btn { 
+                grid-column: 3; 
+                grid-row: 1 / span 2; /* İki satır boyunca uzayabilir veya tek kalabilir */
+                height: 100%; 
+                aspect-ratio: 1; 
+                padding: 0;
+                width: 45px;
+            }
+            
+            /* Giriş Kutusu - Alt satıra genişle */
+            .name-input { 
+                grid-column: 1 / 3; /* İlk iki kolonu kapla */
+                grid-row: 2;
+                width: 100%;
+                margin: 0;
+            }
+
+            /* Butonlar ekrana sığsın */
+            .mode-btn { 
+                padding: 12px 2px; 
+                font-size: 0.7rem; 
+            }
+            
+            /* Görev listesi metinlerini küçült */
+            .ms-desc { font-size: 0.7rem; }
+            
+            /* Başlık boyutunu ayarla */
+            h1 { font-size: 1.8rem; }
+        }
 
     </style>
 </head>
