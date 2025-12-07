@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ghost Keyboard v4.6 (Mobile Fix)</title>
+    <title>Ghost Keyboard v4.8 (Fixes)</title>
     
     <meta property="og:title" content="Ghost Keyboard Challenge">
     <meta property="og:description" content="Invisible keys. Can you type blindly?">
@@ -23,8 +23,11 @@
         body.theme-normal { --accent-color: #00ff9d; --glow-color: rgba(0, 255, 157, 0.4); --bg-gradient: radial-gradient(circle at 50% 50%, #05150a 0%, #000 100%); }
         body.theme-hard { --accent-color: #ff003c; --glow-color: rgba(255, 0, 60, 0.4); --bg-gradient: radial-gradient(circle at 50% 50%, #250505 0%, #000 100%); }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
         
+        /* 1. FIX: HTML Background Siyah (iPhone Adacık/Bounce İçin) */
+        html { background-color: #000; }
+
         body {
             background: var(--bg-gradient); 
             color: var(--text-color); 
@@ -37,7 +40,6 @@
             margin: 0; 
             overflow-x: hidden;
             overflow-y: auto;
-            touch-action: manipulation; 
             transition: background 0.5s ease;
         }
 
@@ -98,9 +100,10 @@
 
         .profile-btn { 
             background: #111; border: 1px solid var(--accent-color); color: var(--accent-color); 
-            padding: 0 15px; border-radius: 2px; 
+            padding: 0 10px; border-radius: 2px; 
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; transition: 0.3s;
+            font-size: 0.9rem; font-weight: 900; transition: 0.3s;
+            letter-spacing: 1px;
         }
         .profile-btn:hover { background: var(--accent-color); color: #000; box-shadow: 0 0 15px var(--glow-color); }
         
@@ -144,12 +147,24 @@
         .lb-name { flex-grow: 1; color: #ddd; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;}
         .lb-score { color: var(--accent-color); font-weight: bold; }
 
-        /* --- GAME UI --- */
+        /* --- GAME UI (FIXED LAYOUT) --- */
         #game-screen { 
-            display: none; width: 100%; 
+            display: none; width: 100%; height: 100%;
             flex: 1; flex-direction: column; 
-            justify-content: center; align-items: center;
+            justify-content: flex-end; 
+            align-items: center;
             position: relative;
+            padding-bottom: 20px; 
+        }
+        
+        .game-top-content {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: auto; 
+            margin-top: 30px;
         }
 
         .timer-container { text-align: center; margin-bottom: 10px; }
@@ -164,16 +179,20 @@
         }
         .target-text { font-size: 1.4rem; color: #fff; font-weight: 600; line-height: 1.4; }
         
+        /* 4. FIX: Input Box Scrolling (Uzun cümleler için) */
         .input-box { 
             font-size: 1.5rem; color: var(--accent-color); 
             border-bottom: 2px solid #333; min-height: 40px; 
             margin: 15px 0 25px 0; text-align: center; 
             white-space: pre; width: 100%; max-width: 450px; 
+            overflow-x: auto; /* Yatay kaydırma */
+            scrollbar-width: none; /* Firefox gizle */
         }
+        .input-box::-webkit-scrollbar { display: none; /* Chrome gizle */ }
         
         .keyboard { display: flex; flex-direction: column; width: 100%; max-width: 420px; padding: 5px 0; }
         .row { display: flex; justify-content: center; margin-bottom: 4px; width: 100%; }
-        .key { background: var(--key-bg); color: #fff; height: 40px; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin: 0 1px; flex: 0 0 auto; width: var(--key-width); cursor: pointer; transition: all 0.2s; }
+        .key { background: var(--key-bg); color: #fff; height: 45px; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin: 0 1px; flex: 0 0 auto; width: var(--key-width); cursor: pointer; transition: all 0.2s; }
         .key span { opacity: 0; transition: opacity 0.2s; } 
         .key.special span, .key.enter span { opacity: 1; }
         .key:active, .key.active-key { background: #555; transform: scale(1.1); }
@@ -185,27 +204,24 @@
         .key.revealed { border: 1px solid var(--accent-color); box-shadow: 0 0 15px var(--glow-color); background: rgba(0, 255, 157, 0.1); }
         .key.revealed span { opacity: 1; color: var(--accent-color); text-shadow: 0 0 10px var(--accent-color); }
 
-        /* 1. ERROR TRACE */
+        /* ERROR TRACE */
         .key.trace { border: 1px solid #ff3333; box-shadow: 0 0 20px rgba(255, 51, 51, 0.6); background: rgba(255, 51, 51, 0.2); animation: traceShake 0.4s; }
         .key.trace span { opacity: 1; color: #ff3333; }
         @keyframes traceShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-2px)} 75%{transform:translateX(2px)} }
 
-        /* 2. PREDICTIVE (BALANCED: Hides text, only shows weak border hint) */
+        /* PREDICTIVE */
         .key.predict { 
             border: 1px solid rgba(0, 255, 157, 0.3); 
             background: rgba(0, 255, 157, 0.02); 
             box-shadow: 0 0 5px rgba(0, 255, 157, 0.1);
         }
-        /* IMPORTANT: If not fully revealed by scan, hide the character! */
-        .key.predict:not(.revealed) span { 
-            opacity: 0 !important; 
-        }
+        .key.predict:not(.revealed) span { opacity: 0 !important; }
 
-        /* 3. FREQUENCY OVERLAY (Passive) */
+        /* FREQUENCY OVERLAY */
         .key.freq { background: rgba(0, 255, 157, 0.05); border: 1px dashed rgba(255,255,255,0.1); }
         .key.freq span { opacity: 0.2; }
 
-        /* 4. TIME BUFFER OVERLAY */
+        /* TIME BUFFER OVERLAY */
         #buffer-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); z-index: 50; display: none;
@@ -234,7 +250,7 @@
         @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
         .error-glow { text-shadow: 0 0 15px #ff0000 !important; color: #ff5555 !important; }
 
-        /* --- IMPROVED DAILY UI (TACTICAL UPDATE) --- */
+        /* --- IMPROVED DAILY UI --- */
         .missions-wrapper {
             width: 100%; margin-bottom: 20px;
             background: #000000; 
@@ -292,14 +308,25 @@
             background: rgba(0,0,0,0.9); border: 2px solid var(--accent-color);
             padding: 20px 40px; border-radius: 10px; z-index: 200;
             text-align: center; box-shadow: 0 0 30px var(--glow-color), inset 0 0 20px rgba(0,255,157,0.1);
-            display: none; animation: slideUp 0.5s ease-out forwards;
+            display: none; 
+            /* 2. FIX: Slide Up Animation Only */
+            animation: slideUp 0.5s ease-out forwards;
         }
         .badge-notify.show { display: block; }
+        
+        /* 2. FIX: Kapanış Animasyonu (Slide Down) */
+        .badge-notify.hide {
+            display: block;
+            animation: slideDown 0.5s ease-in forwards;
+        }
+
         .bn-icon { font-size: 3rem; margin-bottom: 10px; animation: anim-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .bn-title { color: #fff; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
         .bn-name { color: var(--accent-color); font-size: 1.2rem; font-weight: 900; text-shadow: 0 0 10px var(--accent-color); }
 
         @keyframes slideUp { 0%{opacity:0; transform:translate(-50%, 20px);} 100%{opacity:1; transform:translate(-50%, 0);} }
+        /* 2. FIX: Slide Down Keyframes */
+        @keyframes slideDown { 0%{opacity:1; transform:translate(-50%, 0);} 100%{opacity:0; transform:translate(-50%, 20px);} }
         @keyframes anim-pop { 0%{transform:scale(0);} 80%{transform:scale(1.2);} 100%{transform:scale(1);} }
 
         /* --- PROFILE MODAL (REVISED) --- */
@@ -389,51 +416,48 @@
         }
         .active-proto-display.visible { opacity: 1; }
 
-        /* --- MOBILE FIXES (EKLENDİ) --- */
+        /* --- MOBILE FIXES --- */
         @media (max-width: 600px) {
-            .container { padding: 5px; } /* Daha az kenar boşluğu */
+            .container { padding: 5px; }
             
-            /* Üst paneli sıkışıklıktan kurtarmak için Grid yapısı */
             .user-action-area {
                 display: grid;
-                grid-template-columns: 1fr 1fr auto; /* Rozet, Kredi, ID Butonu */
-                grid-template-rows: auto auto; /* İki satır */
+                grid-template-columns: 1fr 1fr auto; 
+                grid-template-rows: auto auto; 
                 gap: 8px;
             }
-            
-            /* Üst Satır */
             .badge-progress-tag { grid-column: 1; }
             .sc-tag { grid-column: 2; }
             
-            /* ID Butonu - Sağ üstte sabit */
             .profile-btn { 
                 grid-column: 3; 
-                grid-row: 1 / span 2; /* İki satır boyunca uzayabilir veya tek kalabilir */
+                grid-row: 1 / span 2; 
                 height: 100%; 
-                aspect-ratio: 1; 
+                width: 50px;
                 padding: 0;
-                width: 45px;
+                font-size: 0.7rem;
             }
             
-            /* Giriş Kutusu - Alt satıra genişle */
             .name-input { 
-                grid-column: 1 / 3; /* İlk iki kolonu kapla */
+                grid-column: 1 / 3; 
                 grid-row: 2;
                 width: 100%;
                 margin: 0;
             }
 
-            /* Butonlar ekrana sığsın */
-            .mode-btn { 
-                padding: 12px 2px; 
-                font-size: 0.7rem; 
+            .mode-btn { padding: 10px 2px; font-size: 0.7rem; }
+            h1 { font-size: 1.5rem; }
+            .ghost-icon { font-size: 2.5rem; }
+            
+            .missions-wrapper { padding: 8px; gap: 5px; margin-bottom: 10px; }
+            .ms-desc { font-size: 0.65rem; }
+            .ms-row { padding: 5px 8px; }
+            .ms-title-text { font-size: 0.75rem; }
+            .tutorial-box { display: none; }
+            
+            #game-screen {
+                padding-bottom: 40px; 
             }
-            
-            /* Görev listesi metinlerini küçült */
-            .ms-desc { font-size: 0.7rem; }
-            
-            /* Başlık boyutunu ayarla */
-            h1 { font-size: 1.8rem; }
         }
 
     </style>
@@ -473,7 +497,7 @@
                             💎<span id="sc-val">0</span>
                         </div>
                         <input type="text" id="username-input" class="name-input" placeholder="USERNAME" maxlength="12" onchange="saveUsername(this.value)">
-                        <button class="profile-btn" onclick="openProfile()" title="ID Card">🆔</button>
+                        <button class="profile-btn" onclick="openProfile()" title="Store">STORE</button>
                     </div>
 
                     <!-- NEW DYNAMIC DAILY MISSION UI -->
@@ -483,9 +507,7 @@
                     <!-- END NEW UI -->
 
                     <!-- ACTIVE HACK INDICATOR (Main Page) -->
-                    <div id="active-hack-display" class="active-proto-display">
-                        <!-- JS Injected: 🔮 PREDICTIVE TEXT ACTIVE -->
-                    </div>
+                    <div id="active-hack-display" class="active-proto-display"></div>
 
                     <div style="width:100%;">
                         <div class="btn-row" id="diff-row">
@@ -520,10 +542,13 @@
                 <div class="buffer-text">SYSTEM PAUSED // RECALIBRATING</div>
                 <div class="buffer-count" id="buffer-countdown">2</div>
             </div>
+            
+            <div class="game-top-content">
+                <div class="timer-container"><div id="timer">0.0</div></div>
+                <div class="target-box"><span class="target-text" id="target-text">Loading...</span></div>
+                <div class="input-box" id="input-box-area"><span id="user-input"></span><span style="animation:blink 1s infinite">|</span></div>
+            </div>
 
-            <div class="timer-container"><div id="timer">0.0</div></div>
-            <div class="target-box"><span class="target-text" id="target-text">Loading...</span></div>
-            <div class="input-box" id="input-box-area"><span id="user-input"></span><span style="animation:blink 1s infinite">|</span></div>
             <div class="keyboard" id="kb-container"></div>
         </div>
 
@@ -548,8 +573,11 @@
             </div>
             
             <div style="width:100%; max-width:400px; margin-top:10px;">
-                <button class="main-btn" onclick="resetGame()">TRY AGAIN</button>
-                <button class="secondary-btn" id="share-btn" onclick="shareResult()">SHARE RESULT</button>
+                <button class="main-btn" onclick="startGame()">RETRY</button>
+                <button class="secondary-btn" id="share-btn" onclick="resetGame()">MAIN MENU</button>
+                <div style="margin-top:10px; text-align:center;">
+                   <a href="#" onclick="shareResult(); return false;" style="color:#666; font-size:0.8rem; text-decoration:none;">SHARE RESULT</a>
+                </div>
             </div>
         </div>
     </div>
@@ -612,20 +640,19 @@
     </div>
 
     <script>
-        // --- SUPABASE & INIT ---
+        document.addEventListener('dblclick', function(event) { event.preventDefault(); }, { passive: false });
+
         const SUPABASE_URL = 'https://dhqegitqiarogxivzcyv.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRocWVnaXRxaWFyb2d4aXZ6Y3l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5NzAwMzMsImV4cCI6MjA3OTU0NjAzM30.qnBHT5grVgmoMk1yCQA2_R8J-Q5MBXW3W05bXRS7Xoc';
         let supabase; try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e){}
 
         const config = { diff: 'easy', lang: 'tr', backspace: true };
         
-        // --- GAME VARIABLES ---
         let state = { active: false, target: "", input: "", start: 0, timer: null };
         let tracker = { combo: 0, burst: 0, lastTime: 0, halfwayDone: false, revealTimer: null, bufferUsed: false, rewindUsed: false };
         let keyMap = {}; 
         let userCredits = 0;
         
-        // --- BUFF CONFIG & STATE ---
         const HACKS_CONFIG = {
             easy: [
                 { id: 'scan', name: 'GHOST SCAN', cost: 50, icon: '👁️', desc: 'İlk 3 sn tam görüş sağlar.' },
@@ -643,15 +670,10 @@
 
         const BONUS_AMOUNTS = { easy: 50, normal: 75, hard: 100 };
 
-        // Current active buffs for next game
-        let activeBuffs = { 
-            scan: false, trace: false, 
-            predict: false, buffer: false, 
-            freq: false, rewind: false 
-        };
+        let activeBuffs = { scan: false, trace: false, predict: false, buffer: false, freq: false, rewind: false };
 
-        let currentShopFilter = 'easy'; // For modal shop tab
-        let isAdWatching = false; // For ad simulation
+        let currentShopFilter = 'easy'; 
+        let isAdWatching = false; 
 
         let username = "";
         let audioCtx = null;
@@ -671,10 +693,18 @@
 };
         
         window.onload = () => {
+            // 5. FIX: UUID & Username Persistence
+            let deviceId = localStorage.getItem('ghostDeviceId');
+            if(!deviceId) { 
+                deviceId = crypto.randomUUID ? crypto.randomUUID() : 'GHOST-' + Math.random().toString(36).substr(2,9); 
+                localStorage.setItem('ghostDeviceId', deviceId); 
+            }
             const savedName = localStorage.getItem('ghostUsername');
-            if(savedName) username = sanitizeUsername(savedName);
-            
-            // LOAD CREDITS
+            if(savedName) {
+                username = sanitizeUsername(savedName);
+                document.getElementById('username-input').value = username;
+            }
+
             userCredits = parseInt(localStorage.getItem('ghostUserCredits') || '0');
             updateCreditsUI();
 
@@ -746,7 +776,6 @@
             });
         }
 
-        // --- ECONOMY SYSTEM ---
         function updateCreditsUI() {
             document.getElementById('sc-val').innerText = userCredits;
             document.getElementById('shop-sc-val').innerText = userCredits;
@@ -757,8 +786,6 @@
             localStorage.setItem('ghostUserCredits', userCredits);
             updateCreditsUI();
         }
-
-        // --- NEW MODAL & SHOP LOGIC ---
 
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -773,16 +800,21 @@
             document.getElementById(`filter-${diff}`).classList.add('active');
             renderShopContent();
 
-            // CHECK DISCOVERY BONUS
             const bonusKey = `ghostBonusClaimed_${diff}`;
             const isClaimed = localStorage.getItem(bonusKey) === 'true';
             const footer = document.querySelector('.shop-footer');
-
+            const dateStr = new Date().toDateString();
+            const limitKey = `ghostManualAd_${dateStr}`;
+            
+            // 3. FIX: Check Daily Limit immediately upon viewing shop
             if (!isClaimed) {
-                // AUTO TRIGGER MINING BONUS
                 startBonusMining(diff, footer);
+            } else if (localStorage.getItem(limitKey) === 'true') {
+                footer.innerHTML = `
+                    <button class="earn-sc-btn" style="border-color:#ff003c; color:#ff003c; cursor:not-allowed; opacity:0.7;">
+                        DAILY LIMIT REACHED (TRY TOMORROW)
+                    </button>`;
             } else {
-                // SHOW STANDARD EARN BUTTON
                 footer.innerHTML = `
                     <button class="earn-sc-btn" id="earn-sc-btn" onclick="watchAdSim()">
                         <span class="blink">⚡</span> NEED CREDITS? EARN 💎
@@ -791,7 +823,7 @@
         }
 
         function startBonusMining(diff, container) {
-            localStorage.setItem(`ghostBonusClaimed_${diff}`, 'true'); // Set immediately
+            localStorage.setItem(`ghostBonusClaimed_${diff}`, 'true'); 
             const amount = BONUS_AMOUNTS[diff];
             
             container.innerHTML = `<div class="mining-status-box">INITIALIZING DATA INJECTION...</div>`;
@@ -806,13 +838,10 @@
                 playPowerUp();
                 container.innerHTML = `<div class="mining-success-box">+${amount} 💎 RECEIVED</div>`;
                 
-                // Revert to manual earn button after delay
                 setTimeout(() => {
                     if(currentShopFilter === diff) {
-                        container.innerHTML = `
-                            <button class="earn-sc-btn" id="earn-sc-btn" onclick="watchAdSim()">
-                                <span class="blink">⚡</span> NEED CREDITS? EARN 💎
-                            </button>`;
+                        // Re-render to check limits again correctly
+                        filterShop(diff);
                     }
                 }, 2000);
             }, 1500);
@@ -845,7 +874,7 @@
         }
 
         function buyHack(hackId, cost, btn) {
-            if(activeBuffs[hackId]) return; // Already owned
+            if(activeBuffs[hackId]) return; 
             
             if(userCredits >= cost) {
                 userCredits -= cost;
@@ -862,29 +891,16 @@
             }
         }
         
-        // --- AD SIMULATION LOGIC (MANUAL WITH DAILY LIMIT) ---
         function watchAdSim() {
             if(isAdWatching) return;
 
-            // NEW: DAILY CHECK LOGIC
             const dateStr = new Date().toDateString();
             const claimKey = `ghostManualAd_${dateStr}`;
             const btn = document.getElementById('earn-sc-btn');
-            // Reconstruct original text to ensure we don't lose the icon
-            const originalText = '<span class="blink">⚡</span> NEED CREDITS? EARN 💎';
 
             if(localStorage.getItem(claimKey) === 'true') {
-                btn.innerText = "DAILY LIMIT REACHED (TRY TOMORROW)";
-                btn.style.borderColor = "#ff003c"; // Red for error
-                btn.style.color = "#ff003c";
-                btn.classList.add('shake');
-                
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.style.borderColor = "";
-                    btn.style.color = "";
-                    btn.classList.remove('shake');
-                }, 2000);
+                 // Fallback if triggered somehow
+                filterShop(currentShopFilter);
                 return;
             }
 
@@ -901,8 +917,6 @@
                     clearInterval(timer);
                     addCredits(25); 
                     playPowerUp(); 
-                    
-                    // SAVE CLAIM
                     localStorage.setItem(claimKey, 'true');
 
                     btn.innerText = "+25 💎 RECEIVED";
@@ -910,11 +924,8 @@
                     btn.style.color = "var(--accent-color)";
                     
                     setTimeout(() => {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                        btn.style.borderColor = "";
-                        btn.style.color = "";
                         isAdWatching = false;
+                        filterShop(currentShopFilter); // Update UI to "Limit Reached" state
                     }, 2000);
                 }
             }, 1000);
@@ -945,7 +956,6 @@
             if(!username || username.length<2){ alert("Enter username!"); return;}
             saveUsername(username);
             
-            // Check for Matrix Vision Reward
             if(localStorage.getItem('ghostRewardPending') === 'true') {
                 setTimeout(() => {
                     triggerReveal(3000); 
@@ -968,7 +978,7 @@
 
             document.getElementById('start-screen').style.display='none';
             document.getElementById('result-screen').style.display='none';
-            document.getElementById('game-screen').style.display='flex';
+            document.getElementById('game-screen').style.display='flex'; 
             
             initKeyboard();
             document.getElementById('target-text').textContent = state.target;
@@ -981,7 +991,6 @@
                 }
             },50);
 
-            // --- ACTIVATE BOUGHT BUFFS ---
             if(activeBuffs.scan) triggerReveal(3000);
             if(activeBuffs.predict) updatePredictiveVisuals();
             if(activeBuffs.freq) highlightFrequentKeys();
@@ -1008,13 +1017,8 @@
             saveBestScore(score);
             updateBadgeProgress();
 
-            // RESET BUFFS AFTER GAME
-            activeBuffs = { 
-                scan: false, trace: false, 
-                predict: false, buffer: false, 
-                freq: false, rewind: false 
-            };
-            updateActiveHackIndicator(); // Clear the indicator
+            activeBuffs = { scan: false, trace: false, predict: false, buffer: false, freq: false, rewind: false };
+            updateActiveHackIndicator();
 
             document.getElementById('game-screen').style.display='none';
             document.getElementById('result-screen').style.display='flex';
@@ -1043,7 +1047,6 @@
                 let inp = config.diff!=='hard'?char.toLowerCase():char;
                 
                 if(exp && inp!==exp) {
-                    // ERROR LOGIC
                     if(activeBuffs.rewind && !tracker.rewindUsed) {
                         tracker.rewindUsed = true;
                         let safeLen = Math.max(0, state.input.length - 4); 
@@ -1076,9 +1079,7 @@
                     tracker.combo++;
                     if(diff < 120) { tracker.burst++; } else { tracker.burst = 0; }
                     
-                    // --- MODIFIED REWARD LOGIC (ECONOMY FOCUS) ---
                     if(tracker.combo >= 20) { 
-                        // REPLACED REVEAL WITH SC REWARD
                         addCredits(5); 
                         playPowerUp(); 
                         tracker.combo = 0; 
@@ -1087,19 +1088,19 @@
                     }
                     
                     if(tracker.burst >= 10) { 
-                        // REPLACED REVEAL WITH MICRO SC REWARD
                         addCredits(2);
                         tracker.burst = 0; 
                     }
-
-                    // REMOVED HALFWAY REVEAL LOGIC
                 }
             }
             document.getElementById('user-input').textContent=state.input;
+            // 4. FIX: Auto Scroll Input
+            const inputBoxArea = document.getElementById('input-box-area');
+            inputBoxArea.scrollLeft = inputBoxArea.scrollWidth;
+
             if(activeBuffs.predict) updatePredictiveVisuals();
         }
 
-        // --- BUFF MECHANICS ---
         function highlightFrequentKeys() {
             let counts = {};
             for(let char of state.target) {
@@ -1172,9 +1173,7 @@
             else { 
                 const textToCopy = `${shareData.text}\n${shareData.url}`;
                 navigator.clipboard.writeText(textToCopy).then(() => {
-                    const btn = document.getElementById('share-btn');
-                    const originalText = btn.innerText; btn.innerText = "COPIED!";
-                    setTimeout(() => { btn.innerText = originalText; }, 2000);
+                    alert("Result copied to clipboard!");
                 });
             }
         }
@@ -1282,7 +1281,6 @@
             const eh=(e)=>{e.preventDefault();finish();playClick(true);};ent.ontouchstart=eh;ent.onmousedown=eh;r4.appendChild(ent);c.appendChild(r4);
         }
 
-        // --- ACHIEVEMENTS (BADGES) ---
         const BADGES = [
             { id: 'initiate', name: 'PROTOCOL INITIATE', icon: '🔌', desc: 'Pass System Check (Play 5 Games)' },
             { id: 'access', name: 'ACCESS GRANTED', icon: '🔓', desc: 'Finish with >90% Accuracy' },
@@ -1303,7 +1301,6 @@
 
         function setupDailyMissions() {
             const dateStr = new Date().toDateString();
-            // ... (Mission setup logic unchanged) ...
             activeMissions.easy = [
                 { id: 'n_alpha', name: 'ALPHA', desc: 'WPM > 30 & Errors < 5', check: (s,w,a,err) => w > 30 && err < 5 },
                 { id: 'n_beta', name: 'BETA', desc: 'Score > 30', check: (s,w,a) => s > 30 },
@@ -1417,8 +1414,15 @@
             const notifyEl = document.getElementById('badge-notify-area');
             document.getElementById('bn-icon').innerText = badge.icon;
             document.getElementById('bn-name').innerText = badge.name;
+            // 2. FIX: Reset classes properly
+            notifyEl.classList.remove('hide');
             notifyEl.classList.add('show');
-            setTimeout(() => { notifyEl.classList.remove('show'); }, 4000);
+            setTimeout(() => { 
+                notifyEl.classList.remove('show'); 
+                notifyEl.classList.add('hide');
+                // Hide completely after slide down animation finishes
+                setTimeout(() => notifyEl.classList.remove('hide'), 500);
+            }, 4000);
         }
 
         function updateBadgeProgress() {
@@ -1431,11 +1435,10 @@
 
         function openProfile() {
             document.getElementById('pc-username').innerText = username || "GHOST";
-            document.getElementById('pc-id').innerText = Math.random().toString(36).substr(2, 6).toUpperCase();
+            document.getElementById('pc-id').innerText = localStorage.getItem('ghostDeviceId').substr(-6);
             document.getElementById('pc-best-score').innerText = localStorage.getItem('ghostBestScore') || '0';
             updateBadgeProgress();
             
-            // Badge Grid Render
             const userBadges = JSON.parse(localStorage.getItem('ghostUserBadges') || '[]');
             const grid = document.getElementById('modal-badge-grid');
             grid.innerHTML = '';
@@ -1448,11 +1451,9 @@
                 grid.appendChild(el);
             });
 
-            // Default State: Database Tab Open
             switchTab('db');
             
-            // Prepare Shop
-            filterShop(config.diff); // Open shop with current difficulty filter
+            filterShop(config.diff); 
             updateCreditsUI();
 
             document.getElementById('profile-modal').classList.add('open');
