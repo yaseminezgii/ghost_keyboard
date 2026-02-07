@@ -365,7 +365,7 @@
         /* PROTOCOL HACKS TAB STYLES */
         .shop-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .shop-filters { display: flex; gap: 5px; }
-        .shop-filter-btn { background: #111; border: 1px solid #333; color: #666; padding: 5px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; transition: 0.2s; font-family: inherit; }
+        .shop-filter-btn { background: #111; border: 1px solid #333; color: #666; padding: 5px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; transition: 0.2s; font-family: inherit; letter-spacing: 1px; }
         .shop-filter-btn:hover { border-color: #555; }
         .shop-filter-btn.active { background: var(--accent-color); color: #000; border-color: var(--accent-color); box-shadow: 0 0 10px var(--glow-color); }
         .shop-balance { font-size: 0.9rem; color: var(--gold-color); font-weight: bold; border: 1px solid #333; padding: 5px 10px; border-radius: 4px; background: rgba(0,0,0,0.5); }
@@ -644,7 +644,7 @@
 
         const SUPABASE_URL = 'https://dhqegitqiarogxivzcyv.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRocWVnaXRxaWFyb2d4aXZ6Y3l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5NzAwMzMsImV4cCI6MjA3OTU0NjAzM30.qnBHT5grVgmoMk1yCQA2_R8J-Q5MBXW3W05bXRS7Xoc';
-        let supabase; try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e){}
+        let supabaseClient; try { supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e){}
 
         const config = { diff: 'easy', lang: 'tr', backspace: true };
         
@@ -708,7 +708,7 @@
             userCredits = parseInt(localStorage.getItem('ghostUserCredits') || '0');
             updateCreditsUI();
 
-            if(supabase) { fetchLeaderboard(); setupRealtimeSubscription(); }
+            if(supabaseClient) { fetchLeaderboard(); setupRealtimeSubscription(); }
             startCountdown();
             setupDailyMissions();
             updateBadgeProgress();
@@ -1208,7 +1208,7 @@
         function setLang(v,b) { config.lang=v; document.querySelectorAll('#lang-row .mode-btn').forEach(k=>k.classList.remove('active')); b.classList.add('active'); playClick(); }
         
         function resetGame() { 
-            if(supabase) fetchLeaderboard(); 
+            if(supabaseClient) fetchLeaderboard(); 
             document.getElementById('result-screen').style.display='none'; 
             document.getElementById('start-screen').style.display='block'; 
             document.getElementById('username-input').value=username; 
@@ -1232,16 +1232,16 @@
         }
 
         async function fetchLeaderboard() {
-            if(!supabase) return; const c=document.getElementById('lb-content'); const t=new Date(); t.setHours(0,0,0,0);
-            const {data}=await supabase.from('scores').select('*').gte('created_at',t.toISOString()).order('score',{ascending:false}).limit(10);
+            if(!supabaseClient) return; const c=document.getElementById('lb-content'); const t=new Date(); t.setHours(0,0,0,0);
+            const {data}=await supabaseClient.from('scores').select('*').gte('created_at',t.toISOString()).order('score',{ascending:false}).limit(10);
             c.innerHTML=''; if(!data||!data.length) c.innerHTML='<div style="text-align:center;color:#666;margin-top:20px">No scores yet today!</div>';
             else { let r=1; data.forEach(d=>{ const row=document.createElement('div'); row.className='lb-row'+(d.username===username?' highlight':''); row.innerHTML=`<span class="lb-rank">#${r++}</span><span class="lb-name">${d.username}</span><span class="lb-score">${d.score}</span>`; c.appendChild(row); }); }
         }
-        function setupRealtimeSubscription() { if(supabase) supabase.channel('public:scores').on('postgres_changes',{event:'INSERT',schema:'public',table:'scores'},fetchLeaderboard).subscribe(); }
+        function setupRealtimeSubscription() { if(supabaseClient) supabaseClient.channel('public:scores').on('postgres_changes',{event:'INSERT',schema:'public',table:'scores'},fetchLeaderboard).subscribe(); }
         
         async function saveScoreToCloud(s,w,a,t) { 
-            if(supabase && w<=350 && a<=100) {
-                await supabase.from('scores').insert({
+            if(supabaseClient && w<=350 && a<=100) {
+                await supabaseClient.from('scores').insert({
                     username: username,
                     score: s,
                     wpm: w,
